@@ -982,3 +982,59 @@ worker binary has no service activation, setuid or file capabilities. Root fixtu
 success requires checked scope removal. The earlier r1 failed fixture scope was
 separately removed after confirmed quiescent normal process exit
 (worker-r1-scope-cleanup.log, remote0). No Action runtime package was installed.
+
+Release9 checkpoint `fd7520c20ca0beff02ad0faced055f9dc3674a9d` pushed to main
+with exit0 and exact remote-ref match. The reviewer confirmed its final packaging
+publication gate separately from production broker/public execution enablement.
+
+P04-WORKER-SESSION-r1 is IN_REVIEW. The private frontend session durably begins a
+worker generation and reserves every START before transmitting its first byte.
+Independent bounded command/cancel queues and a bounded reply decoder correlate
+exact generation/sequence/token, enforce partial-transfer deadlines and retain
+uncertainty on channel/protocol/persistence failure. Only a validated Complete
+followed by successful journal persistence releases a reservation. Buffered
+Complete frames are drained before reply EOF; clean EOF still requires independent
+normal-worker-exit proof. No-child worker rejection is integrated with the actual
+WorkerLoop. Spawn/authentication/unit/cgroup/production activation remain absent.
+Host `cmake --build build --target check -j2` CTest6/6 PASS
+(worker-session-host-r4.log, exit0). Exact four-file manifest checks and native
+g++/GoogleTest34/34 PASS (worker-session-native-r1.log, remote0). Persistence tests
+inject write, file-fsync, rename and directory-fsync errors at both Reserve and
+Complete; other tests cover partial START cancellation, malformed/lost replies,
+concurrent capacity, post-completion duplicates and restart refusal. Earlier host
+GTest same-line macro/compiler diagnostics were fixed before these passing runs.
+These tests do not spawn a privileged namespace workload or change image policy.
+
+Action candidate follow-up corrects the initial build-shape limitation: the first
+successful scratch configuration built its core static by upstream default.
+An explicit BUILD_SHARED_LIBS=ON rebuild passes (action-scratch-shared-build-r1.log,
+remote0); twenty-seven candidate shared objects pass loader relocation checks
+(action-shared-elf-audit.log, remote0). Full CTest4/4 again passes in the private
+mount namespace/tmpfs /tmp with unchanged host /tmp identity
+(action-shared-isolated-ctest-r1.log, remote0). These are symbol/test evidence, not
+semantic SDK ABI or live service compatibility. Candidate shared SqliteDb code
+reads only the owned migrated copy with an explicit image sequence, lists78 names,
+gets each schema and enumerates providers (action-copy-runtime-r3.log, remote0).
+The sorted native name digest exactly matches the old/new SQL copy-query digest
+`46b8dce8f0a7f6a033415c008499a649c359458187d0d620946f04e5f6d53b4e`
+(action-copy-native-names-comparison.json, PASS). Stored action rows remain245.
+Read-only image AUL lookup identifies AMD2305/uid301 as
+`d::org.tizen.action-framework.service`; pkgmgr usr-appinfo lookup for that exact
+identity returns -3 (action-directory-probe.log, remote0). Local DirectoryInfo
+source would return no resource context on that result, consistent with shared
+sequence fallback, but this does not inspect AMD's cached in-process context.
+Provider positional-ID compatibility and actual matched service integration stay
+open. No Action runtime upgrade or operational database mutation was performed.
+
+P04-WORKER-SESSION-r2 ACCEPTED by w1:pJ for the exact four-file manifest.
+The r1 review found that a late State/ENOENT was accepted for any retired token;
+r2 instead records four exact CANCEL entitlements, marks them sent only after the
+full frame write and consumes each at most once. Cancelled Complete proves live
+consumption; other outcomes retain ambiguity until a matching late State or EOF.
+Correlation exhaustion closes admission and persists uncertainty. Host
+worker-session-host-r5.log CTest6/6 PASS and exact native
+worker-session-native-r2.log38/38 PASS, remote0. No-CANCEL, duplicate and consumed
+CANCEL State fixtures now reject the former permissive path. This closes the
+private session finding only; no spawned production worker, external exit proof,
+TIDL admission/authentication, cgroup or public backend is enabled. Installed
+packages remain Release9, whose tests predate this private source checkpoint.
