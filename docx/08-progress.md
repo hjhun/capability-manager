@@ -879,3 +879,35 @@ archive build may be possible. No Action repository edit/push, runtime upgrade o
 operational database mutation has occurred; migration/compatibility review and
 actual build dependencies must precede any concrete upgrade proposal. Current
 installed1.3.27 still lacks subscription/cancel and those paths stay disabled.
+
+
+Child reservation checkpoint `532d80ca9ccc9b6e643340820b4bd563c77c1016` pushed
+to main with exit0 and matched the remote ref. P04-WORKER-COMMAND-r2 ACCEPTED
+by w1:pJ for the private anonymous-pipe reader/encoder and tests; implementation
+SHA256 `91a1d4b4bb5ba4bbe4ca3209a6bc25ed57306c020c6363cab6a777c7fa5fb9ed`.
+Fixed version/generation/sequence/token framing bounds START to64KiB; independent
+CANCEL input can progress while START is partial. EOF/HUP, framing/deadline errors
+and every escaping allocation exception permanently poison admission. The r1
+allocation failure gap is closed with bad_alloc/length_error injection. Host
+`cmake --build build --target check -j2` CTest6/6 PASS
+(worker-command-host-r2.log, exit0); exact-source native11/11 GoogleTests PASS
+(worker-command-native-r2.log, remote0). Earlier r1 native10/10 covers earlier
+bytes only. A cli: prefix is syntax, not registered-executable authorization.
+Actual worker scheduling, output, parent-loss cleanup and trusted catalog resolution
+remain unimplemented; installed RPM remains Release8.
+
+Action migration feasibility remains copy-only. The target snapshot has245 stored
+actions and59 legacy provider rows without enabled. A transactional same-version
+v4 migration adds enabled DEFAULT1; repeated no-op, SQL-error rollback and crash
+rollback preserve existing row digests/integrity (action-v4-copy-migration.log,
+remote0). The old f9c43cb listing and new de4d7fc enabled-provider listing each
+return exactly the same78 sorted names on pre/post copies, with zero additions or
+removals (action-copy-list-comparison.log, remote0; sorted-name SHA256
+`46b8dce8f0a7f6a033415c008499a649c359458187d0d620946f04e5f6d53b4e`).
+All59 migrated providers remain enabled. Stored245 vs candidate78 is not an
+upgrade regression. New ActionSequence deprecated filtering, runtime availability
+and actual execution require separate verification against the image resource.
+Missing requires_confirmation is not a de4d7fc1.4.2 requirement. Installed package
+layout differs from the nominal f9c43cb spec, so version alone does not establish
+binary provenance. Scratch SDK downloads are isolated, not installed or claimed
+ABI-matched; no operational Action DB, service or runtime package was modified.
