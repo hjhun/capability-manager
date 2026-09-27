@@ -27,9 +27,9 @@ Branch main tracks origin/main; upstream initial commit is
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
 | P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
-| P04 | IN_PROGRESS | CLI runner core tested; app_fw/TIDL/cgroup integration pending |
+| P04 | IN_PROGRESS | Private PID1 isolation r2 accepted and installed fixture passed; authenticated app_fw/TIDL broker and cgroup integration pending |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
-| P06 | IN_PROGRESS | Release4 installed; real TIDL MAIN/callback allow/deny/rejection cleanup fixture passed; public transport/AMD integration pending |
+| P06 | IN_PROGRESS | Release7 installed; TIDL binding and injected async frames tested; public transport/AMD integration pending |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -712,3 +712,49 @@ failure and retry evidence are retained. r1 native PASS is separate from r2 PASS
 This is a source checkpoint; installed RPM remains Release6. Namespace init, actual
 root broker, authorization, cgroup and physical/ARM validation remain NOT_RUN.
 Native r2 source archive SHA256 `170049841212c1fac5bb43fa6c8c27ef00708abe0643d8ba5454f5a3e04f7ed6`.
+
+
+Owned-child checkpoint `3250ff75c5198db97fbf10ce4e2e242c4e16fb37` on main pushed
+with exit0 and matched the remote main ref. Namespace setup proceeds as a separate
+review scope; the ownership acceptance does not cover it.
+
+P04-NAMESPACE-INIT-r2 ACCEPTED by w1:pJ for six-file private setup/fixture scope.
+Manifest SHA256 `bc17e261698651bb40aa452b5a24bf37508e2d05b204a49a552fe44b77dc9570`.
+The caller must be a single-threaded trusted broker and open its own proc/mount
+namespace anchors before clone. The helper checks mount isolation before mounting,
+uses private propagation and namespace procfs, drops app_fw credentials/capabilities,
+checks its creator through the pinned proc object, waits for GO, and remains a
+non-exec PID1 reaper. The public client/backend is not connected to this helper.
+
+Review r1 found a missing mount-namespace guard and reliance on GO-pipe HUP after
+creator death; r2 added both guards and negative fixtures. Host
+`cmake --build build --target check -j2` (`namespace-host-r4.log`) CTest6/6 PASS,
+exit0; this builds but does not execute the privileged fixture. Native direct
+`g++ -std=c++20 -Wall -Wextra -Werror -pthread ...` followed by a30s watchdog
+(`namespace-native-r5.log`) passed normal/closed-stdin execution, full post-exec
+real/effective/saved IDs, empty groups/capability sets, exact System label, private
+proc/mounts, FD/env isolation, setsid descendant exit, wrong clone flags, ENOENT/
+EACCES exec, and creator death before setup/before GO/after exec. Retained-writer
+cases include creator death before the first prctl. All fixture cases and remote
+command exit0. Initial manual compilation caught misleading-indentation warnings
+under -Werror; formatting was corrected before these successful build/test runs.
+Native clock skew caused tar timestamp warnings; no device clock was changed.
+
+Release7 r1 RPM build/%check CTest6/6 and payload/dependency checks passed
+(`namespace-native-rpm-r1.log`, remote0), but it was NOT installed after review
+changes. Exact r2 rebuild is pending. No broker service/launcher-unit provenance,
+registration trust, cgroup policy, production execution, remount, physical-device
+or ARM validation is accepted by these results.
+
+
+Exact Release7 r2 archive SHA256
+`a084c0b28e485ba22c7849473a8f1df6ec664fe4a9c711e211258de1f6905930`.
+Native `rpmbuild -ba` built five RPMs, %check CTest6/6 passed, payload/dependency/
+unpackaged-file checks completed (`namespace-native-rpm-r2.log`, remote exit0).
+Normal `rpm -U --test` then `rpm -U` upgraded runtime/devel/offline-tools/tests to
+0.1.0-7. Installed43 unit,41 adapter,18 platform GoogleTests, pure C consumer,
+7 offline tests and the explicit root namespace fixture passed, with no skipped
+platform tests (`namespace-native-install-r2.log`, remote exit0). The known msm
+post-hook warning is retained; package/test outcome does not establish full image
+policy health. No setuid bit or file capability is installed for the fixture.
+Reviewed hashes were rechecked before publication. Commit/push follows below.

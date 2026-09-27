@@ -169,3 +169,39 @@ python3 test/integration/package_tool_test.py build/capmgr-package-tool
 # Installed tests RPM:
 python3 /usr/libexec/capmgr/package_tool_test.py /usr/libexec/capmgr/capmgr-package-tool
 ```
+
+
+## Private PID namespace setup fixture
+
+The tests RPM includes `capmgr-namespace-probe`, a development fixture with no
+setuid bit or file capabilities. Run it explicitly as root on the selected test
+image with app_fw and the reviewed System label policy:
+
+```sh
+python3 /usr/libexec/capmgr/run_bounded.py --seconds 30 -- /usr/libexec/capmgr/capmgr-namespace-probe
+```
+
+It requires CAP_SYS_ADMIN and credential/SMACK setup permissions and fails on
+missing prerequisites. Ordinary CTest builds it but does not count its privileged
+execution as a unit-test pass. All job mounts are private and the original proc
+mount stays unchanged. The fixture checks UID/group/capability/no_new_privs/FD
+isolation, setsid descendant cleanup, failed exec (including app_fw permission
+denial), and parent death before setup, before GO, and after exec. Parent-death
+cases use subreaper adoption to observe the init child without sending it a signal.
+
+The routine supports a single-threaded trusted creator only. Before clone the
+creator opens its own proc directory and mount namespace from image-trusted procfs.
+The child rejects a shared mount namespace before any mount, anchors creator
+liveness to that proc object and bounds the GO wait to five seconds. The fixture
+also deliberately omits CLONE_NEWNS and retains a GO writer after creator death;
+one case delays init until after the creator has died, exercising the missed
+PDEATHSIG window. No supplied application FD is accepted as either anchor.
+
+NamespaceInit is a private, trusted setup routine; it is not an authenticated
+broker or a sandbox against filesystem/network/service access. No arbitrary path,
+UID or FD interface is exposed to applications. Production CLI remains gated on
+trusted registration, original caller authorization, launcher-unit authentication,
+image SMACK policy and cgroup limits. D-state teardown has no unconditional bound;
+OwnedChildren reserves pending jobs and preserves signal errors for retry. Its
+fail-stop destructor cannot substitute for a long-lived broker/reaper. Installed
+fixture success does not enable public execution or resource remount.

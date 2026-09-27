@@ -23,7 +23,7 @@ target_include_directories(capmgr-catalog PUBLIC src)
 target_link_libraries(capmgr-catalog PUBLIC SQLite::SQLite3 nlohmann_json::nlohmann_json)
 set_target_properties(capmgr-catalog PROPERTIES CXX_VISIBILITY_PRESET hidden)
 add_library(capmgr-adapters STATIC src/pkgmgr-plugin/parser.cc src/amd-module/action_import.cc
-  src/launcher/runner.cc src/launcher/action_exchange.cc src/launcher/owned_children.cc)
+  src/launcher/runner.cc src/launcher/action_exchange.cc src/launcher/owned_children.cc src/launcher/namespace_init.cc)
 target_link_libraries(capmgr-adapters PUBLIC capmgr-catalog Threads::Threads)
 add_executable(capmgr-package-tool tools/package_tool.cc)
 target_link_libraries(capmgr-package-tool PRIVATE capmgr-adapters)
@@ -78,6 +78,8 @@ if(BUILD_TESTING)
   if(CAPMGR_REQUIRE_CYNARA)
     set_tests_properties(capmgr-peer PROPERTIES ENVIRONMENT "CAPMGR_REQUIRE_PEER_TESTS=1")
   endif()
+  add_executable(capmgr-namespace-probe test/integration/namespace_probe.cc)
+  target_link_libraries(capmgr-namespace-probe PRIVATE capmgr-adapters)
   add_executable(capmgr-catalog-benchmark tools/catalog_benchmark.cc)
   target_link_libraries(capmgr-catalog-benchmark PRIVATE capmgr-catalog)
   add_test(NAME capmgr-verification-tools COMMAND ${Python3_EXECUTABLE} -m unittest discover
@@ -85,7 +87,7 @@ if(BUILD_TESTING)
   add_test(NAME capmgr-offline-package COMMAND ${Python3_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/test/integration/package_tool_test.py $<TARGET_FILE:capmgr-package-tool>)
   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests capmgr-peer-tests capmgr-catalog-benchmark capmgr-package-tool USES_TERMINAL)
+    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests capmgr-peer-tests capmgr-catalog-benchmark capmgr-package-tool capmgr-namespace-probe USES_TERMINAL)
 endif()
 
 find_program(TIDLC_EXECUTABLE tidlc)

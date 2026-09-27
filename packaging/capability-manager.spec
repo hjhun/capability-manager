@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Name: capability-manager
 Version: 0.1.0
-Release: 6
+Release: 7
 Summary: Capability catalog and client library
 License: Apache-2.0 AND MIT
 URL: https://github.com/hjhun/capability-manager
@@ -76,6 +76,7 @@ install -D -m 755 _build/capmgr-peer-tests %{buildroot}%{_libexecdir}/capmgr/cap
 install -D -m 755 _build/capmgr-tidl-probe %{buildroot}%{_libexecdir}/capmgr/capmgr-tidl-probe
 install -D -m 755 test/integration/run_tidl_probe.py %{buildroot}%{_libexecdir}/capmgr/run_tidl_probe.py
 %endif
+install -D -m 755 _build/capmgr-namespace-probe %{buildroot}%{_libexecdir}/capmgr/capmgr-namespace-probe
 install -D -m 755 _build/capmgr-catalog-benchmark %{buildroot}%{_libexecdir}/capmgr/capmgr-catalog-benchmark
 install -D -m 755 tools/verify.py %{buildroot}%{_libexecdir}/capmgr/verify.py
 install -D -m 755 tools/run_bounded.py %{buildroot}%{_libexecdir}/capmgr/run_bounded.py
@@ -110,6 +111,7 @@ install -D -m 644 json-3.11.3/LICENSE.MIT %{buildroot}%{_datadir}/licenses/%{nam
 %{_libexecdir}/capmgr/capmgr-adapter-tests
 %{_libexecdir}/capmgr/capmgr-cli-fixture
 
+%{_libexecdir}/capmgr/capmgr-namespace-probe
 %{_libexecdir}/capmgr/capmgr-catalog-benchmark
 %{_libexecdir}/capmgr/verify.py
 %{_libexecdir}/capmgr/run_bounded.py
