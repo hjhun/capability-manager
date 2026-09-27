@@ -279,3 +279,38 @@ Installed adapter tests passed 23/23 and installed C consumer exited 0; remote
 exit 0 (`adapters-native-install-r3.log`). The earlier msm warning was on the
 failed same-NEVRA attempt; the Release 2 successful transaction did not emit it.
 Platform policy correctness is still unverified independently of package outcome.
+
+### Adapter publication and async/API checkpoint
+
+Adapter core commit `247b6bac60a2deab891651a4dafc79f2a45f9e98` pushed to
+origin/main, exit 0; remote ref verified equal. No unreviewed async/tool changes
+were staged with it.
+
+P06-ASYNC-r2 ACCEPTED by w1:pJ for CMake, private client/backend and dispatcher,
+public callback integration tests and search corpus. Dispatcher SHA256
+`efaeb029ebdb1b20ceb0b1903cab49c19f9250cd99c7c5d0d10b06fbc4e84012`.
+R1 rejected unchecked backend replies; r2 validates bounded JSON-RPC envelopes,
+matching exact IDs and error shapes before callbacks and preserves valid native
+bytes. Synthetic transport errors retain a confirmed data.cause. Event envelopes
+are also checked; actual Action event mapping remains unimplemented.
+
+Host `cmake --build build --target check -j 3` passed CTest 3/3: 36 foundation/API/
+search tests, 23 adapter tests and C consumer (`async-check-r4.log`). The 12 public
+exports remain unchanged. Tests cover callback-active BUSY/no partial destroy,
+setter data lifetime, callback cancellation, successful cleanup without callbacks,
+unsupported cancellation, token exhaustion, duplicate in-flight IDs, two/client
+and four/process limits, bounded queue and changed-revision deduplication.
+The 13-entry English/Unicode search corpus tests expected ordering, AND/no padding
+and corrupted FTS handling. It does not establish optimal relevance weights.
+
+Exact source snapshot built inside emulator-26101 with TIDL generation and
+CTest 3/3 PASS, remote exit 0 and marked-scope cleanup PASS:
+`async-native-r2-retry/summary.json`. First attempt failed before compilation,
+exit 127, because target coreutils 6.9 lacks timeout (`timeout-probe.log`).
+The verification tool now uses a Python process-group watchdog; this tool change
+is reviewed separately. The failed run and its successful cleanup remain recorded.
+
+This checkpoint implements injected-backend callback/lifetime behavior. Production
+create still denies access until platform privilege/DB policy and TIDL session
+integration are verified. Transport deadlines, service-wide cross-process limits,
+Action subscriptions, remount and actual source-feed reconnection remain gates.

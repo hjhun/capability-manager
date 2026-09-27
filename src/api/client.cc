@@ -12,7 +12,8 @@ struct capmgr_client {
   explicit capmgr_client(const std::string& path)
       : catalog(path, capmgr::Database::Access::kReadOnly) {}
   capmgr::Catalog catalog;
-  std::atomic<bool> callback_active{false};
+  capmgr::Dispatcher dispatcher;
+  std::shared_ptr<capmgr::ExecutionBackend> backend;
 };
 struct capmgr_search_results { std::vector<std::string> items; };
 namespace {
@@ -34,10 +35,18 @@ class PlatformAccessGate final : public capmgr::AccessGate {
 }
 namespace capmgr {
 int CreateClient(AccessGate& gate, capmgr_client_h* client) noexcept {
+  return CreateClient(gate,{},client);
+}
+int CreateClient(AccessGate& gate,std::shared_ptr<ExecutionBackend> backend,
+                 capmgr_client_h* client) noexcept {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
   *client = nullptr;
   return Guard([&] { auto path=gate.AuthorizeAndGetDatabase();
-                     *client=new capmgr_client(path); });
+                     auto out=std::make_unique<capmgr_client>(path);
+                     out->backend=std::move(backend);*client=out.release(); });
+}
+void NotifyChanged(capmgr_client_h client,uint64_t revision) {
+  if(client)client->dispatcher.Changed(revision);
 }
 }
 extern "C" {
@@ -46,22 +55,19 @@ int capmgr_client_create(capmgr_client_h* client) {
 }
 int capmgr_client_destroy(capmgr_client_h client) {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
-  if (client->callback_active.load()) return CAPMGR_ERROR_BUSY;
-  delete client; return CAPMGR_OK;
+  return Guard([&] {
+    if(!client->dispatcher.Close())throw capmgr::Error(capmgr::ErrorCode::kBusy,"Callback active");
+    delete client;
+  });
 }
 int capmgr_client_foreach_capability(capmgr_client_h client, capmgr_kind_t kind,
                                      capmgr_foreach_cb callback, void* data) {
   if (!client || !callback) return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!client->dispatcher.EnterCallback())return CAPMGR_ERROR_BUSY;
+  struct Scope {capmgr::Dispatcher& dispatcher;~Scope(){dispatcher.LeaveCallback();}} scope{client->dispatcher};
   return Guard([&] { client->catalog.Foreach(static_cast<capmgr::Kind>(kind),
-    [&](const auto& entry) {
-      auto json=entry.dump();
-      struct CallbackScope {
-        std::atomic<bool>& active;
-        explicit CallbackScope(std::atomic<bool>& flag) : active(flag) { active=true; }
-        ~CallbackScope() { active=false; }
-      } scope(client->callback_active);
-      return callback(json.c_str(),data);
-    }); });
+    [&](const auto& entry) {auto json=entry.dump();return callback(json.c_str(),data);}); });
+
 }
 int capmgr_client_search_capabilities(capmgr_client_h client, const char* query,
                                       capmgr_kind_t kind, capmgr_search_results_h* results) {
@@ -99,21 +105,33 @@ int capmgr_client_get_capability(capmgr_client_h client, const char* id, char** 
   });
 }
 int capmgr_client_execute(capmgr_client_h client, const char* request,
-                          capmgr_result_cb callback, void*, capmgr_request_token_t* token) {
+                          capmgr_result_cb callback, void* data, capmgr_request_token_t* token) {
   if (token) *token=0;
   if (!client || !request || !callback || !token) return CAPMGR_ERROR_INVALID_ARGUMENT;
-  return CAPMGR_ERROR_NOT_SUPPORTED;
+  return Guard([&] {
+    auto parsed=capmgr::ParseRequest(request);
+    auto entry=client->catalog.GetPrivate(parsed.capability_id);
+    if(entry.kind!=capmgr::Kind::kCli && entry.kind!=capmgr::Kind::kAction)
+      throw capmgr::Error(capmgr::ErrorCode::kUnsupported,"Skill execution belongs to the agent");
+    if(!client->backend)throw capmgr::Error(capmgr::ErrorCode::kUnsupported,"Execution transport is unavailable");
+    auto backend=client->backend;backend->Admit(entry,parsed);
+    auto id=parsed.id;bool supports_cancel=backend->SupportsCancel(entry);
+    *token=client->dispatcher.Execute(
+      [backend,entry=std::move(entry),parsed=std::move(parsed)](const auto& cancelled,const auto& emit) {
+        return backend->Execute(entry,parsed,cancelled,emit);
+      },std::move(id),callback,data,supports_cancel);
+  });
 }
 int capmgr_client_cancel(capmgr_client_h client, capmgr_request_token_t token) {
   if (!client || !token) return CAPMGR_ERROR_INVALID_ARGUMENT;
-  return CAPMGR_ERROR_NOT_SUPPORTED;
+  return Guard([&]{client->dispatcher.Cancel(token);});
 }
 int capmgr_client_remount_resources(capmgr_client_h client, const char* destination) {
   if (!client || !destination || destination[0]!='/') return CAPMGR_ERROR_INVALID_ARGUMENT;
   return CAPMGR_ERROR_NOT_SUPPORTED;
 }
-int capmgr_client_set_changed_callback(capmgr_client_h client, capmgr_changed_cb, void*) {
+int capmgr_client_set_changed_callback(capmgr_client_h client, capmgr_changed_cb callback, void* data) {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
-  return CAPMGR_ERROR_NOT_SUPPORTED;
+  return client->dispatcher.SetChanged(callback,data)?CAPMGR_OK:CAPMGR_ERROR_BUSY;
 }
 }
