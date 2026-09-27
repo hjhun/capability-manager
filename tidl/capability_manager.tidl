@@ -1,0 +1,13 @@
+[privilege="http://tizen.org/privilege/internal/default/platform"]
+interface CapabilityManager {
+  string AuthorizeCatalog();
+  int Execute(string request_token, string request_json);
+  int Cancel(string request_token);
+  int RemountResources(string destination_path);
+  void Reply(string request_token, string response_json, bool is_event) delegate;
+  int RegisterReply(Reply callback);
+  bool UnregisterReply(int callback_id);
+  void Changed(string catalog_revision) delegate;
+  int RegisterChanged(Changed callback);
+  bool UnregisterChanged(int callback_id);
+}

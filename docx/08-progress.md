@@ -107,3 +107,116 @@ filename-sorted docx/*.md, src/api/capmgr.h), concatenated-byte SHA256
 its accepted r4 contract clauses/header are unchanged. Reviewer explicitly permits
 this append-only bookkeeping before commit. Fence/local-link/JSON validation
 passed (exit 0). Commit/push/ref outcome will be appended after execution.
+
+### Initial publication result
+
+Commit `28cd7cb267eecef318b5100c2b09f088ad2a2b30` on main preserved the initial
+upstream commit and LICENSE. `git push origin HEAD:main` exited 0; `git ls-remote
+origin refs/heads/main` returned that exact SHA. No force push or history rewrite.
+
+### P01 host foundation verification (working revision, review pending)
+
+Host Ubuntu x86_64 / GCC 13.3 / CMake 3.28 / SQLite 3.45.1 / GTest 1.14:
+`cmake -S . -B build -DCMAKE_PREFIX_PATH=<extracted-deps>/usr
+-DCMAKE_BUILD_TYPE=Debug`, `cmake --build build -j 4`, and
+`cmake --build build --target check` succeeded. CTest: 2/2, including 17 actual
+SQLite/mock tests and a pure C consumer. `nm -D --defined-only build/libcapmgr.so`
+shows exactly the 12 capmgr functions plus the version node, no writer exports.
+The first build found duplicate GoogleTest macro labels on one source line;
+separating the assertions fixed it, and the full affected tests passed.
+Injected `/bin/false` into the generated CTest file: CTest exited 8 and build check
+exited 2; restored the generated file afterward. Temporary logs reside outside
+Git under a local capmgr evidence directory (p01-configure/build/ctest/check and
+p01-negative-check). These results do not validate async callbacks, TIDL runtime,
+installation, mounting, Action synchronization, RPM or ARM behavior.
+
+### P01 RPM and emulator-native foundation evidence
+
+Host `rpmbuild -ba --nodeps` used the actual extracted Ubuntu development prefix
+(the host RPM database does not describe its Debian packages); CMake resolved
+SQLite/GTest/GMock and compiled/linked them. %check executed CTest 2/2, exit 0.
+Generated runtime/devel/tests and source RPMs under a temporary rpmbuild root.
+Host RPMs are host artifacts, not Tizen deployment evidence. Third-party
+nlohmann/json v3.11.3 source SHA256 is
+`0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406`;
+its MIT notice is retained in the runtime package (RPM License Apache-2.0 AND MIT).
+
+Emulator dependency RPMs were downloaded from the configured Tizen 10.1 emulator
+and base repositories and checked against primary-metadata SHA256. RPM --test
+exited 0 before installation. Native packages now provide GCC 14.2, CMake 3.31.2,
+TIDL 3.1.1, SQLite 3.50.2 and GTest/GMock 1.15.2. Initial compilation failed because
+cc1 is in the separate cpp package; installing matching cpp fixed it. RPM reported
+some ldconfig SMACK permission warnings; actual native linking/tests succeeded,
+which does not clear platform privilege-policy gates.
+
+In an isolated emulator development directory, CMake with CAPMGR_REQUIRE_TIDL=ON
+and the pinned JSON source generated TIDL proxy/stub files, built C++ and the C
+consumer, and ran CTest 2/2 successfully (17 unit cases at this earlier snapshot).
+Remote shell sentinel CAPMGR_REMOTE_EXIT=0 verifies command status independently
+of the SDB transport exit. Logs: native-install-test, native-install, native-build
+(initial failure), native-cpp-install, native-build-retry in local temporary
+evidence. Native product RPM build/install is still NOT_RUN at this point.
+
+Subsequent host working revision adds UTF-8 identity validation, idempotent final
+outcome replay, and foreach callback destroy protection: 20 unit cases pass plus
+C consumer (CTest 2/2). Native rerun of that changed revision remains pending.
+Graphify AST update exited 0 (229 nodes initially) with a parser warning at the C
+visibility macro in capmgr.h; actual C compile/link passed. Graph artifacts are
+ignored, and the graph warning is not hidden as a clean parse.
+
+### P01 review corrections (r3)
+
+P01-FOUNDATION-r2: CHANGES_REQUESTED by w1:pJ. Corrected the schema-version
+collision by introducing v2 and a transactional v1-to-v2 completed-ledger migration;
+read-only v1 clients reject until a writer migrates. Removed the direct
+ReplacePackage API: package publication now requires explicit Stage + successful
+Finalize. Fixtures supply authoritative outcomes themselves. Stored revision types,
+row types and JSON are validated as DATABASE errors; revision overflow rolls back
+catalog/FTS rather than becoming a floating-point generation. Added migration,
+corruption, and overflow fixtures. Host check now passes 24 tests plus C consumer,
+with 12 exported C functions; native RPM revalidation of r3 is in progress.
+
+SEARCH-01 remains partial: cap, basic Porter matching, exact-name preference and
+AND/no-padding tests are not the representative English relevance corpus.
+Native RPM retry initially produced artifacts but its unpackaged-file checker
+could not run because diff was missing. Added BuildRequires diffutils, installed
+the matching Tizen dependency, and scheduled a full rebuild of the exact spec.
+The earlier OOM is confirmed by kernel `Killed process ... (cc1plus)` evidence;
+current spec uses Release -O1/-DNDEBUG and one compile job. Neither failed/warning
+run is treated as a fully verified native RPM checkpoint.
+
+The new tools/verify.py preflight/foundation/native-build runner was exercised:
+explicit emulator serial, command logs, transport and remote exit codes, pinned
+JSON archive validation, isolated remote build scope, and cleanup. Its r2 source
+snapshot built and passed CTest 2/2, then removed only its marked temporary scope.
+TIDL --version deliberately returns 1 with a version string; preflight records
+that observed exit separately as expected rather than masking arbitrary failures.
+Tool implementation review/commit is separate from P01 foundation.
+
+### P01 foundation r3 acceptance and native RPM result
+
+P01-FOUNDATION-r3 ACCEPTED by w1:pJ for the private-catalog foundation
+(R01/R02/R06/R09/R13/R14/R16), excluding launcher, parser, Action importer and
+verification-tool work in progress. Reviewed catalog.cc SHA256
+`a4f063d85b12b1204aa3bd3e596a695d0cacf066ecaade629ff7aa52b8814fbb`,
+catalog.hh `167c50a43d64139e89ac59fbc7119899b3174788d63c1ecd0381b5ff8fb1880e`,
+database.cc `f2c6e942015594b0b697ee989db2aa6044570aebb657d08a78ad229ea319e07f`,
+client.cc `b5320e09b8e5ae719b3df2f0a36e1387c70808f98813da39b74788688c15d42e`,
+and spec `1d8412485cb093f307ad5253009e0960b10fc1f7d54f1196779f44d777283185`.
+Reviewer read source/logs; did not independently rerun tests or operate devices.
+
+Exact r3 source archive SHA256:
+`9e5ab491eb84575941290d9374095ab1909e3f2b085b313c195ccd564389e57e`.
+On emulator-26101 x86_64, `rpmbuild -ba` with the reviewed spec completed
+TIDL generation, CTest 2/2 (24 GoogleTests and C consumer), unpackaged-file checks
+and runtime/devel/tests/source RPM creation. Remote exit 0, evidence
+`native-rpm-r3.log`; the earlier missing-diff warning is absent. Payload and
+runtime dependency inspection plus `rpm -U --test` exited 0 in
+`native-rpm-inspect.log` (RPM msm tsm_post warning retained). Private writer
+headers are not installed. Package installation remains NOT_RUN at this point.
+
+This acceptance is not completion of P01/P02 or product R01-R18: public production
+create remains fail-closed pending privilege/TIDL integration; asynchronous
+execution, mount, authoritative installer finalization, Action change feed,
+representative search quality and device permission checks remain open.
+Next checkpoint integrates and reviews parser/importer/CLI cores and their tests.

@@ -1,0 +1,4 @@
+CAPMGR_0 {
+  global: capmgr_*;
+  local: *;
+};
