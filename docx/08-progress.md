@@ -1068,3 +1068,26 @@ host/native evidence. Only the generated fixture's build permissions changed fro
 r1; no production permission guard was relaxed. This closes the private descriptor
 transport/ownership review, with all bootstrap/auth/catalog/exit-proof gates above
 still open.
+
+Fixed-worker spawn checkpoint `6adf4660320ba0bb74bc483bd357d8f290613cb4` pushed
+to main with exit0 and exact remote-ref match. P04-WORKER-CATALOG-r1 ACCEPTED by
+w1:pJ for four files implementing startup-only CLI snapshot loading. The caller
+supplies the provisioned writer UID/group and exact directory/file modes; this
+supports a live writable catalog instead of incorrectly requiring root ownership.
+Directory/DB/WAL/SHM DAC, ACL, links, types and identities are checked. One RO
+transaction reads schema/revision and published CLI entries, excluding pending and
+other kinds and rejecting more than256 entries. The SQLite connection closes
+before return; no worker-loop lookup performs database I/O.
+
+Host worker-catalog-host-r4.log CTest8/8 PASS; exact native
+worker-catalog-native-r1.log10/10 loader tests PASS, remote0. Tests include live
+WAL updates, pending invisibility, file policy rejection, missing/linked sidecars,
+verified sidecar recreation, schema/corruption, pre-load directory rename and
+unchanged catalog data. An initial development test run used BEGIN IMMEDIATE on
+the RO connection and failed; it was corrected to an explicit read transaction
+before these final runs. Host SQLite3.45.1 and native3.50.2 both canonicalize the
+procfd input into a normal pathname. This is expressly not an FD-only VFS or a
+hostile rename/ABA proof: stable trusted ancestors, authorized writer and SMACK
+policy remain prerequisites. Source invalidation, bounded production subset,
+execution path trust and bootstrap READY/spawn wiring remain unimplemented gates.
+Installed packages remain Release9; no production worker image is installed.
