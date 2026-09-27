@@ -27,9 +27,9 @@ Branch main tracks origin/main; upstream initial commit is
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
 | P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
-| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release10 installed; authenticated app_fw/TIDL broker and resource gates open |
+| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release11 installed tests verified; authenticated app_fw/TIDL broker and resource gates open |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
-| P06 | IN_PROGRESS | Release10 installed; TIDL binding and injected async frames tested; public transport/AMD integration pending |
+| P06 | IN_PROGRESS | Injected managed C API cleanup accepted, host/native66+C and Release11 installed tests verified; production transport/AMD gates open |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -83,7 +83,7 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-Reviewed development checkpoints through `aed8ffd3d193313b49cf854401131befee78d927`
+Reviewed development checkpoints through `8f100b8d8a98f6adcebe1b11fef6c7abf5bad4da`
 are committed and pushed on main, with exact remote refs verified. The chronological
 records below retain earlier failures and pending states as historical evidence;
 later entries supersede their status. Raw evidence/builds/dependencies are excluded
@@ -95,8 +95,8 @@ device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gate
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: implement reviewed worker output/result correlation and continue production
-admission/catalog/resource integration afterward. PATH-01 remains a
+Next: continue production admission/catalog/resource integration after the
+accepted Release11 package checkpoint. PATH-01 remains a
 product question, not a reason to block unrelated catalog/CLI work.
 
 ### P00 publication checkpoint review
@@ -1486,3 +1486,52 @@ Accepted07 SHA256: f27761cce9a05b4a20fc22830cb11ce85b954d66a98a25c9139efc1dc0119
 Only the pending-review heading changes for publication; clauses are unchanged.
 The separately accepted Release11 spec revision is only10->11; RPM build/%check,
 payload/script/dependency audit, normal upgrade and installed tests remain pending.
+
+
+## P06 cleanup Release11 package checkpoint (2026-09-28)
+
+CLIENT-MANAGED-r2 was committed/pushed as
+8f100b8d8a98f6adcebe1b11fef6c7abf5bad4da on main; push exit0 and exact remote
+refs/heads/main verified. The accepted spec-only CLEANUP-PACKAGE-r1 revision
+changes Release10 to11 (SHA256
+d926e46429547319ed7740578f779ac8a262bb37537fd48513e3a06174d22fef).
+P06-CLEANUP-PACKAGE-r1 final publication gate is ACCEPTED by w1:pJ; source
+and package/runtime evidence are separately recorded.
+
+Native x86_64 source archive SHA256:
+cca993007b1654557af8e53228e0b1efd22376fed11c411440e0a31c5103ef46.
+Pinned JSON archive SHA256:
+0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406.
+The source archive contains reviewed source8f100b8 plus the accepted Release11
+spec, without raw logs or build products. Evidence remains ephemeral under
+/tmp/capmgr-evidence; paths here identify local records, not portable dependencies.
+
+- cleanup-package-native-r1.log: inputs.sha256 verified; protected root0700
+  build scope, umask022, run_bounded.py1800s, rpmbuild -ba with capmgr_tizen1;
+  native RPM %check CTest8/8 PASS, unpackaged-file check completed, four binary
+  RPMs plus SRPM written, CAPMGR_REMOTE_EXIT0 / TRANSPORT_EXIT0.
+- cleanup-package-payload-r1.log: rpm -qp file owners/modes/caps, requirements
+  and scriptlets for all four packages. Root-owned executable0755 payload;
+  no setuid/filecap, new service or scriptlet. Private bootstrap fixtures remain
+  tests-only. Runtime/devel/offline/tests dependency resolution is also exercised
+  by the subsequent normal rpm -U --test transaction. Remote0/transport0.
+- cleanup-package-install-r1.log: all four installed0.1.0-11. Owner-run method
+  was bounded180s normal rpm -U --test followed by rpm -U for runtime/devel/
+  offline-tools/tests (script /tmp/capmgr-install-release11.sh); command lines
+  are not echoed in the captured log. The reviewer verified resulting versions
+  and tests, not those command flags from log text.
+  Installed unit66/66, adapter162/162, peer18/18 (required no-skip mode), pure C
+  consumer and offline Python7/7 PASS; remote0/transport0. The earlier request's
+  adapter147 count was corrected to162 from the actual log:246 total GoogleTests.
+  Known Plugin msm: hook tsm_post failed warning remains observed; exit0 and tests
+  do not establish production SMACK policy. No force or replacefiles used.
+
+Release11 runtime RPM SHA256:
+acb217b06467581d9981372a146b12313cfe64143bc669ddd5e5829c97457189.
+Release11 tests RPM SHA256:
+0b287247374dac2a9e5d65ad83d2f518faadbfc76f38d135c3c5b255ad6d44a1.
+Installed tests exercise private/injected paths. No production managed factory,
+platform authorization, live worker service, catalog invalidation or resource
+control is enabled. The unchanged privileged bootstrap fixture was not rerun for
+this cleanup-only scope; its Release10 evidence remains historical. ARM/P09 and
+physical-device verification remain NOT_RUN.
