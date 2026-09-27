@@ -1624,3 +1624,34 @@ NOT_RUN; production create, CLI/remount and ARM/P09 remain gated.
 Original accepted07 SHA256: e3f9f490c5d57e8465b28d2a2ea04a244ea018625d7aaff32c6b4fe2963c4c9c.
 Publication07 SHA256: c159d2c7aa2480925169340247ed86ad672c73ef3bfab86845ae1e4c01a172e3.
 The only post-review07 change is pending-review -> accepted-local heading.
+
+
+Read-handoff publication: 28d0c435272a3b2d3ac7d6046c2a33dace815a00 on main,
+commit/push exit0 and exact remote ref verified.
+
+## P06 per-instance catalog grant (2026-09-28, r1 accepted)
+
+P06-READ-GRANT-r1 ACCEPTED by w1:pJ: exact five-file manifest
+/tmp/capmgr-read-grant-r1.sha256. One service-instance object owns a fresh
+getrandom256 nonce, fixed235-byte CMG1 envelope and issuer lease. Shared64 budget
+bounds pending grants; confirmation checks exact nonce, descriptor and deadline
+again after metadata validation, consuming once. Wrong instance/replay, stale
+receipt, malformed envelope, expiry and policy changes deny. Clear releases the
+lease then its budget exactly once on every error/revoke/destruction path.
+
+Evidence under ephemeral /tmp/capmgr-evidence:
+- read-grant-host-check-r2.log: cmake --build build --target check --parallel2,
+  CTest8/8 PASS exit0. Earlier r1 compile failed on two GTest assertion labels
+  sharing one source line; split assertions fix it, with failure log preserved.
+- read-grant-native-r1.log: exact5/5, affected rebuild,95/95 GoogleTests,
+  C_CONSUMER_EXIT0, CAPMGR_REMOTE_EXIT0 / TRANSPORT_EXIT0, under600s watchdog.
+  Nine grant fixtures include concurrency, entropy, allocation failure/capacity,
+  explicit delayed expiry and deadline crossing during metadata validation.
+
+Five seconds is a confirmation deadline, not hard wall-clock reclamation. A
+stalled service-context timer retains lease/capacity; no actual timer, service
+instance, TIDL/private-context transport or policy matrix is implemented by this
+primitive. Those are next integration gates. Production create stays denied.
+Accepted07 hash: c0081a32f5f49b97eef149561fb927b0d1ff070026adc6f2c0afb4f54a3330fb.
+Publication07 hash: 6c81e32fed1c8d1a8f2bbbd05755d9d49ba4f79fb9935003df4305382a4307b4.
+Only the review-status heading changed after acceptance.

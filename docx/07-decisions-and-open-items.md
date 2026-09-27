@@ -661,3 +661,28 @@ shared with another thread, and destroy its proxy while its listener is alive,
 then pop/unref that context before publication. Exact native split-socket,
 disconnect/replay/lost-reply and teardown stress remain separate review gates.
 The design does not enable production create or change the public C ABI.
+
+### Per-instance catalog grant (development revision 1, accepted privately)
+
+CMG1 adds a separate unpredictable 256-bit getrandom nonce to the descriptive
+CMR1 receipt: CMG1:<64 lowercase hex nonce>:<165-byte CMR1 descriptor>, exactly
+235 bytes. CatalogReadGrant belongs to one already-authorized service instance;
+there is no global nonce lookup. One issuance per instance, one consume only.
+A service-owned shared budget caps pending grants at64. Issue failure, confirmation,
+expiry, disconnect revocation and destruction release the budget and issuer lease
+exactly once. A failed nonce/identity check retires that instance's grant.
+
+The steady-clock5s limit is a confirmation deadline, rechecked after metadata
+validation. It is not hard wall-clock lease reclamation: a delayed service-context
+expiry callback retains the lease and its budget slot. The concrete service must
+schedule idle expiry and remove its timer before destruction; busy/stalled context
+availability remains an explicit limitation. Expire, Confirm and Revoke serialize.
+No service timer or real TIDL transport is wired by the primitive checkpoint.
+
+Confirmation matches the per-instance nonce and rechecks its retained descriptor
+and local lease. The protocol requires the client to acquire/check its independent
+lease before Confirm; the primitive alone cannot prove remote compliance. A
+successful validation can release the issuer lease before reply serialization
+because the compliant client already holds its own. Lost reply still fails create.
+Generated MAIN/callback and real policy checks must precede both Issue and Confirm;
+this private class neither authenticates callers nor enables production create.
