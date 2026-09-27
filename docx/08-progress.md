@@ -27,9 +27,9 @@ Branch main tracks origin/main; upstream initial commit is
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
 | P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
-| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release11 installed tests verified; authenticated app_fw/TIDL broker and resource gates open |
+| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release12 installed tests verified; authenticated app_fw/TIDL broker and resource gates open |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
-| P06 | IN_PROGRESS | Injected managed C API cleanup accepted, host/native66+C and Release11 installed tests verified; production transport/AMD gates open |
+| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff and stress accepted; Release12 package/installed transport fixture accepted; production admission/policy gates open |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -83,7 +83,7 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-Reviewed development checkpoints through `75145f4dc005a5b732ce4c046b7c470bd579607e`
+Reviewed development checkpoints through `a4c19f7dafd3f5ebd2b8a128582fa86506ef1b49`
 are committed and pushed on main, with exact remote refs verified. The chronological
 records below retain earlier failures and pending states as historical evidence;
 later entries supersede their status. Raw evidence/builds/dependencies are excluded
@@ -95,8 +95,8 @@ device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gate
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: continue production admission/catalog/resource integration after the
-accepted Release11 package checkpoint. PATH-01 remains a
+Next: review the causal read-admission policy/direct-open fixture before native
+policy changes; Release12 package/installed fixture acceptance is complete. PATH-01 remains a
 product question, not a reason to block unrelated catalog/CLI work.
 
 ### P00 publication checkpoint review
@@ -1738,3 +1738,80 @@ reply10/10/10/10. Counts remain stable within each process; differences across
 modes are not leak evidence. Eight server drains and owned normal exits, endpoint
 absence, REMOVED_SCOPE before FIXTURE_PASS; remote0/transport0, no retained scope.
 This extends failure-path fixture evidence only, not production policy or RPM12.
+
+Read-transport stress publication: a4c19f7dafd3f5ebd2b8a128582fa86506ef1b49
+on main, commit/push exit0 and exact remote ref verified.
+
+## P06 read-handoff Release12 package checkpoint (2026-09-28)
+
+READ-PACKAGE-r1 source-only ACCEPTED by w1:pJ for the exact two-file manifest
+/tmp/capmgr-read-package-r1.sha256: spec SHA256
+ deefb867db52ac5ab327995e0db6f0b24fb0b2c9879938c8277135eb0d3e0130
+and tools/README SHA256
+ 5c283103d6c1dc63f3ec434925c760f04918c0bf715dedf4111746b45fc81829.
+The spec advances11->12 and adds only the Tizen tests read-transport-probe path;
+no new service, scriptlet, setuid or file capability. Source acceptance alone
+is not runtime acceptance; the separate final verdict is recorded below.
+
+Source archive /tmp/capmgr-release12.tar.gz SHA256:
+09e79b1f566658d9387e03928cfdcafccda8529a76284b3cf8c36ac84cd9108f.
+It contains134 tracked files at source checkpoint a4c19f7 plus the accepted
+spec/README working-tree proposal, with each archived byte verified locally.
+JSON source SHA256 remains
+0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406.
+Native input hashes were checked before rpmbuild in new root0700
+/opt/usr/capmgr-bootstrap-build-p4h4og7o/rpmbuild-release12, under900s watchdog.
+The historical root0777 development tree was not used.
+
+Ephemeral evidence under /tmp/capmgr-evidence:
+- read-package-native-r1.log: exact three input hashes, Release -O1/-DNDEBUG,
+  parallel1; optional TIDL/transport targets and new fixture rebuilt, native
+  RPM %check CTest8/8 PASS, clean unpackaged-file check, four binary RPMs and
+  SRPM written, CAPMGR_REMOTE_EXIT0 / TRANSPORT_EXIT0.
+- read-package-payload-r1.log: audit FAILED because the initial script assumed
+  identical automatically generated ELF dependencies. This is preserved evidence,
+  not a package/build failure or permission to ignore dependency differences.
+- read-package-payload-r2.log and read-package-symbols-r1.log: runtime adds
+  GLIBC_2.3 (fgetxattr/TLS), GLIBC_2.33 (fstat/lstat), and GLIBCXX_3.4.26
+  (filesystem path operations). Target glibc2.40 and libstdc++14.2 provide all
+  three. Other package requirements match Release11 after version normalization;
+  spec-declared dependencies did not change. Payload paths match Release11 except
+  the one new tests-only /usr/libexec/capmgr/capmgr-read-transport-probe,
+  root:root0755, no filecaps. All four packages have no scripts or setuid/setgid
+  files. Audit PASS, remote0/transport0.
+- read-package-install-r1.log: prints the actual normal four-package
+  rpm -U --test followed by rpm -U, with no force/replacefiles. RPM DB shows all
+  four 0.1.0-12 packages. Installed unit95/95 + adapter162/162 + peer18/18 =275
+  GoogleTests PASS, explicit C_CONSUMER_EXIT0 and offline Python7/7 PASS;
+  rpm -V all four packages is clean, remote0/transport0. The known
+  'Plugin msm: hook tsm_post failed' warning occurs during the test transaction;
+  it did not change these outcomes and does not prove production SMACK policy.
+- read-package-installed-fixture-r1.log: installed tests package ownership,
+  root0755 mode, RPM verification and binary SHA256
+  420e4146b7fceef4c0a2e40ee2bcac964364207d1431e3915d4b47ede183a2c5
+  precede explicit180s root/User::Shell fixture. All eight cases PASS; normal24,
+  deny/malformed/oversize each FD9/9/9/9, stalled/lost-reply each10/10/10/10.
+  Eight server grant/service drains, normal child reap and endpoint-absence
+  checks, REMOVED_SCOPE before FIXTURE_PASS, no retained markers;
+  remote0/transport0. Cross-process baseline differences are not leak evidence.
+
+Release12 RPM SHA256:
+- runtime: 46e7543cc2dd2585debb886050aed78fb00803e81e3e59ddca13b21bdb74bc6b
+- devel: b29a7ea6a6d1b9b97706c53a81ebe055c6fa36901d445014043b9a044a2dd26b
+- offline-tools: 4811f8a1ba7607cdec6926397a858e2f33385ec7deb9436f87897c26d2da94a6
+- tests: 315c0f8ec3de999ba7b25176e02a5a94c18a0552489e25b60e70f3847567b9ae
+- source: 44a917ee4d9f9a0e4d1f293c1b27447e6a8f0d731725921cdfbb4832d5c425e3
+
+No unchanged root bootstrap rerun, global SMACK rule, operational DB write,
+production service/factory activation or CLI/remount occurred. Real causal
+same-UID/different-label/direct-open policy, endpoint/ancestor provisioning,
+ordinary writer lease/PERSIST cooperation, delegation/relabel and remaining
+worker/resource gates are still open. P08 product/physical-device and P09/ARM
+acceptance are not inferred from these fixture results.
+
+READ-PACKAGE-r1 final publication/runtime ACCEPTED by w1:pJ for the unchanged
+spec/README manifest and this administrative evidence diff. Reviewer independently
+verified all134 archive bytes, native build/payload/dependency audit, normal upgrade
+and installed fixtures above. The initial failed audit remains preserved. This
+closes only the Release12 tests-package checkpoint; production/policy gates remain
+open. Pending-to-accepted status edits do not change source or contract clauses.

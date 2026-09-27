@@ -324,3 +324,35 @@ Initial platform procfs/PID1 provenance, no hostile root, structural single-thre
 behavior and image policy are explicit premises. Live catalog invalidation/SMACK
 writer isolation, executable authorization, frontend authentication and resource
 controls remain production gates. The existing public client stays fail-closed.
+
+
+## Explicit read-only TIDL handoff fixture
+
+Release12 Tizen tests add `capmgr-read-transport-probe`. On the selected
+root/User::Shell development emulator, invoke explicitly under a watchdog:
+
+```sh
+python3 /usr/libexec/capmgr/run_bounded.py --seconds 180 -- /usr/libexec/capmgr/capmgr-read-transport-probe
+```
+
+This creates a uniquely named root0700 catalog under `/opt/usr` and short-lived
+registered `d::` fixture endpoints. It checks its own executable/ancestor/mount
+provenance and pins the scope identity before cleanup. Child server/client processes
+are owned and reaped; each normal server exit requires an empty grant/service set
+and removal of its own endpoint. REMOVED_SCOPE must precede FIXTURE_PASS. Preserve
+any RETAINED_SCOPE/RETAINED_ENDPOINT or watchdog failure, and prove child absence
+before cleanup. No policy rules, operational catalog, CLI jobs or mounts change.
+
+Eight modes exercise24 normal creates/local queries/destroys, same-instance nonce
+confirmation, wrong-instance/replay/expiry, actual four-socket rpc-port1.21.17
+write-half loss, fixed UID-rule denial, malformed/oversized envelopes, stalled
+service expiry, and lost confirmation reply. Each public negative mode repeats4
+with a same-process FD baseline check; the5s grant value is a confirmation deadline,
+not a hard resource-release guarantee. The helper never substitutes read-FD polling
+for confirmation. Client proxy/context teardown completes before handle publication.
+
+The test binary is tests-only mode0755, with no setuid/file caps, service or package
+script. The optional adapter is not wired into production create. Root-positive
+Cynara/file-label results do not prove same-UID/different-label/direct-open policy,
+endpoint provisioning, fork/relabel revocation or ordinary writer lease/PERSIST_WAL
+cooperation. Production read admission, CLI and remount remain gated.
