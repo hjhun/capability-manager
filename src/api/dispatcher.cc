@@ -5,7 +5,8 @@ namespace capmgr {
 namespace {
 std::atomic<unsigned> global_jobs{0};
 struct ReplyFailure {const char* cause;};
-void ValidateReply(const std::string& text,const nlohmann::json& id) {
+void ValidateReply(const std::string& text,const nlohmann::json& id,bool event,bool complete,
+                   Dispatcher::Protocol protocol) {
   using Json=nlohmann::json;
   if(text.size()>1024*1024)throw ReplyFailure{"response limit"};
   if(text.find_first_not_of(" \t\r\n")==std::string::npos)throw ReplyFailure{"empty response"};
@@ -14,13 +15,36 @@ void ValidateReply(const std::string& text,const nlohmann::json& id) {
     return true;
   },false);
   if(json.is_discarded() || !json.is_object() || json.value("jsonrpc",Json())!="2.0" ||
-     !json.contains("id") || json.contains("result")==json.contains("error"))
+     !json.contains("id") ||
+     (json.contains("result")+json.contains("error")+json.contains("event"))!=1)
     throw ReplyFailure{"malformed response"};
   const auto& actual=json["id"];
   bool valid_id=actual.is_string() || (actual.is_number_integer() &&
       (!actual.is_number_unsigned() || actual.get<uint64_t>()<=static_cast<uint64_t>(INT64_MAX)));
   if(!valid_id || actual.is_string()!=id.is_string() || actual!=id)
     throw ReplyFailure{"response ID mismatch"};
+  if(event!=json.contains("event"))throw ReplyFailure{"response kind mismatch"};
+  bool acknowledgement=false;
+  if(json.contains("result") && json["result"].is_object()) {
+    const auto& result=json["result"];
+    acknowledgement=result.value("subscription",Json())==true &&
+      (!result.contains("isError") || result["isError"]==false);
+  }
+  // CLI result members remain native data; Action reserves this acknowledgement.
+  if(protocol==Dispatcher::Protocol::kAction && acknowledgement && complete)
+    throw ReplyFailure{"terminal subscription acknowledgement"};
+  if(event) {
+    const auto& body=json["event"];
+    if(!body.is_object() || complete!=body.contains("closed") ||
+       (body.contains("closed") && (!body["closed"].is_string() || body["closed"].get_ref<const std::string&>().empty())) ||
+       (body.contains("isError") && !body["isError"].is_boolean()))
+      throw ReplyFailure{"malformed event response"};
+  } else if(!complete) {
+    if(!json.contains("result") || !json["result"].is_object() ||
+       json["result"].value("subscription",Json())!=true ||
+       (json["result"].contains("isError") && json["result"]["isError"]!=false))
+      throw ReplyFailure{"invalid subscription acknowledgement"};
+  }
   if(json.contains("error")) {
     const auto& error=json["error"];
     if(!error.is_object() || !error.contains("code") || !error["code"].is_number_integer() ||
@@ -34,6 +58,14 @@ Dispatcher::Job::~Job(){if(admitted)--global_jobs;}
 Dispatcher::Dispatcher(uint64_t first):next_(first),dispatcher_([this]{Dispatch();}) {}
 Dispatcher::~Dispatcher(){Close();}
 uint64_t Dispatcher::Execute(Work work,nlohmann::json rpc_id,capmgr_result_cb callback,void* data,bool supports_cancel) {
+  if(!work)throw Error(ErrorCode::kInvalid,"Missing async operation");
+  return ExecuteFrames([work=std::move(work)](const auto& cancelled,const EmitFrame& emit) {
+    auto result=work(cancelled,[&](std::string json){emit({std::move(json),true,false});});
+    emit({std::move(result),false,true});
+  },std::move(rpc_id),callback,data,supports_cancel);
+}
+uint64_t Dispatcher::ExecuteFrames(FramedWork work,nlohmann::json rpc_id,capmgr_result_cb callback,
+                                    void* data,bool supports_cancel,Protocol protocol) {
   if(!work || !callback)throw Error(ErrorCode::kInvalid,"Missing async operation");
   std::unique_lock lock(mutex_);
   if(closing_)throw Error(ErrorCode::kBusy,"Client is closing");
@@ -48,27 +80,33 @@ uint64_t Dispatcher::Execute(Work work,nlohmann::json rpc_id,capmgr_result_cb ca
   job->admitted=true;
   jobs_.emplace(token,job);
   try {
-    job->worker=std::thread([this,job,token,work=std::move(work),rpc_id=std::move(rpc_id)] {
-      auto emit=[this,job,token,&rpc_id](std::string json,bool event) {
-        ValidateReply(json,rpc_id);
+    job->worker=std::thread([this,job,token,work=std::move(work),rpc_id=std::move(rpc_id),protocol] {
+      auto emit=[this,job,token,&rpc_id,protocol](Frame frame) {
+        auto& json=frame.json;
+        ValidateReply(json,rpc_id,frame.is_event,frame.complete,protocol);
         std::unique_lock lock(mutex_);
-        space_.wait(lock,[&]{return closing_ || (replies_.size()<64 && json.size()<=1024*1024-queued_bytes_);});
+        if(closing_ || job->terminal)return;
+        space_.wait(lock,[&]{return closing_ || job->terminal || (replies_.size()<64 && json.size()<=1024*1024-queued_bytes_);});
         if(closing_ || job->terminal)return;
         auto size=json.size();
-        replies_.push_back({token,std::move(json),event});
-        queued_bytes_+=size;if(!event)job->terminal=true;wake_.notify_one();
+        replies_.push_back({token,std::move(json),frame.is_event,frame.complete});
+        queued_bytes_+=size;
+        if(frame.complete){job->terminal=true;space_.notify_all();}
+        wake_.notify_one();
       };
       auto failure=[&](const char* cause,int backend_code=0) {
         try {
           nlohmann::json response={{"jsonrpc","2.0"},{"id",rpc_id},
             {"error",{{"code",-32090},{"message","Capability transport failure"},
               {"data",{{"cause",cause},{"backendCode",backend_code}}}}}};
-          emit(response.dump(),false);
+          emit({response.dump(),false,true});
         } catch(...) { /* Allocation failure cannot safely allocate another reply. */ }
       };
       try {
-        auto result=work(job->cancelled,[&](std::string event){emit(std::move(event),true);});
-        emit(std::move(result),false);
+        work(job->cancelled,emit);
+        bool complete;
+        {std::lock_guard lock(mutex_);complete=job->terminal || closing_;}
+        if(!complete)failure("backend ended without terminal response");
       } catch(const ReplyFailure& error) {failure(error.cause);}
       catch(const Error& error) {failure("backend error",static_cast<int>(error.code()));}
       catch(...) {failure("backend exception");}
@@ -81,7 +119,7 @@ uint64_t Dispatcher::Execute(Work work,nlohmann::json rpc_id,capmgr_result_cb ca
 void Dispatcher::Cancel(uint64_t token) {
   std::lock_guard lock(mutex_);
   auto it=jobs_.find(token);
-  if(it==jobs_.end())throw Error(ErrorCode::kNotFound,"Unknown request token");
+  if(it==jobs_.end() || it->second->terminal)throw Error(ErrorCode::kNotFound,"Unknown or completed request token");
   if(!it->second->supports_cancel)throw Error(ErrorCode::kUnsupported,"Backend cancellation is unsupported");
   it->second->cancelled=true;space_.notify_all();
 }
@@ -139,8 +177,8 @@ void Dispatcher::Dispatch() {
     auto job=it->second;active_=true;lock.unlock();
     try {job->callback(reply.token,reply.json.c_str(),reply.event,job->data);}catch(...){}
     // A completed worker may still be unwinding after emit. Join outside the lock.
-    if(!reply.event && job->worker.joinable())job->worker.join();
-    lock.lock();if(!reply.event)jobs_.erase(reply.token);active_=false;
+    if(reply.complete && job->worker.joinable())job->worker.join();
+    lock.lock();if(reply.complete)jobs_.erase(reply.token);active_=false;
   }
 }
 }

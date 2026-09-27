@@ -2,6 +2,7 @@
 #include "api/dispatcher.hh"
 #include <gtest/gtest.h>
 #include <future>
+#include <unistd.h>
 using namespace capmgr;
 using namespace std::chrono_literals;
 namespace {
@@ -38,7 +39,7 @@ TEST(Dispatcher, CallbackCanCancelButCannotDestroyOrReplaceItself) {
     } else {state.cancelled=nlohmann::json::parse(response)["result"]=="cancelled";state.done.set_value();}
   };
   dispatcher.Execute([](const auto& cancelled,const auto& emit) {
-    emit(R"({"jsonrpc":"2.0","id":"id","result":"event"})");while(!cancelled)std::this_thread::sleep_for(1ms);
+    emit(R"({"jsonrpc":"2.0","id":"id","event":{"seq":1}})");while(!cancelled)std::this_thread::sleep_for(1ms);
     return std::string(R"({"jsonrpc":"2.0","id":"id","result":"cancelled"})");
   },"id",callback,&state);
   ASSERT_EQ(state.done.get_future().wait_for(2s),std::future_status::ready);
@@ -95,4 +96,107 @@ TEST(Dispatcher, UnsupportedCancellationIsNeverReportedAsSuccess) {
   try {dispatcher.Cancel(token);FAIL();}
   catch(const Error& error){EXPECT_EQ(error.code(),ErrorCode::kUnsupported);}
   EXPECT_TRUE(dispatcher.Close());
+}
+
+TEST(Dispatcher, MalformedAfterAckAndMissingTerminalRetireWithOneFailure) {
+  for(bool malformed:{false,true}) {
+    Dispatcher dispatcher;
+    struct State {std::promise<nlohmann::json> done;std::atomic<int> calls{0};} state;
+    auto callback=+[](uint64_t,const char* text,bool event,void* data) {
+      auto& state=*static_cast<State*>(data);++state.calls;
+      EXPECT_FALSE(event);auto json=nlohmann::json::parse(text);
+      if(json.contains("error"))state.done.set_value(json);
+    };
+    dispatcher.ExecuteFrames([&](const auto&,const Dispatcher::EmitFrame& emit) {
+      emit({R"({"jsonrpc":"2.0","id":1,"result":{"subscription":true}})",false,false});
+      if(malformed)emit({"not-json",true,false});
+    },1,callback,&state);
+    auto future=state.done.get_future();ASSERT_EQ(future.wait_for(2s),std::future_status::ready);
+    EXPECT_EQ(future.get()["error"]["data"]["cause"],malformed?"malformed response":"backend ended without terminal response");
+    while(!dispatcher.Close())std::this_thread::yield();
+    EXPECT_EQ(state.calls,2);
+  }
+}
+TEST(Dispatcher, ClosedEventReleasesCapacityAndDropsLaterFrames) {
+  Dispatcher dispatcher;
+  struct State {std::promise<void> closed;std::atomic<int> calls{0};} state;
+  auto callback=+[](uint64_t,const char* text,bool event,void* data) {
+    auto& state=*static_cast<State*>(data);++state.calls;
+    if(event && nlohmann::json::parse(text)["event"].contains("closed"))state.closed.set_value();
+  };
+  auto work=[](const auto&,const Dispatcher::EmitFrame& emit) {
+    emit({R"({"jsonrpc":"2.0","id":1,"result":{"subscription":true}})",false,false});
+    emit({R"({"jsonrpc":"2.0","id":1,"event":{"closed":"once"}})",true,true});
+    emit({R"({"jsonrpc":"2.0","id":1,"event":{"seq":99}})",true,false});
+  };
+  dispatcher.ExecuteFrames(work,1,callback,&state);
+  ASSERT_EQ(state.closed.get_future().wait_for(2s),std::future_status::ready);
+  // Reusing the completed JSON ID proves the closed event releases its job.
+  bool admitted=false;
+  for(int i=0;i<200 && !admitted;++i) {
+    try {dispatcher.ExecuteFrames([](const auto&,const Dispatcher::EmitFrame& emit) {
+      emit({R"({"jsonrpc":"2.0","id":1,"result":0})",false,true});
+    },1,+[](uint64_t,const char*,bool,void*){},nullptr);admitted=true;}
+    catch(const Error&) {std::this_thread::sleep_for(1ms);}
+  }
+  EXPECT_TRUE(admitted);
+  while(!dispatcher.Close())std::this_thread::yield();
+  EXPECT_EQ(state.calls,2);
+}
+TEST(Dispatcher, DestroyAfterAcknowledgementCancelsAndSuppressesLateEvents) {
+  Dispatcher dispatcher;std::promise<void> ack;std::atomic<int> calls{0};
+  struct State {std::promise<void>* ack;std::atomic<int>* calls;} state{&ack,&calls};
+  dispatcher.ExecuteFrames([](const auto& cancelled,const Dispatcher::EmitFrame& emit) {
+    emit({R"({"jsonrpc":"2.0","id":1,"result":{"subscription":true}})",false,false});
+    while(!cancelled)std::this_thread::sleep_for(1ms);
+    emit({R"({"jsonrpc":"2.0","id":1,"event":{"closed":"cancelled"}})",true,true});
+  },1,+[](uint64_t,const char*,bool,void* data) {
+    auto& state=*static_cast<State*>(data);
+    if(++*state.calls==1)state.ack->set_value();
+  },&state);
+  ASSERT_EQ(ack.get_future().wait_for(2s),std::future_status::ready);
+  while(!dispatcher.Close())std::this_thread::yield();
+  EXPECT_EQ(calls,1);
+}
+
+TEST(Dispatcher, QueuedTerminalCannotBeCancelledWhileAnotherCallbackBlocks) {
+  Dispatcher dispatcher;Blocked blocker;
+  dispatcher.SetChanged(Blocked::Changed,&blocker);dispatcher.Changed(1);
+  ASSERT_EQ(blocker.entered.get_future().wait_for(2s),std::future_status::ready);
+  std::promise<void> queued;
+  auto token=dispatcher.ExecuteFrames([&](const auto&,const Dispatcher::EmitFrame& emit) {
+    emit({R"({"jsonrpc":"2.0","id":1,"result":0})",false,true});queued.set_value();
+  },1,+[](uint64_t,const char*,bool,void*){},nullptr);
+  auto ready=queued.get_future().wait_for(2s);
+  EXPECT_EQ(ready,std::future_status::ready);
+  if(ready==std::future_status::ready) {
+    try {dispatcher.Cancel(token);ADD_FAILURE()<<"Completed token accepted cancellation";}
+    catch(const Error& error){EXPECT_EQ(error.code(),ErrorCode::kNotFound);}
+  }
+  blocker.release.set_value();while(!dispatcher.Close())std::this_thread::yield();
+}
+
+TEST(Dispatcher, PostTerminalEmitDoesNotWaitBehindSaturatedQueue) {
+  ASSERT_EXIT(([] {
+    alarm(5); // Bound regressions even if a dispatch join would deadlock.
+    Dispatcher dispatcher;Blocked blocker;
+    dispatcher.SetChanged(Blocked::Changed,&blocker);dispatcher.Changed(1);
+    if(blocker.entered.get_future().wait_for(1s)!=std::future_status::ready)_exit(2);
+    std::promise<void> terminal,full,finished;
+    auto filled=full.get_future().share();
+    dispatcher.ExecuteFrames([&](const auto&,const Dispatcher::EmitFrame& emit) {
+      emit({R"({"jsonrpc":"2.0","id":1,"result":0})",false,true});terminal.set_value();
+      filled.wait();
+      emit({nlohmann::json{{"jsonrpc","2.0"},{"id",1},{"event",{{"data",std::string(300*1024,'x')}}}}.dump(),true,false});
+      finished.set_value();
+    },1,+[](uint64_t,const char*,bool,void*){},nullptr);
+    if(terminal.get_future().wait_for(1s)!=std::future_status::ready)_exit(3);
+    dispatcher.ExecuteFrames([&](const auto& cancel,const Dispatcher::EmitFrame& emit) {
+      emit({nlohmann::json{{"jsonrpc","2.0"},{"id",2},{"event",{{"data",std::string(900*1024,'x')}}}}.dump(),true,false});
+      full.set_value();while(!cancel)std::this_thread::sleep_for(1ms);
+    },2,+[](uint64_t,const char*,bool,void*){},nullptr);
+    if(finished.get_future().wait_for(1s)!=std::future_status::ready)_exit(4);
+    blocker.release.set_value();while(!dispatcher.Close())std::this_thread::yield();
+    _exit(0);
+  }()),testing::ExitedWithCode(0),"");
 }

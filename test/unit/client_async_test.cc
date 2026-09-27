@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "fixture.hh"
 #include "api/client.hh"
+#include "launcher/action_exchange.hh"
 #include <future>
 using namespace capmgr;
 using namespace std::chrono_literals;
@@ -19,7 +20,7 @@ class Backend:public ExecutionBackend {
   }
   std::string Execute(const Entry&,const Request& request,const std::atomic<bool>& cancel,
                       const Dispatcher::Emit& event) override {
-    event(Json{{"jsonrpc","2.0"},{"id",request.id},{"result",{{"event",true}}}}.dump());
+    event(Json{{"jsonrpc","2.0"},{"id",request.id},{"event",{{"seq",1}}}}.dump());
     while(!cancel)std::this_thread::sleep_for(1ms);
     return Json{{"jsonrpc","2.0"},{"id",request.id},{"error",{{"code",-32800},{"message","cancelled"}}}}.dump();
   }
@@ -103,6 +104,83 @@ TEST_F(CatalogTest, InvalidBackendResponsesBecomeConfirmedTransportFailures) {
     auto bytes=future.get();auto json=Json::parse(bytes);EXPECT_EQ(json["id"],"original");
     if(cause=="native")EXPECT_EQ(bytes,reply);
     else EXPECT_EQ(json["error"]["data"]["cause"],cause);
+    int status;do {status=capmgr_client_destroy(client);}while(status==CAPMGR_ERROR_BUSY);
+    EXPECT_EQ(status,0);
+  }
+}
+
+TEST_F(CatalogTest, SubscriptionAckRetainsTokenAndClosedEventEndsLifetime) {
+  class StreamBackend:public ExecutionBackend {
+   public:
+    bool SupportsCancel(const Entry&) const override{return true;}
+    void Admit(const Entry&,const Request&) override{}
+    void Run(const Entry& entry,const Request& request,const std::atomic<bool>& cancelled,
+             const Dispatcher::EmitFrame& emit) override {
+      ActionExchange exchange(entry,request,7,true);
+      auto send=[&](const char* text) {
+        auto frame=exchange.Accept(7,text);emit({std::move(frame.json),frame.is_event,frame.complete});
+      };
+      send(R"({"jsonrpc":"2.0","id":7,"result":{"subscription":true,"isError":false}})");
+      send(R"({"jsonrpc":"2.0","id":7,"event":{"seq":1,"isError":true}})");
+      auto deadline=std::chrono::steady_clock::now()+2s;
+      while(!cancelled && std::chrono::steady_clock::now()<deadline)std::this_thread::sleep_for(1ms);
+      if(!cancelled)throw std::runtime_error("fixture cancellation deadline");
+      send(R"({"jsonrpc":"2.0","id":7,"event":{"seq":2,"closed":"cancelled"}})");
+    }
+  };
+  Catalog writer(path_,Database::Access::kWriter);
+  auto entry=Make("stream","pkg.one",Kind::kAction);entry.detail["eventSchema"]={{"type","object"}};
+  Publish(writer,"pkg.one",{entry});Gate gate(path_);
+  capmgr_client_h client=nullptr;ASSERT_EQ(CreateClient(gate,std::make_shared<StreamBackend>(),&client),0);
+  struct State {capmgr_client_h client;std::promise<void> done;std::vector<bool> kinds;std::vector<Json> replies;} state{client,{},{},{}};
+  auto callback=+[](uint64_t token,const char* text,bool event,void* data) {
+    auto& state=*static_cast<State*>(data);auto json=Json::parse(text);
+    state.kinds.push_back(event);state.replies.push_back(json);
+    if(json.contains("event") && !json["event"].contains("closed")) {
+      EXPECT_EQ(capmgr_client_destroy(state.client),CAPMGR_ERROR_BUSY);
+      EXPECT_EQ(capmgr_client_cancel(state.client,token),0);
+    }
+    if(json.contains("event") && json["event"].contains("closed")) {
+      EXPECT_EQ(capmgr_client_cancel(state.client,token),CAPMGR_ERROR_NOT_FOUND);
+    }
+    if(json.contains("error") || (json.contains("event") && json["event"].contains("closed")))state.done.set_value();
+  };
+  auto request=Json{{"jsonrpc","2.0"},{"id","public-id"},{"method","tools/call"},
+    {"params",{{"name",entry.id},{"arguments",Json::object()}}}}.dump();
+  uint64_t token=0;ASSERT_EQ(capmgr_client_execute(client,request.c_str(),callback,&state,&token),0);
+  auto future=state.done.get_future();ASSERT_EQ(future.wait_for(3s),std::future_status::ready);
+  int status;do {status=capmgr_client_destroy(client);}while(status==CAPMGR_ERROR_BUSY);
+  EXPECT_EQ(status,0);EXPECT_EQ(state.kinds,(std::vector<bool>{false,true,true}));
+  ASSERT_EQ(state.replies.size(),3u);
+  for(const auto& reply:state.replies)EXPECT_EQ(reply["id"],"public-id");
+  EXPECT_TRUE(state.replies[1]["event"]["isError"]);
+  EXPECT_EQ(state.replies[2]["event"]["closed"],"cancelled");
+}
+
+TEST_F(CatalogTest, TerminalActionAckRejectedButIdenticalCliResultPreserved) {
+  class AckBackend:public ExecutionBackend {
+   public:
+    void Admit(const Entry&,const Request&) override{}
+    std::string Execute(const Entry&,const Request& request,const std::atomic<bool>&,
+                        const Dispatcher::Emit&) override {
+      return Json{{"jsonrpc","2.0"},{"id",request.id},{"result",{{"subscription",true}}}}.dump();
+    }
+  };
+  Catalog writer(path_,Database::Access::kWriter);Gate gate(path_);
+  for(auto kind:{Kind::kAction,Kind::kCli}) {
+    auto entry=Make("ack","pkg.one",kind);Publish(writer,"pkg.one",{entry});
+    capmgr_client_h client=nullptr;ASSERT_EQ(CreateClient(gate,std::make_shared<AckBackend>(),&client),0);
+    std::promise<Json> result;
+    auto request=Json{{"jsonrpc","2.0"},{"id",1},{"method","tools/call"},
+      {"params",{{"name",entry.id},{"arguments",Json::object()}}}}.dump();
+    uint64_t token=0;
+    ASSERT_EQ(capmgr_client_execute(client,request.c_str(),+[](uint64_t,const char* text,bool event,void* data) {
+      EXPECT_FALSE(event);static_cast<std::promise<Json>*>(data)->set_value(Json::parse(text));
+    },&result,&token),0);
+    auto future=result.get_future();ASSERT_EQ(future.wait_for(2s),std::future_status::ready);
+    auto reply=future.get();
+    if(kind==Kind::kAction)EXPECT_EQ(reply["error"]["data"]["cause"],"terminal subscription acknowledgement");
+    else EXPECT_EQ(reply["result"]["subscription"],true);
     int status;do {status=capmgr_client_destroy(client);}while(status==CAPMGR_ERROR_BUSY);
     EXPECT_EQ(status,0);
   }

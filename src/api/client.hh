@@ -24,7 +24,18 @@ class ExecutionBackend {
   virtual bool SupportsCancel(const Entry&) const {return false;}
   virtual void Admit(const Entry& entry,const Request& request)=0;
   virtual std::string Execute(const Entry& entry,const Request& request,
-      const std::atomic<bool>& cancelled,const Dispatcher::Emit& event)=0;
+      const std::atomic<bool>& cancelled,const Dispatcher::Emit& event) {
+    (void)entry;(void)request;(void)cancelled;(void)event;
+    throw Error(ErrorCode::kUnsupported,"Execution backend is unavailable");
+  }
+  // Subscription acknowledgements are nonterminal results; closed events are
+  // terminal events. Return only after native callbacks are quiescent. The
+  // transport still owns cancellation acknowledgement and a bounded deadline.
+  virtual void Run(const Entry& entry,const Request& request,const std::atomic<bool>& cancelled,
+                   const Dispatcher::EmitFrame& emit) {
+    auto result=Execute(entry,request,cancelled,[&](std::string json){emit({std::move(json),true,false});});
+    emit({std::move(result),false,true});
+  }
 };
 int CreateClient(AccessGate& gate,std::shared_ptr<ExecutionBackend> backend,
                  capmgr_client_h* client) noexcept;

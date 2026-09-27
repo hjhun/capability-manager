@@ -20,11 +20,17 @@ class Dispatcher {
  public:
   using Emit=std::function<void(std::string)>;
   using Work=std::function<std::string(const std::atomic<bool>&,const Emit&)>;
+  struct Frame {std::string json;bool is_event=false;bool complete=true;};
+  using EmitFrame=std::function<void(Frame)>;
+  using FramedWork=std::function<void(const std::atomic<bool>&,const EmitFrame&)>;
+  enum class Protocol { kGeneric, kAction };
   explicit Dispatcher(uint64_t first_token=1);
   ~Dispatcher();
   Dispatcher(const Dispatcher&)=delete;
   Dispatcher& operator=(const Dispatcher&)=delete;
   uint64_t Execute(Work work,nlohmann::json rpc_id,capmgr_result_cb callback,void* data,bool supports_cancel=true);
+  uint64_t ExecuteFrames(FramedWork work,nlohmann::json rpc_id,capmgr_result_cb callback,
+                         void* data,bool supports_cancel=true,Protocol protocol=Protocol::kGeneric);
   void Cancel(uint64_t token);
   bool Close(); // false = BUSY, no state change
   bool EnterCallback();
@@ -43,7 +49,7 @@ class Dispatcher {
     nlohmann::json rpc_id;
     ~Job();
   };
-  struct Reply {uint64_t token;std::string json;bool event;};
+  struct Reply {uint64_t token;std::string json;bool event;bool complete;};
   void Dispatch();
   std::mutex mutex_;
   std::condition_variable wake_,space_;

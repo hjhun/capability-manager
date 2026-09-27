@@ -625,3 +625,54 @@ remains the previously verified offline/TIDL fixture package. Dispatcher framed
 response changes are separate WIP and excluded from this mapper commit.
 Allocator uniqueness, native callback lifetime/deadline, original caller privilege
 and upgraded subscription runtime remain production adapter gates.
+
+Action mapper commit `a46f1bcaffaf22b9a6b360f89768b06b56df6497` pushed on main to
+origin/main, exit0, exact remote ref verified. A separate native read-only snapshot
+probe imported all245 existing Action rows from `/opt/dbspace/.tizen_action.db`
+into an owned temporary CapDB, projected245 rows with no top-level private execution
+fields, and reached revision1 (`action-native-source-snapshot.log`, remote exit0).
+The probe removed only its temporary CapDB; the original DB was opened read-only.
+This is actual source-format compatibility/initial projection evidence, not the
+post-commit writer feed or AMD startup lifecycle gate.
+
+### Framed asynchronous responses (P06-ACTION-FRAMES-r2)
+
+Private frames separate event classification from completion. The public C callback
+fixture retains an Action token after acknowledgement, delivers native events,
+accepts cancellation while open and retires on a closed event. Production backend
+and target subscription API remain unavailable; no subscription is enabled.
+
+r1 CHANGES_REQUESTED identified terminal-marked acknowledgements, cancellation
+success after completion was queued, and a post-terminal emit waiting behind a
+saturated queue while dispatcher joined its worker. r2 derives Action protocol
+from catalog kind (CLI data stays native), rejects a terminal Action acknowledgement,
+returns NOT_FOUND for completed tokens and checks terminal before/in/after queue
+wait, waking waiters on completion. Regression tests cover the public callback,
+a terminal queued behind a blocked callback, and a bounded subprocess with900KiB
+queued plus a post-terminal300KiB emission. Join stays outside the mutex.
+
+P06-ACTION-FRAMES-r2 ACCEPTED by w1:pJ for eight-file manifest. Host
+`action-frames-check-r4.log` CTest6/6 PASS:43 unit,30 adapter,18 platform GoogleTests,
+C consumer,9 Python collector/generator and7 offline subprocess tests. The public
+export list remains12 symbols. Intermediate r2 host compile failed due to GTest
+macro commas/dangling-else warning; r3/r4 corrected and passed. Native Release6 r1
+built successfully but was NOT installed because findings were still open.
+Revised archive SHA256
+`fffcb29880742640de086e969096edd3705a095089d29c35d8e00a625c349ea1`.
+Exact r2 `rpmbuild -ba`/%check CTest6/6, payload/dependency/unpackaged checks and
+five RPM outputs passed (`action-frames-native-rpm-r2.log`, remote exit0).
+Upgrade and installed verification are pending in the following entry.
+
+Release6 exact r2 normal `rpm -U --test` then `rpm -U` succeeded for runtime/devel/
+offline-tools/tests; RPM DB reports0.1.0-6 for all four. Installed43 unit,30 adapter,
+18 platform GoogleTests, pure C consumer and7 offline subprocess tests passed
+(`action-frames-native-install-r2.log`, remote exit0). The known msm post-hook
+warning remains recorded; this is verified package/test execution, not full policy
+health or an actual Action subscription call. The accepted eight hashes were
+rechecked before staging. Commit/push follows in the next board entry.
+
+Independent P04 cleanup investigation: actual target `unshare --mount --pid --fork
+--mount-proc` succeeded with namespace PID1 and distinct PID/mount namespace FDs
+(`cli-pidns-native-probe.log`, remote exit0). This probes kernel support only.
+A namespace setup/cleanup helper, app_fw execution policy, resource confinement
+and broker authorization are not implemented or accepted by this probe.

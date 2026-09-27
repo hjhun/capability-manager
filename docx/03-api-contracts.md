@@ -112,6 +112,20 @@ Illustrative Action projection using the accepted entities map:
 
 ## Execution, framing and errors
 
+For an Action subscription, a successful `result.subscription=true`
+acknowledgement uses `is_event=false` and retains the request token. Subsequent
+native top-level `event` messages use `is_event=true`; an `event.closed` message
+also ends that request's lifetime. An ordinary result/error or a pre-acknowledgement
+failure ends the request once. Preserve native `result.isError` and `event.isError`.
+Transport failure after an acknowledgement ends the request with one synthetic
+error. This requires a private completion flag independent of `is_event`.
+Once completion is queued, cancel returns NOT_FOUND even if its callback has not
+run yet. A terminal-marked successful Action subscription acknowledgement is a
+protocol error; the same field in an ordinary CLI result remains native tool data.
+Unsupported Action runtimes must reject subscription admission: the inspected
+1.3.27 target has no subscription/cancel API. Protocol fixture tests do not enable
+production subscriptions or prove native callback shutdown.
+
 Only registered CLI/Action capabilities are executable. The precise tools/call
 subset and canonical ID mapping are fixed by accepted RPC-01 in 07; JSON-RPC does not imply a full
 MCP implementation. A representative request is:

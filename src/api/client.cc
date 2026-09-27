@@ -116,10 +116,12 @@ int capmgr_client_execute(capmgr_client_h client, const char* request,
     if(!client->backend)throw capmgr::Error(capmgr::ErrorCode::kUnsupported,"Execution transport is unavailable");
     auto backend=client->backend;backend->Admit(entry,parsed);
     auto id=parsed.id;bool supports_cancel=backend->SupportsCancel(entry);
-    *token=client->dispatcher.Execute(
+    auto protocol=entry.kind==capmgr::Kind::kAction?capmgr::Dispatcher::Protocol::kAction:
+      capmgr::Dispatcher::Protocol::kGeneric;
+    *token=client->dispatcher.ExecuteFrames(
       [backend,entry=std::move(entry),parsed=std::move(parsed)](const auto& cancelled,const auto& emit) {
-        return backend->Execute(entry,parsed,cancelled,emit);
-      },std::move(id),callback,data,supports_cancel);
+        backend->Run(entry,parsed,cancelled,emit);
+      },std::move(id),callback,data,supports_cancel,protocol);
   });
 }
 int capmgr_client_cancel(capmgr_client_h client, capmgr_request_token_t token) {
