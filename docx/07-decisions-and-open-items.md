@@ -145,3 +145,30 @@ P00-ABI-r4 acceptance and its original contract/header hashes are recorded in
 Record gate/requirements, source evidence, selected behavior, rejected alternatives,
 ABI/error/security/memory consequences, review request and revision, tests and
 remaining restrictions. Unexecuted work is NOT_RUN or BLOCKED, never PASS.
+
+## Platform identity investigation (P06-PEER-r2, accepted private scope)
+
+Socket SO_PEERCRED/SO_PEERSEC identify the connector, not the process sending each
+request after fork or FD transfer. The private Peer helper pins that connection
+principal and rejects disconnected, zombie or reaped connectors. Its proc/starttime
+checks do not prove absence of an initial PID-reuse race. Its namespace FD pins an
+object, not an authorized current-sender mount target. Do not use it alone for
+RemountResources; production create/remount remain fail-closed.
+
+The generated TIDL `-e` getters describe the callback channel. Request authorization
+must obtain the MAIN channel, check all internal API results, verify both channels'
+kernel identities, and bind checks to MAIN. Sender/instance strings and default
+extension values are never identity proof. This integration remains NOT_RUN.
+
+Cynara checks must include system UIDs and derive client/user from the verified
+socket. Only an explicit allowed result permits access; denied, unresolved,
+unavailable and failed credential extraction fail closed. This is connection
+authorization, not permission to act in an arbitrary sender's namespace.
+
+The target 4.4 kernel exposes SO_PASSCRED/SCM_CREDENTIALS and SO_PASSSEC/SCM_SECURITY
+on an actual AF_UNIX SOCK_SEQPACKET connection. A repo-owned remount sidechannel
+can bind one bounded packet to kernel sender credentials and security label, then
+match a short-lived one-use TIDL ticket bound to MAIN's principal and destination.
+This is the next implementation direction, not a completed transport or mount
+policy. Packet truncation, ancillary ambiguity, delegation, replay, disconnect,
+PID lifecycle, namespace access and rollback remain required negative tests.

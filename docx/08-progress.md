@@ -355,3 +355,63 @@ These are different builds/SQLite versions and are not a comparative optimizatio
 claim. Reopen measurements retain OS caches; peak RSS includes seeding. Later
 installed-run timings are separately retained and must not replace earlier data.
 Platform smoke/integration/performance and physical-device results remain NOT_RUN.
+
+### Tool publication and platform connection identity investigation
+
+Tools commit `e32ce8ef2137cdc3600947c1bb7fdd30a0e0c230` pushed to origin/main,
+exit 0; remote ref verified identical. Release 3 package evidence is above.
+
+P06-PEER-r1 CHANGES_REQUESTED correctly identified connection-vs-message identity,
+initial PID reuse uncertainty, zombie liveness and missing policy integration.
+The revised helper rejects Z/X states. Tests explicitly demonstrate inherited FD
+and SCM_RIGHTS retain the connector identity, while an endpoint recipient cannot
+keep a zombie connector authorized. Native inherited-FD sender drops to UID 65534;
+connector remains UID 0. Neither case is claimed as per-message authorization.
+No mount is enabled. Generated extension FD defaults fail closed, but its FD is
+from the callback channel; MAIN/callback binding is a separate unimplemented gate.
+
+Host CMake configure and `cmake --build build --target check -j 3`: exit 0,
+CTest 5/5 (`peer-check-r2.log`). Standalone host/native peer tests 5/5 with
+CAPMGR_REQUIRE_PEER_TESTS=1, no skips (`peer-host-tests-r2.log`,
+`peer-native-tests-r2-retry.log`), native remote exit 0. First standalone host
+compile failed on ambiguous GTest macro braces; corrected. First native r2 compile
+failed from a wrong JSON include path (`peer-native-tests-r2.log`); corrected.
+Policy decision tests inject allowed/denied/unresolved/unavailable and require a
+check even for system UID. They are not target Cynara policy provisioning tests.
+Actual native root/User::Shell socket passed the real Cynara check
+(`peer-native-policy-probe.log`, remote exit 0). Full denied/unresolved/real-label
+policy matrix remains NOT_RUN. Raw output is retained outside Git.
+
+Native seqpacket probe sets SO_PASSCRED and SO_PASSSEC before listen: the received
+packet has SCM_CREDENTIALS matching the connector and SCM_SECURITY User::Shell,
+no truncation (`seqpacket-credentials-probe.log`, remote exit 0). Native kernel
+4.4.35 returns ENOSYS for pidfd_open. This supports a repo-owned remount sidechannel
+implementation direction; it does not establish completed remount access control.
+
+Current repository SDK RPMs required newer capi-base-common/rpc-port runtime
+versions; `rpm -U --test` rejected them, exit 27. Existing runtimes were preserved.
+Development-only local SDK RPMs were reconstructed in an owned temporary scope
+from capi-base-common 0.4.82 source commit
+`0e569d4774a27d6435ae3b490abb81783b8d750b` and rpc-port 1.21.17 commit
+`6292196d115a4b736f41fb170c39f1925bf48336`. They contain headers, linker symlinks,
+pkg-config metadata, provenance and upstream licenses, no runtime binaries.
+They are local reconstructions, not official upstream binary artifacts.
+Build/payload inspection/test/install passed (`matched-sdk-install.log`, remote
+exit 0). Matching remaining development dependencies installed; the script's final
+pkg-config command used the wrong name pkgmgr-info-parser and returned 1, then
+inspection confirmed the actual package is pkgmgr-parser. rpc-port 1.21.17,
+tizen-core 0.2.4, glib 2.80.5, bundle 0.18.15, Cynara 0.26.0 and libsmack 1.3.1
+are available; original runtime versions remain unchanged. Observed msm post-hook
+and ldconfig SMACK permission warnings remain in the logs; compilation/linking and
+RPM queries succeeded, but no broad platform policy correctness is inferred.
+
+P06-PEER-r2 ACCEPTED by w1:pJ for the eight-file manifest (not nine) plus this
+administrative evidence ledger. Scope is private connection-principal code/tests,
+not TIDL request authorization, per-message identity, public create or remount.
+The 07 heading is updated only to reflect this acceptance; no contract clause
+changed. Initial PID reuse and MAIN/callback verification remain hard integration
+gates. A second actual target probe with UID 65534 and the same User::Shell label
+was denied or unresolved by real Cynara (`peer-native-policy-dropped-uid-probe.log`,
+remote exit 0); it does not distinguish the underlying denial code or substitute
+for a full real-label policy matrix. The new credential_packet source is separate
+unreviewed WIP and excluded from this checkpoint.
