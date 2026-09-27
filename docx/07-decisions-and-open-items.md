@@ -183,3 +183,67 @@ the current task label after exec/relabel while retaining that socket. Current
 task-label validation and its race strategy remain production authorization gates.
 Neither socket-label comparison nor Cynara's socket-derived identity alone closes
 this gate. No private packet/ticket acceptance enables remount.
+
+## P04 namespace cleanup design (revision 2, accepted for development)
+
+R10 keeps the public TIDL launcher service running as app_fw. Process groups alone
+cannot contain a CLI that calls setsid. A separate, minimal root setup broker is
+the selected development direction for PID/mount namespace creation; this expands
+the trusted surface and is not enabled by the existing primitive acceptances.
+Both public and broker request interfaces remain TIDL. Internal anonymous pipes
+used between a parent and its child are fork coordination, not a public protocol.
+
+The broker's future operations are START/CANCEL/STATUS for registered CLI IDs and
+owned job IDs. No caller-selected executable, UID, environment, namespace or file
+FD is accepted over that interface. The broker independently resolves the trusted
+catalog and verifies the executable/resources with the eventual app_fw credentials;
+a root-opened descriptor must not bypass those permissions. START is admitted only
+for the independently authenticated launcher unit and its verified original-client
+request context. UID app_fw or label System alone cannot authenticate the launcher:
+the CLI itself has that UID. Actual unit/process/label provenance, socket policy,
+registration trust and original client authorization remain integration gates.
+Broker FDs must never reach jobs. A fixed image policy must provision this boundary
+before deployment; no matching policy is assumed or added by these experiments.
+
+A dedicated long-lived spawning thread (or a single-threaded broker) owns each
+namespace-init child. A small non-exec PID1 supervisor creates private mount
+propagation and a procfs mounted from its active PID namespace. It closes inherited
+FDs except defined control/stdio pipes and sets a safe cwd. Privileged mount/SMACK
+setup and bounding-set reduction occur while required capabilities, including
+CAP_SETPCAP, are still held. Then remove supplementary groups, set app_fw real/
+effective/saved gid and uid, clear remaining ambient/permitted/effective/inheritable
+capabilities, set no_new_privs, and verify IDs/capabilities/label. Every step fails
+closed and exec must not regain privilege. Expected SMACK label and permissions
+must be verified against the image, not guessed. It sets PDEATHSIG only after credential/label
+changes, checks the held parent-control channel and waits for GO. Only after a
+successful setup handshake does it fork/exec the CLI; PID1 remains the supervisor
+and reaper rather than executing potentially relabeling CLI code itself. Exec
+status combines a close-on-exec error pipe with child status; EOF alone is not
+proof of successful exec. Mount propagation and all namespace setup are confined
+to this job, never the launcher or caller's namespace.
+
+On completion/cancel/timeout, the broker signals its unreaped direct PID1 child
+and polls waitid(WEXITED|WNOWAIT). This retains the numeric child PID until explicit
+reap and prevents a subsequent kill from targeting a reused number. PID1 exit
+kills namespace descendants independently of session/process-group membership.
+Only observed init exit plus reap confirms complete cleanup. A bounded wait that
+expires reports CLEANUP_PENDING and keeps the owned job record/capacity reserved;
+it does not claim descendants are gone or admit unlimited replacements. A reaper
+continues inspection. CLEANUP_PENDING is a broker-private job/STATUS state, not a
+new public C error. The existing public cleanup-failure contract (IO, retained
+handle, closed admission and retry) remains unchanged. Before final waitpid/reap
+releases the numeric PID, mark the job terminal and forbid further signaling;
+a late CANCEL must never signal a reaped/reused PID. Systemd control-group cleanup and cgroup resource limits
+are additional controls, not a replacement for these semantics. Linux D-state
+work can delay kernel namespace teardown indefinitely; API wait can be bounded,
+physical cleanup completion cannot be promised unconditionally.
+
+Evidence: exact-release-string kernel ref39b6687fdb8e0493d9cc61423b272638ae0e9de2
+has kernel/pid_namespace.c:184-263 namespace kill/reap and unbounded wait,
+kernel/exit.c:992 onward WNOWAIT, fs/namespace.c:2007-2045 private propagation,
+fs/proc/root.c:100-117 procfs namespace selection, and kernel/cred.c:441-450 plus
+Smack exec transition code clearing PDEATHSIG. Exact image build provenance remains
+unproven. Required tests include setsid descendants, parent death before/after GO,
+FD/cap/UID/label isolation, host proc invisibility, no propagated mounts, setup/exec
+failure, simulated cleanup-pending state and spoofed app_fw broker callers.
+This contract permits isolated implementation/tests, not production enablement.

@@ -676,3 +676,20 @@ Independent P04 cleanup investigation: actual target `unshare --mount --pid --fo
 (`cli-pidns-native-probe.log`, remote exit0). This probes kernel support only.
 A namespace setup/cleanup helper, app_fw execution policy, resource confinement
 and broker authorization are not implemented or accepted by this probe.
+
+Framed-response commit `f955ffe8c53a29be8b85fc13310d5e9cc2b88e3d` on main pushed
+successfully; remote main verified identical. The tree was clean after publication.
+Next independent P04 design review addresses setsid escape with a small non-exec
+PID1 supervisor and a separate authenticated root setup broker while retaining
+an app_fw TIDL launcher. Exact4.4 source review confirms namespace teardown but also
+an unbounded kernel wait; cleanup-pending must remain distinct from confirmed exit.
+No helper implementation or image security policy is implied by this design entry.
+
+P04-ISOLATION-CONTRACT-r2 ACCEPTED by w1:pJ for development only, reviewed 07
+SHA256 `e9d8cdea55eb1f54049fc0e95c551e63f6632961813c3b4931947b21e5ba5db6`.
+The publication edit changes only the stale heading. Privileged bounding-set
+reduction precedes credential drop; CLEANUP_PENDING stays broker-private with
+existing public IO/retained-handle semantics. Jobs forbid signaling before final
+reap releases the PID. Helper implementation, teardown tests, broker policy and
+cgroup verification remain NOT_RUN. Source/kernel support probes are distinct
+from production authorization or cleanup evidence.
