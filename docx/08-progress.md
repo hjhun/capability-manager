@@ -314,3 +314,44 @@ This checkpoint implements injected-backend callback/lifetime behavior. Producti
 create still denies access until platform privilege/DB policy and TIDL session
 integration are verified. Transport deadlines, service-wide cross-process limits,
 Action subscriptions, remount and actual source-feed reconnection remain gates.
+
+### Async publication and fixture-tooling checkpoint
+
+Async/API commit `9b39a8490315ac64817733de423d658b65844c10` pushed to
+origin/main, exit 0; remote ref verified identical. Its native source archive was
+`5afb87787671a88327473bc25acf2cd8732cb28cd6e970e0567c9e68efc2da37`.
+
+P07-TOOLS-r2 ACCEPTED for the seven tooling/build/package files; r3 ACCEPTED for
+the native test portability correction, verify_test.py SHA256
+`b72ddab497d26878e11e0edd21b3d54b8e36615bbe5cf9abd2395f7e88afc0fe`.
+The runner requires explicit target selection, records actual remote/transport
+exits and source hashes, preserves earlier evidence, checks archive paths/types/
+size, and preserves native scope when completion is unknown. The watchdog holds
+the leader PID until process-group cleanup even after normal shell exit. Tests
+cover failed commands, deadlines, descendants, missing CTest tree, lost transport,
+missing remote sentinel and retained evidence. Deliberate process-group escape
+still requires production cgroup supervision.
+
+First native Release 3 RPM %check failed (exit 1) because /tmp is noexec and the
+fake-SDB fixture tried to execute there. Actual mount/shebang evidence is in
+`tool-native-failure-probe.log`; no target mount flags were changed. Executable
+fixtures now use owned build-directory temporary scopes. An already-reaped child
+is accepted only when its /proc/PID is absent. Host/native Python tests 7/7 passed
+(`tool-tests-r6.log`, `tools-native-tests-r3.log`).
+
+Exact corrected Release 3 archive SHA256
+`d6eaa3df7fdb4bfc48c2a99220b97ae60e0b26d1cd711d37b4bfa99357e4eb6b`:
+native `rpmbuild -ba`, CTest 4/4, unpackaged-file check and RPM creation passed,
+remote exit 0 (`tools-native-rpm-r3.log`). Normal `rpm -U` upgraded all three
+packages to 0.1.0-3. Installed tests passed 36 API/catalog/search + 23 adapter
+GoogleTests and the pure C consumer; benchmark also passed, remote exit 0
+(`tools-native-install-r3.log`). No platform policy acceptance follows from this.
+
+Reusable modes and actual commands are documented in [tools/README.md](../tools/README.md).
+Installed SDB benchmark report: `installed-perf-r3/summary.json`. Earlier isolated
+1000-row/100-iteration measurements: host warm median 494 us/p95 537 us and peak
+RSS 18304 KiB; emulator warm median 463 us/p95 539 us and peak RSS 8240 KiB.
+These are different builds/SQLite versions and are not a comparative optimization
+claim. Reopen measurements retain OS caches; peak RSS includes seeding. Later
+installed-run timings are separately retained and must not replace earlier data.
+Platform smoke/integration/performance and physical-device results remain NOT_RUN.

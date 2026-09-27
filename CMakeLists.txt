@@ -38,6 +38,7 @@ configure_file(packaging/capmgr.pc.in capmgr.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/capmgr.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 if(BUILD_TESTING)
   find_package(GTest REQUIRED)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
   add_executable(capmgr-unit-tests test/unit/catalog_test.cc test/unit/client_test.cc test/unit/search_test.cc test/unit/dispatcher_test.cc
     test/unit/client_async_test.cc src/api/client.cc src/api/dispatcher.cc)
   target_include_directories(capmgr-unit-tests PRIVATE src src/api)
@@ -53,8 +54,12 @@ if(BUILD_TESTING)
   target_link_libraries(capmgr-adapter-tests PRIVATE capmgr-adapters GTest::gtest_main)
   add_dependencies(capmgr-adapter-tests capmgr-cli-fixture)
   add_test(NAME capmgr-adapters COMMAND capmgr-adapter-tests)
+  add_executable(capmgr-catalog-benchmark tools/catalog_benchmark.cc)
+  target_link_libraries(capmgr-catalog-benchmark PRIVATE capmgr-catalog)
+  add_test(NAME capmgr-verification-tools COMMAND ${Python3_EXECUTABLE} -m unittest discover
+    -s ${CMAKE_CURRENT_SOURCE_DIR}/test/tools -p *_test.py)
   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests USES_TERMINAL)
+    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests capmgr-catalog-benchmark USES_TERMINAL)
 endif()
 
 find_program(TIDLC_EXECUTABLE tidlc)

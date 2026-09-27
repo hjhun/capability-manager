@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Name: capability-manager
 Version: 0.1.0
-Release: 2
+Release: 3
 Summary: Capability catalog and client library
 License: Apache-2.0 AND MIT
 URL: https://github.com/hjhun/capability-manager
@@ -11,6 +11,7 @@ Source1: https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz
 BuildRequires: cmake
 BuildRequires: gcc-c++
 BuildRequires: diffutils
+BuildRequires: python3
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(gtest)
 BuildRequires: pkgconfig(gmock)
@@ -31,6 +32,7 @@ Public C header and link metadata; private writer headers are not installed.
 
 %package tests
 Summary: Capability Manager unit and C ABI tests
+Requires: python3
 Requires: %{name} = %{version}-%{release}
 %description tests
 Real SQLite and mock-adapter unit tests plus a pure C consumer.
@@ -53,6 +55,9 @@ ctest --test-dir _build --output-on-failure --no-tests=error
 %install
 DESTDIR=%{buildroot} cmake --install _build
 install -D -m 755 _build/capmgr-unit-tests %{buildroot}%{_libexecdir}/capmgr/capmgr-unit-tests
+install -D -m 755 _build/capmgr-catalog-benchmark %{buildroot}%{_libexecdir}/capmgr/capmgr-catalog-benchmark
+install -D -m 755 tools/verify.py %{buildroot}%{_libexecdir}/capmgr/verify.py
+install -D -m 755 tools/run_bounded.py %{buildroot}%{_libexecdir}/capmgr/run_bounded.py
 install -D -m 755 _build/capmgr-adapter-tests %{buildroot}%{_libexecdir}/capmgr/capmgr-adapter-tests
 install -D -m 755 _build/capmgr-cli-fixture %{buildroot}%{_libexecdir}/capmgr/capmgr-cli-fixture
 install -D -m 755 _build/capmgr-c-consumer %{buildroot}%{_libexecdir}/capmgr/capmgr-c-consumer
@@ -74,3 +79,8 @@ install -D -m 644 json-3.11.3/LICENSE.MIT %{buildroot}%{_datadir}/licenses/%{nam
 
 %{_libexecdir}/capmgr/capmgr-adapter-tests
 %{_libexecdir}/capmgr/capmgr-cli-fixture
+
+%{_libexecdir}/capmgr/capmgr-catalog-benchmark
+%{_libexecdir}/capmgr/verify.py
+%{_libexecdir}/capmgr/run_bounded.py
+%doc tools/README.md
