@@ -33,6 +33,10 @@ class CatalogReadLease final:public ReadAccess {
   CatalogReadLease& operator=(const CatalogReadLease&)=delete;
   const std::string& Path() const noexcept override;
   void Check() override; // caller-serialized; failure permanently poisons admission
+  // Fixed CMR1: + five ordered dev/ino pairs (16 lowercase hex digits each).
+  // Descriptor is identity only, not authority or a substitute for live handoff.
+  std::string Descriptor();
+  void MatchDescriptor(std::string_view);
   void Opened(Database&) override; // RO/WAL and resolved-file check before publish
  private:
   struct Impl;

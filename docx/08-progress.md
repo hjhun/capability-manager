@@ -1589,3 +1589,38 @@ Next: bounded identity receipt plus SAME TIDL connection through local open and
 validation, followed by separately reviewed recoverable native policy fixture.
 Read-only vertical-slice completion still requires that integration and policy
 matrix. CLI/remount, physical device and ARM/P09 gates are unchanged.
+
+
+Read-lease publication: d776f25d791bef00308b3bedac37c89424a7ca95 on main,
+commit/push exit0 and exact remote ref verified. Installed Release11 remains older.
+
+## P06 catalog receipt/local handoff (2026-09-28, r2 accepted)
+
+P06-READ-HANDOFF-r2 was ACCEPTED by w1:pJ for the exact seven-file manifest
+/tmp/capmgr-read-handoff-r2.sha256. CMR1 describes five held file identities in
+165 canonical ASCII bytes; it conveys no authority. LeasedCatalogGate acquires
+an independent lease, validates local SQLite and descriptor, then requires
+ConfirmCatalog and Finish before any C handle is published. Afterward there is
+no channel IPC/state in queries or destroy. Channel ownership remains with the
+caller during failed-create teardown. This is an injected local channel seam.
+
+Evidence under ephemeral /tmp/capmgr-evidence:
+- read-handoff-host-check-r2.log: cmake --build build --target check --parallel2,
+  exit0, CTest8/8 PASS. Initial r1 compile rejected two EXPECT_THROW declarations
+  on the same line; that test-only compile error was corrected before r1 checks.
+- read-handoff-native-r2.log: exact manifest7/7, affected recompile under600s
+  watchdog in protected source/build, unit86/86 PASS, C_CONSUMER_EXIT0,
+  CAPMGR_REMOTE_EXIT0 / TRANSPORT_EXIT0. Native r1 passed85/85+C separately.
+  R2 adds explicit same-instance confirmation to the seam and failure despite
+  locally live checks; no real TIDL or policy operation was run here.
+
+The target rpc-port1.21.17 uses four split sockets in release source6292196;
+read-FD-only polling cannot prove MAIN write-half lifetime. The proposed capture
+route is abandoned. Next: a separate unpredictable per-ServiceBase grant, expiry,
+same-proxy confirmation and private uniterated GLib context teardown, followed by
+exact native failure/lifetime tests. Full real-policy/direct-open matrix remains
+NOT_RUN; production create, CLI/remount and ARM/P09 remain gated.
+
+Original accepted07 SHA256: e3f9f490c5d57e8465b28d2a2ea04a244ea018625d7aaff32c6b4fe2963c4c9c.
+Publication07 SHA256: c159d2c7aa2480925169340247ed86ad672c73ef3bfab86845ae1e4c01a172e3.
+The only post-review07 change is pending-review -> accepted-local heading.

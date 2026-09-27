@@ -622,3 +622,42 @@ already-open descriptors or OFD lease availability. Parent behavior is unchanged
 Production gate, TIDL handoff, current-label behavior and DAC/SMACK policy matrix
 are not enabled or proved by these local tests. Label reads use an explicit test
 substitution in host/native unit tests, not a production permissive fallback.
+
+
+### Catalog receipt and handoff seam (development revision 2, accepted locally)
+
+A checked local lease can describe its five pinned objects (lock, directory,
+DB, WAL, SHM) as fixed165-byte ASCII: CMR1: followed by each device/inode pair
+in that order, each integer encoded as16 lowercase hexadecimal digits. This
+bounded descriptor contains no path or executable and is not a bearer grant.
+A local lease rejects any different/noncanonical descriptor and stays poisoned.
+The held file objects and cooperative generation lock underpin identity matching;
+no hostile rename/ABA or authorization guarantee comes from the string alone.
+
+LeasedCatalogGate forbids its path-only fallback. It receives the descriptor from
+a trusted private CatalogAdmissionChannel, acquires its independent local lease,
+and carries a borrowed channel reference only through create. Opened validates
+local READONLY/WAL, fixed pathname and descriptor, then checks known connection
+loss and calls ConfirmCatalog on the SAME proxy before Finish and publication.
+The concrete channel owns a fresh bounded one-use nonce scoped to its service
+instance, descriptor and finite expiry. Confirm must revalidate both channels,
+policy, nonce/expiry and held issuer lease, then consume once. Only its successful
+reply proves the overlapping-lease handoff; reconnect or lost reply fails create.
+Finish completes native teardown during create before handle publication. Failure
+at any point leaves the output NULL; the caller-owned channel retains failure
+cleanup responsibility. Finish must complete native callback/proxy teardown; no
+channel/native callback state belongs to a published client or its destructor.
+After success, query/destroy use only the retained local lease and no channel IPC.
+
+The current channel is a test seam, not a concrete TIDL transport. Its tests prove
+call ordering, overlapping independent locks, malformed/mismatched descriptors,
+connection loss at every observed validation point, loss after SQLite open and
+confirmation denial despite locally live checks and Finish failure. They cannot
+establish actual native socket identity, listener quiescence or real policy.
+Rpc-port1.21.17 has four split sockets; read-FD polling cannot prove the MAIN write
+half survives. It is not an alternative to confirmation. The concrete create-only
+proxy should use a new private thread-default GMainContext, never iterated or
+shared with another thread, and destroy its proxy while its listener is alive,
+then pop/unref that context before publication. Exact native split-socket,
+disconnect/replay/lost-reply and teardown stress remain separate review gates.
+The design does not enable production create or change the public C ABI.

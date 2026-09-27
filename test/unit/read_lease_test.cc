@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "fixture.hh"
 #include "api/client.hh"
+#include "api/read_admission.hh"
 #include "catalog/read_lease.hh"
 #include <fcntl.h>
 #include <future>
@@ -33,6 +34,35 @@ class LeaseTest:public CatalogTest {
     struct flock lock{};lock.l_type=F_WRLCK;lock.l_whence=SEEK_SET;
     int result=fcntl(fd,F_OFD_SETLK,&lock);close(fd);return result==0;
   }
+  class Channel:public CatalogAdmissionChannel {
+   public:explicit Channel(LeaseTest& test):test_(test){}
+    std::string AuthorizeCatalog()override {
+      issuer=test_.Lease();auto descriptor=issuer->Descriptor();
+      if(!override_descriptor.empty())descriptor=override_descriptor;
+      if(lose_after_receipt)live=false;
+      return descriptor;
+    }
+    void CheckSameLive()override {
+      ++checks;if(!live || checks==fail_at)throw Error(ErrorCode::kPermission,"Connection lost or changed");
+    }
+    void ConfirmCatalog(std::string_view descriptor)override {
+      ++confirms;
+      if(!live || !issuer || fail_confirm || confirmed)
+        throw Error(ErrorCode::kPermission,"Confirmation denied or lost");
+      issuer->MatchDescriptor(descriptor);confirmed=true;
+      issuer.reset();overlap=!test_.Exclusive();
+    }
+    void Finish()override {
+      ++finishes;if(!confirmed)throw Error(ErrorCode::kPermission,"Confirmation missing");
+      live=false;
+      if(fail_finish)throw Error(ErrorCode::kPermission,"Teardown failed");
+    }
+    std::unique_ptr<CatalogReadLease> issuer;
+    std::string override_descriptor;
+    int checks=0,confirms=0,finishes=0,fail_at=0;
+    bool live=true,overlap=false,fail_finish=false,lose_after_receipt=false,fail_confirm=false,confirmed=false;
+   private:LeaseTest& test_;
+  };
   class Gate:public AccessGate {
    public:explicit Gate(LeaseTest& test):test(test){}
     std::string AuthorizeAndGetDatabase() override{throw Error(ErrorCode::kPermission,"No path-only fallback");}
@@ -177,4 +207,59 @@ TEST_F(LeaseTest, InheritedClientRejectsEveryCallBeforeDispatcherOrSqliteUse) {
   }
   int status=0;ASSERT_EQ(waitpid(child,&status,0),child);EXPECT_EQ(status,0);
   EXPECT_FALSE(Exclusive());EXPECT_EQ(capmgr_client_destroy(client),0);EXPECT_TRUE(Exclusive());
+}
+
+TEST_F(LeaseTest, CanonicalDescriptorMatchesOnlyThePinnedFileGeneration) {
+  auto lease=Lease();auto receipt=lease->Descriptor();ASSERT_EQ(receipt.size(),165u);
+  EXPECT_EQ(receipt.substr(0,5),"CMR1:");EXPECT_NO_THROW(lease->MatchDescriptor(receipt));
+  for(auto bad:{std::string("CMR1:"),receipt+"0",std::string("CMR2:")+receipt.substr(5),
+                receipt.substr(0,164)+(receipt.back()=='0'?"1":"0")}) {
+    auto other=Lease();EXPECT_THROW(other->MatchDescriptor(bad),Error);
+    EXPECT_THROW(other->Check(),Error);
+  }
+}
+TEST_F(LeaseTest, HandoffHasOverlappingLeasesThenNoTransportInLocalQueriesOrDestroy) {
+  Channel channel(*this);LeasedCatalogGate gate(Policy(),channel,&labels);capmgr_client_h client=nullptr;
+  EXPECT_THROW(gate.AuthorizeAndGetDatabase(),Error);
+  ASSERT_EQ(CreateClient(gate,&client),0);EXPECT_EQ(channel.confirms,1);EXPECT_EQ(channel.finishes,1);EXPECT_TRUE(channel.overlap);
+  int checks=channel.checks;EXPECT_FALSE(Exclusive());char* detail=nullptr;
+  EXPECT_EQ(capmgr_client_get_capability(client,"cli:fixture",&detail),0);std::free(detail);
+  EXPECT_EQ(capmgr_client_destroy(client),0);EXPECT_EQ(channel.checks,checks);EXPECT_TRUE(Exclusive());
+}
+TEST_F(LeaseTest, HandoffRejectsLossAtEveryObservedValidationPointBeforePublication) {
+  int checks=0;{
+    Channel channel(*this);LeasedCatalogGate gate(Policy(),channel,&labels);capmgr_client_h client=nullptr;
+    ASSERT_EQ(CreateClient(gate,&client),0);checks=channel.checks;ASSERT_EQ(capmgr_client_destroy(client),0);
+  }
+  ASSERT_GT(checks,0);
+  for(int at=1;at<=checks;++at){
+    Channel channel(*this);channel.fail_at=at;LeasedCatalogGate gate(Policy(),channel,&labels);capmgr_client_h client=nullptr;
+    EXPECT_EQ(CreateClient(gate,&client),CAPMGR_ERROR_PERMISSION_DENIED);EXPECT_EQ(client,nullptr);
+    EXPECT_EQ(channel.finishes,0);channel.issuer.reset();EXPECT_TRUE(Exclusive());
+  }
+}
+TEST_F(LeaseTest, HandoffRejectsReceiptLossMalformedIdentityAndFailedFinish) {
+  for(int mode=0;mode<4;++mode){
+    Channel channel(*this);
+    if(mode==0)channel.lose_after_receipt=true;
+    if(mode==1)channel.override_descriptor="bad";
+    if(mode==2)channel.override_descriptor=std::string(165,'0');
+    if(mode==3)channel.fail_finish=true;
+    LeasedCatalogGate gate(Policy(),channel,&labels);capmgr_client_h client=nullptr;
+    EXPECT_EQ(CreateClient(gate,&client),CAPMGR_ERROR_PERMISSION_DENIED);EXPECT_EQ(client,nullptr);
+    channel.issuer.reset();EXPECT_TRUE(Exclusive());
+  }
+}
+TEST_F(LeaseTest, ConnectionMustStillBeLiveAfterLocalSqliteOpen) {
+  Channel channel(*this);LeasedCatalogGate gate(Policy(),channel,&labels);
+  auto access=gate.AuthorizeReadAccess();Catalog local(access->Path(),Database::Access::kReadOnly);
+  channel.live=false;EXPECT_THROW(access->Opened(local.database()),Error);EXPECT_EQ(channel.finishes,0);
+}
+
+TEST_F(LeaseTest, ConfirmationFailureDespiteLiveChecksNeverPublishesHandle) {
+  Channel channel(*this);channel.fail_confirm=true;
+  LeasedCatalogGate gate(Policy(),channel,&labels);capmgr_client_h client=nullptr;
+  EXPECT_EQ(CreateClient(gate,&client),CAPMGR_ERROR_PERMISSION_DENIED);
+  EXPECT_EQ(client,nullptr);EXPECT_TRUE(channel.live);EXPECT_EQ(channel.confirms,1);
+  EXPECT_EQ(channel.finishes,0);channel.issuer.reset();EXPECT_TRUE(Exclusive());
 }

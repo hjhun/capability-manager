@@ -86,6 +86,22 @@ CatalogReadLease::CatalogReadLease(ReadLeasePolicy policy,ReadLeaseOperations* o
 CatalogReadLease::~CatalogReadLease()=default;
 const std::string& CatalogReadLease::Path() const noexcept{return impl_->path;}
 void CatalogReadLease::Check(){impl_->Check();}
+std::string CatalogReadLease::Descriptor() {
+  Check();
+  static_assert(sizeof(dev_t)<=sizeof(uint64_t) && sizeof(ino_t)<=sizeof(uint64_t));
+  const std::array<struct stat,5> identities{impl_->lock_identity,impl_->directory_identity,
+    impl_->identities[0],impl_->identities[1],impl_->identities[2]};
+  std::string result(165,'0');result.replace(0,5,"CMR1:");size_t offset=5;
+  constexpr char hex[]="0123456789abcdef";
+  for(const auto& info:identities)for(uint64_t value:{static_cast<uint64_t>(info.st_dev),static_cast<uint64_t>(info.st_ino)}) {
+    for(unsigned index=0;index<16;++index)result[offset++]=hex[(value>>((15-index)*4))&15];
+  }
+  return result;
+}
+void CatalogReadLease::MatchDescriptor(std::string_view descriptor) {
+  try {Require(descriptor.size()==165 && descriptor==Descriptor());}
+  catch(...){impl_->poisoned=true;throw;}
+}
 void CatalogReadLease::Opened(Database& db) {
   try {
     Check();Require(sqlite3_db_readonly(db.handle(),"main")==1);
