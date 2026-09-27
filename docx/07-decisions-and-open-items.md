@@ -158,7 +158,11 @@ RemountResources; production create/remount remain fail-closed.
 The generated TIDL `-e` getters describe the callback channel. Request authorization
 must obtain the MAIN channel, check all internal API results, verify both channels'
 kernel identities, and bind checks to MAIN. Sender/instance strings and default
-extension values are never identity proof. This integration remains NOT_RUN.
+extension values are never identity proof. A repo-owned generation adapter now
+binds both channels and revalidates the actual MAIN FD before parcel decoding.
+Host/native unit tests and a native positive TIDL fixture exercise this boundary;
+production create, initial PID binding proof and the full policy matrix remain
+open. This does not turn stream credentials into per-message identity.
 
 Cynara checks must include system UIDs and derive client/user from the verified
 socket. Only an explicit allowed result permits access; denied, unresolved,
@@ -166,12 +170,13 @@ unavailable and failed credential extraction fail closed. This is connection
 authorization, not permission to act in an arbitrary sender's namespace.
 
 The target 4.4 kernel exposes SO_PASSCRED/SCM_CREDENTIALS and SO_PASSSEC/SCM_SECURITY
-on an actual AF_UNIX SOCK_SEQPACKET connection. A repo-owned remount sidechannel
-can bind one bounded packet to kernel sender credentials and its sending socket's
-security label, then
-match a short-lived one-use TIDL ticket bound to MAIN's principal and destination.
-This is the next implementation direction, not a completed transport or mount
-policy. Packet truncation, ancillary ambiguity, delegation, replay, disconnect,
+on an actual AF_UNIX SOCK_SEQPACKET connection. The private packet/ticket code is
+a security experiment, not a production IPC direction: R01 continues to require
+TIDL and forbids a separate custom UDS protocol. A TIDL protocol-2 file_desc can
+carry a process-directory FD; that is being investigated as a compliant means
+to pin a process object, not as proof of the sender of each stream request.
+No resource transport or mount policy has been accepted. Delegation semantics,
+trusted procfs provenance, packet truncation, ancillary ambiguity, replay, disconnect,
 PID lifecycle, namespace access and rollback remain required negative tests.
 SCM_SECURITY under Smack carries the sending socket's label; it does not prove
 the current task label after exec/relabel while retaining that socket. Current

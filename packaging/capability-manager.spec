@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Name: capability-manager
 Version: 0.1.0
-Release: 3
+Release: 4
 Summary: Capability catalog and client library
 License: Apache-2.0 AND MIT
 URL: https://github.com/hjhun/capability-manager
@@ -17,6 +17,12 @@ BuildRequires: pkgconfig(gtest)
 BuildRequires: pkgconfig(gmock)
 %if 0%{?capmgr_tizen}
 BuildRequires: tidl
+BuildRequires: pkgconfig(rpc-port)
+BuildRequires: pkgconfig(bundle)
+BuildRequires: pkgconfig(dlog)
+BuildRequires: pkgconfig(glib-2.0)
+BuildRequires: pkgconfig(cynara-client)
+BuildRequires: pkgconfig(cynara-creds-socket)
 %endif
 
 %description
@@ -46,7 +52,9 @@ cmake -S . -B _build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS_RELEASE="-O1 -
   -DCMAKE_INSTALL_PREFIX=%{_prefix} -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
   -DCAPMGR_JSON_SOURCE=$PWD/json-3.11.3 -DBUILD_TESTING=ON \
   %{?capmgr_dependency_prefix:-DCMAKE_PREFIX_PATH=%{capmgr_dependency_prefix}} \
-  -DCAPMGR_REQUIRE_TIDL=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF}
+  -DCAPMGR_REQUIRE_TIDL=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF} \
+  -DCAPMGR_REQUIRE_CYNARA=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF} \
+  -DCAPMGR_BUILD_TIDL_TRANSPORT=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF}
 cmake --build _build --parallel 1
 
 %check
@@ -55,6 +63,11 @@ ctest --test-dir _build --output-on-failure --no-tests=error
 %install
 DESTDIR=%{buildroot} cmake --install _build
 install -D -m 755 _build/capmgr-unit-tests %{buildroot}%{_libexecdir}/capmgr/capmgr-unit-tests
+install -D -m 755 _build/capmgr-peer-tests %{buildroot}%{_libexecdir}/capmgr/capmgr-peer-tests
+%if 0%{?capmgr_tizen}
+install -D -m 755 _build/capmgr-tidl-probe %{buildroot}%{_libexecdir}/capmgr/capmgr-tidl-probe
+install -D -m 755 test/integration/run_tidl_probe.py %{buildroot}%{_libexecdir}/capmgr/run_tidl_probe.py
+%endif
 install -D -m 755 _build/capmgr-catalog-benchmark %{buildroot}%{_libexecdir}/capmgr/capmgr-catalog-benchmark
 install -D -m 755 tools/verify.py %{buildroot}%{_libexecdir}/capmgr/verify.py
 install -D -m 755 tools/run_bounded.py %{buildroot}%{_libexecdir}/capmgr/run_bounded.py
@@ -75,6 +88,11 @@ install -D -m 644 json-3.11.3/LICENSE.MIT %{buildroot}%{_datadir}/licenses/%{nam
 
 %files tests
 %{_libexecdir}/capmgr/capmgr-unit-tests
+%{_libexecdir}/capmgr/capmgr-peer-tests
+%if 0%{?capmgr_tizen}
+%{_libexecdir}/capmgr/capmgr-tidl-probe
+%{_libexecdir}/capmgr/run_tidl_probe.py
+%endif
 %{_libexecdir}/capmgr/capmgr-c-consumer
 
 %{_libexecdir}/capmgr/capmgr-adapter-tests

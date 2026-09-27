@@ -78,3 +78,38 @@ Test the collector failure paths with:
 ```sh
 python3 -m unittest discover -s test/tools -p '*_test.py'
 ```
+
+## Native TIDL connection fixture
+
+With matching rpc-port, bundle, dlog, GLib and Cynara development packages,
+configure with `-DCAPMGR_BUILD_TIDL_TRANSPORT=ON -DCAPMGR_REQUIRE_CYNARA=ON`
+and `-DCAPMGR_REQUIRE_TIDL=ON` in addition to the existing dependency options.
+The `check` target compiles generated proxy/stub code and the `capmgr-tidl-probe`
+fixture. It does not run a privileged service connection during ordinary CTest.
+
+On the explicitly selected native fixture image as root with real RPC/Cynara
+services, run:
+
+```sh
+python3 test/integration/run_tidl_probe.py --binary build-native/capmgr-tidl-probe
+```
+
+The Tizen tests RPM installs the binary and driver under `/usr/libexec/capmgr/`.
+It also installs `capmgr-peer-tests`; set `CAPMGR_REQUIRE_PEER_TESTS=1` to require
+socket label support without a skip. The IPC fixture creates a unique daemon
+endpoint and owned temporary readiness/log directory, checks that the server's
+verified MAIN principal is the client PID, and confirms remount remains unsupported.
+A child drops to system UID 1 and makes 32 connections that must be denied by the
+explicit policy check. A subsequent authorized connection must still succeed;
+retained rejected ports/services must be zero and FDs must return below the warmed
+connection count. No privilege policy is changed by this fixture.
+The driver bounds client/server waits and cleans up only its own server process.
+It prints captured server output before removing temporary files, so redirect the
+command's output to your evidence directory. This is connection authorization
+validation, not production catalog/CLI/mount integration or a full policy matrix.
+
+The local generator adapter rejects unknown TIDL layouts instead of generating
+an unchecked binding. MAIN and callback channels must be distinct sockets of the
+same live process/namespace. Every dispatch rechecks the actual channels and
+Cynara on MAIN. Callback extension getters are not used as authority. Initial
+PID binding and current-task-label gates described in docx/07 remain open.

@@ -445,3 +445,87 @@ Only socket-label comments/contracts changed from r1; tested implementation byte
 remain identical. No acceptance closes current-task label, MAIN binding, initial
 PID reuse, privilege, mount or rollback gates. TidlChannels and generator binding
 work are excluded from this publication.
+
+### TIDL MAIN/callback integration checkpoint (review pending)
+
+Packet/ticket commit `a010f81d6ad1c448fc3ede07565a57e7ede0c110` pushed to
+origin/main, exit 0; remote ref verified identical.
+
+The local generator adapter binds distinct MAIN and callback sockets before
+OnCreate, rejects unchecked internal API failures, and validates actual request
+MAIN/callback FDs plus Cynara before decoding a parcel. It fails generation on an
+unknown template layout. TidlChannels tests cover invalid/default/swapped FDs,
+repeated binding, MAIN-specific policy checks, policy revocation, callback
+closure, and a callback connected by another live process. This is still a
+connection-principal boundary; no current-message/task identity is claimed.
+
+Host CTest5/5 PASS (`tidl-binding-check-r3.log`): 36 catalog/API/search +23 adapter
++18 peer/packet/channel GoogleTests, pure C consumer and nine Python tests.
+Native CMake with REQUIRE_TIDL, REQUIRE_CYNARA and BUILD_TIDL_TRANSPORT all ON,
+Release -O1, parallel1: CTest5/5 PASS (`tidl-full-native-r4.log`, remote exit 0).
+Both generated proxy and stub compile/link against the installed runtime SDK.
+Native TIDL3.1.1 and host2.10.2 generation are exercised. libdlog-devel was an
+additional matching dependency, checksum validated; installed runtime untouched.
+
+Actual separate server/client TIDL fixture passed MAIN principal PID equality,
+real root/User::Shell Cynara and unsupported-remount response. Both processes
+exited 0 (`tidl-ipc-probe-r1.log` and final `tidl-full-native-r4.log`). No product
+service was enabled and no mounts occurred. The fixture is a reusable test source
+and driver; it is not the public API or production deployment. Release4 packaging
+adds these tests and declares native transport build dependencies; exact RPM
+build/upgrade verification is pending before publication.
+
+Failed setup attempts are retained: missing dlog development header in
+`tidl-binding-native-compile-r1.log`, corrected compile in r2; relative generated
+proxy include required the source root include path in standalone fixture compile
+(`tidl-probe-compile-r1.log` failed, r2 passed). Two full-build launch attempts used
+a nonexistent watchdog path and then an incorrect CLI argument; both exited2
+before building (tidl-full-native-r1/r2.log). The installed watchdog with
+`--seconds 1200 -- sh ...` ran r3/r4 successfully. No failure is counted as PASS.
+
+P06-TIDL-BIND-r1 CHANGES_REQUESTED: disconnecting borrowed rpc-port handles in
+OnConnected removed their watchers before the owning Stub removed its instance
+entries. Revised generation calls shutdown on known socket FDs and leaves the
+watchers/Port ownership intact; their HUP path removes both accepted ports.
+The fixture observes rejected instance IDs through a no-op-by-default rejection
+hook and uses the C API to check both retained ports after cleanup.
+
+Host `tidl-binding-check-r4.log` CTest5/5 PASS. Native exact revised CMake build,
+CTest5/5 and adversarial IPC fixture passed (`tidl-full-native-r5.log`, remote
+exit0): root authorized, 32 connected UID1 requests denied, subsequent root request
+accepted; rejected=32, retained_ports=0, services=0, final_fds=10, warm_fds=20.
+Separate real Cynara UID1 probe also denied/unresolved, exit0
+(`peer-native-policy-system-uid.log`). No target privilege rules changed.
+
+Release4 first RPM build passed %check and payload/dependency inspection
+(`tidl-native-rpm-r1.log`, remote exit0), but its pre-fix code was NOT installed.
+The revised source will be rebuilt under the still-unpublished Release4 before
+upgrade. R01 reconciliation is explicit: private seqpacket code is an experiment,
+not a product IPC protocol; production resource transport must remain TIDL.
+
+P06-TIDL-BIND-r2 ACCEPTED by w1:pJ for the exact 12-file binding/probe/source
+packaging manifest, all hashes verified again before publication. The rejected
+connection lifetime finding is closed for this scope. Production create/remount,
+initial PID binding and current task label remain outside acceptance.
+
+Exact Release4 revised archive SHA256:
+`37deb9b82a83c53ff730e3ab530d31215924f20ef497508edd970440ceb3b485`.
+Native `rpmbuild -ba --define 'capmgr_tizen 1'` completed %check CTest5/5,
+unpackaged-file validation, four RPM outputs and payload/dependency inspection
+(`tidl-native-rpm-r2.log`, remote exit0). Normal `rpm -U --test` then `rpm -U`
+for runtime/devel/tests succeeded; RPM DB reports all three 0.1.0-4. Installed
+36 unit +23 adapter +18 platform GoogleTests and pure C consumer passed, followed
+by the actual installed TIDL probe: 32 UID1 rejections, later root success,
+retained_ports=0, services=0, final_fds=10 <= warm_fds=20, all process exits0
+(`tidl-native-install-r2.log`, remote exit0). The first installed platform run
+used an unrecognized require-mode variable; it had no skips. A corrected explicit
+`CAPMGR_REQUIRE_PEER_TESTS=1` rerun passed18/18 without skips
+(`tidl-installed-peer-required-r2.log`, remote exit0).
+
+The upgrade emitted `Plugin msm: hook tsm_post failed`; it is retained as an
+observed platform warning. Transaction exit0, installed versions and execution
+establish this fixture upgrade, not general SMACK policy health. No privilege
+policy or mount configuration was changed. Graphify update exited0; generated
+output and all raw evidence remain outside the commit. Commit/push results follow
+in the next board update. Next work: actual parser plugin/offline harness and
+INSTALL-01 finalization integration investigation; ARMv7 remains NOT_RUN until P08.
