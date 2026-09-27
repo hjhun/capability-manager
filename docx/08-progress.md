@@ -693,3 +693,22 @@ existing public IO/retained-handle semantics. Jobs forbid signaling before final
 reap releases the PID. Helper implementation, teardown tests, broker policy and
 cgroup verification remain NOT_RUN. Source/kernel support probes are distinct
 from production authorization or cleanup evidence.
+
+Development contract commit `c861f34efc660bc877022dc3a3950b80bde21877` on main
+was pushed successfully and matched the remote ref (exit0).
+
+P04-CHILD-OWNERSHIP-r2 ACCEPTED by w1:pJ for four-file manifest. Private
+OwnedChildren retains exclusive direct child ownership through WNOWAIT, disables
+signals before nonblocking reap, reserves pending/uncertain slots and never reuses
+job IDs. Bounded cancellation retries transient observation/signal failure and
+preserves persistent errors. No namespace creation or broker policy is enabled.
+`cmake --build build --target check -j2` (`owned-children-host-r2.log`) passed
+CTest6/6 including11 new ownership tests (41 adapter tests total), exit0.
+Same-source x86 emulator native Debug build/check via `tools/verify.py native-build`
+(`owned-children-native-r2/summary.json`) passed CTest6/6; all remote steps and
+confirmed-scope cleanup exit0. Initial r1 source archive used the wrong root name,
+failed local archive validation before any remote scope, and was corrected; both
+failure and retry evidence are retained. r1 native PASS is separate from r2 PASS.
+This is a source checkpoint; installed RPM remains Release6. Namespace init, actual
+root broker, authorization, cgroup and physical/ARM validation remain NOT_RUN.
+Native r2 source archive SHA256 `170049841212c1fac5bb43fa6c8c27ef00708abe0643d8ba5454f5a3e04f7ed6`.
