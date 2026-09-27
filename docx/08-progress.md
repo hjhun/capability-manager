@@ -1396,3 +1396,50 @@ Accepted07 hash: 56f9f46372f6453444e5808d4307297a0cab76a23f6105f1f6fd47d3d890485
 The publication-only heading edit marks acceptance without changing clauses.
 Managed cleanup/journal proof remains the next scope; legacy thread exit is not
 child-absence evidence. Publication includes those8files plus08 bookkeeping.
+
+## P06 retained managed cleanup path (2026-09-28, review pending)
+
+CLOSE-BOUNDS-r1 was committed/pushed as
+9a8b9dee5d8c92a129800f294507dfd62ee54e32 on main; push exit0 and ls-remote
+refs/heads/main matched exactly. Managed cleanup is a separate seven-file scope,
+tracked by /tmp/capmgr-managed-cleanup-r2.sha256 (ephemeral local evidence).
+
+The new private ExecuteManaged retains one-use owner/token/capacity before Run.
+A base-owned coordination thread publishes immutable cleanup/terminal/version
+snapshots and alone performs Session/Journal operations/destruction. Its exit
+future/join covers TLS independently of Run's exit; no subclass bool can declare
+quiescence. Confirmed proof and publication storage are preallocated, with a
+retained materialization retry test. Poll/Cancel/Close never acquire the mutex
+held by a fsyncing Session/Journal. Final owner release occurs outside dispatch
+locks. There is no production backend/factory/API route or generation reset.
+
+Host managed-host-r2.log: cmake --build build --parallel2, then ctest --test-dir
+build --output-on-failure, exit0 and CTest8/8 PASS. The new11 tests exercise real
+WorkerSession ConfirmJobGone blocked/failed fsync, retained journal/reservation,
+coordinator TLS, callback cancellation, pending Run return/exception, capacity,
+terminal construction/publication retry and owner-destruction reentry. The first
+focused host run failed because the test expected a recoverable journal object
+after failed fsync; existing state.next intentionally makes the constructor reject.
+The corrected fixture checks the preserved marker/reservation and refusal instead;
+managed-focused-host-r2.log focused8/8 PASS preceded the final three added tests.
+
+Exact native r1 verified7/7 but reported59/60 PASS and remote1/transport0. The
+invalid-terminal test exposed an initially empty dispatcher wait missing managed
+job progress: a body-done notification could precede exit-future readiness and
+managed work emits no legacy reply. R2 wakes that wait on job presence and notifies
+admission. The failed log is preserved; managed-wakeup-host-r2.log repeats the
+initially-idle regression25times PASS. Native exact-r2 full60+C+25repeat run and
+independent r2 verdict remain pending. Installed Release10 is earlier bytes and
+supplies no evidence for these new private paths; production/ARM remain unclaimed.
+
+P06-MANAGED-CLEANUP-r3 ACCEPTED by w1:pJ for exact7files, host CTest8/8 and
+native61/61 GTests plus C consumer, remote0/transport0 (managed-native-r3.log).
+The r2 native60/60+C+25repeat PASS closed the wake failure, but review then found
+map insertion could throw before outside-lock retirement. R3 moves insertion into
+the catch and tests injected bad_alloc with reentrant owner destruction, token0,
+next token1 and all four capacity slots. No owner is dropped under that lock on
+the tested admission failure. Earlier rejected revisions remain historical evidence.
+Accepted07 SHA256: dd708035d0d694cd78a14dbe7f16bd4145bd1e6b861fb96e5361402e624d657d.
+Publication changes only the heading status; all accepted clauses remain intact.
+The next checkpoint is private injected C API managed admission and lifetime tests;
+production factory, worker service, authority/resource controls remain OPEN.

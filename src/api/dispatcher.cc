@@ -2,6 +2,7 @@
 #include "api/dispatcher.hh"
 #include <nlohmann/json.hpp>
 #include <algorithm>
+#include <array>
 namespace capmgr {
 namespace {
 std::atomic<unsigned> global_jobs{0};
@@ -56,7 +57,7 @@ void ValidateReply(const std::string& text,const nlohmann::json& id,bool event,b
 }
 }
 Dispatcher::Job::~Job(){if(admitted)--global_jobs;}
-Dispatcher::Dispatcher(uint64_t first):next_(first),dispatcher_([this]{
+Dispatcher::Dispatcher(uint64_t first,DispatcherOperations* operations):operations_(operations),next_(first),dispatcher_([this]{
   Dispatch();
   try{dispatcher_exit_.set_value_at_thread_exit();}catch(...){/* Retain missing exit proof. */}
 }) {}
@@ -70,7 +71,18 @@ uint64_t Dispatcher::Execute(Work work,nlohmann::json rpc_id,capmgr_result_cb ca
 }
 uint64_t Dispatcher::ExecuteFrames(FramedWork work,nlohmann::json rpc_id,capmgr_result_cb callback,
                                     void* data,bool supports_cancel,Protocol protocol) {
-  if(!work || !callback)throw Error(ErrorCode::kInvalid,"Missing async operation");
+  if(!work)throw Error(ErrorCode::kInvalid,"Missing async operation");
+  return AdmitJob(std::move(work),std::move(rpc_id),callback,data,supports_cancel,protocol,{});
+}
+uint64_t Dispatcher::ExecuteManaged(std::shared_ptr<ManagedOperation> owner,nlohmann::json rpc_id,
+                                    capmgr_result_cb callback,void* data) {
+  if(!owner)throw Error(ErrorCode::kInvalid,"Missing managed cleanup owner");
+  return AdmitJob({},std::move(rpc_id),callback,data,true,Protocol::kGeneric,std::move(owner));
+}
+uint64_t Dispatcher::AdmitJob(FramedWork work,nlohmann::json rpc_id,capmgr_result_cb callback,
+                             void* data,bool supports_cancel,Protocol protocol,
+                             std::shared_ptr<ManagedOperation> owner) {
+  if(!callback)throw Error(ErrorCode::kInvalid,"Missing async callback");
   std::unique_lock lock(mutex_);
   if(closing_)throw Error(ErrorCode::kBusy,"Client is closing");
   if(!next_ || jobs_.size()>=2)throw Error(ErrorCode::kLimit,"Request capacity exhausted");
@@ -81,9 +93,13 @@ uint64_t Dispatcher::ExecuteFrames(FramedWork work,nlohmann::json rpc_id,capmgr_
   unsigned current=global_jobs.load();
   do {if(current>=4)throw Error(ErrorCode::kLimit,"Global request capacity exhausted");}
   while(!global_jobs.compare_exchange_weak(current,current+1));
+  job->managed=std::move(owner);
   job->admitted=true;
-  jobs_.emplace(token,job);
   try {
+    if(operations_)operations_->BeforeInsert();
+    jobs_.emplace(token,job);
+    if(job->managed && !job->managed->BindClientToken(token))
+      throw Error(ErrorCode::kConflict,"Managed cleanup owner already bound");
     job->worker=std::thread([this,job,token,work=std::move(work),rpc_id=std::move(rpc_id),protocol]() mutable {
       auto emit=[this,job,token,&rpc_id,protocol](Frame frame) {
         auto& json=frame.json;
@@ -106,7 +122,10 @@ uint64_t Dispatcher::ExecuteFrames(FramedWork work,nlohmann::json rpc_id,capmgr_
           emit({response.dump(),false,true});
         } catch(...) { /* Allocation failure cannot safely allocate another reply. */ }
       };
-      try {
+      if(job->managed) {
+        // Run completion is only thread progress, never child-absence proof.
+        try{job->managed->Run();}catch(...){/* Retain owner and its cleanup state. */}
+      } else try {
         work(job->cancelled,emit);
         bool complete;
         {std::lock_guard lock(mutex_);complete=job->terminal || closing_;}
@@ -123,16 +142,21 @@ uint64_t Dispatcher::ExecuteFrames(FramedWork work,nlohmann::json rpc_id,capmgr_
       {std::lock_guard lock(mutex_);job->work_done=true;wake_.notify_all();}
 
     });
-  } catch(...) {jobs_.erase(token);throw;}
+  } catch(...) {
+    auto retired=std::move(job->managed);jobs_.erase(token);
+    lock.unlock();retired.reset();throw;
+  }
   next_=token==UINT64_MAX?0:token+1;
-  return token;
+  wake_.notify_all();return token;
 }
 void Dispatcher::Cancel(uint64_t token) {
-  std::lock_guard lock(mutex_);
+  std::unique_lock lock(mutex_);
   auto it=jobs_.find(token);
   if(it==jobs_.end() || it->second->terminal)throw Error(ErrorCode::kNotFound,"Unknown or completed request token");
   if(!it->second->supports_cancel)throw Error(ErrorCode::kUnsupported,"Backend cancellation is unsupported");
   it->second->cancelled=true;space_.notify_all();
+  auto owner=it->second->managed;lock.unlock();
+  if(owner)owner->RequestCancel();
 }
 bool Dispatcher::EnterCallback() {
   std::lock_guard lock(mutex_);
@@ -170,10 +194,69 @@ bool Dispatcher::JoinFinished(std::unique_lock<std::mutex>& lock) {
     job->joining=true;auto thread=std::move(job->worker);
     lock.unlock();if(thread.joinable())thread.join();lock.lock();
     job->joined=true;job->joining=false;
-    if(job->callback_done && !closing_)jobs_.erase(it);
+    if(job->callback_done && !closing_ && Releasable(*job))RetireJob(it->first,lock);
     wake_.notify_all();return true;
   }
   return false;
+}
+void Dispatcher::RetireJob(uint64_t token,std::unique_lock<std::mutex>& lock) {
+  auto it=jobs_.find(token);if(it==jobs_.end())return;
+  auto owner=std::move(it->second->managed);jobs_.erase(it);
+  lock.unlock();owner.reset();lock.lock();
+}
+bool Dispatcher::Releasable(const Job& job) const {
+  return job.joined && (!job.managed || (job.proof && job.quiescent && !job.poisoned));
+}
+void Dispatcher::RefreshManaged(std::unique_lock<std::mutex>& lock,bool offer) {
+  std::array<std::pair<uint64_t,std::shared_ptr<Job>>,2> observed;
+  size_t count=0;
+  for(const auto& [token,job]:jobs_)if(job->managed)observed[count++]={token,job};
+  for(size_t i=0;i<count;++i) {
+    auto [token,job]=observed[i];
+    if(!jobs_.contains(token) || !job->managed)continue;
+    const bool validate=offer && !closing_ && !job->terminal;
+    auto owner=job->managed;
+    lock.unlock();
+    auto snapshot=owner->PollCleanup();
+    owner.reset();
+    const auto& state=*snapshot.publication;
+    bool invalid=false,allocation_pending=false;
+    if(validate && state.terminal) {
+      try{ValidateReply(*state.terminal,job->rpc_id,false,true,Protocol::kGeneric);}
+      catch(const std::bad_alloc&){allocation_pending=true;}
+      catch(const std::length_error&){allocation_pending=true;}
+      catch(...){invalid=true;}
+    }
+    lock.lock();
+    // Another closer may have consumed this snapshot's last map ownership.
+    auto it=jobs_.find(token);if(it==jobs_.end() || it->second!=job)continue;
+    // Concurrent polling may finish in reverse order; ignore an older coherent
+    // publication. False quiescence means not observed by this try-lock sample.
+    job->quiescent=job->quiescent || snapshot.quiescent;
+    if(state.version<job->publication_version)continue;
+    job->publication_version=state.version;
+    const bool confirmed=state.cleanup==ManagedOperation::Cleanup::kConfirmedComplete;
+    invalid=invalid || (job->proof && !confirmed) ||
+      (state.terminal && !confirmed) ||
+      (job->terminal_source && state.terminal!=job->terminal_source);
+    if(invalid) {
+      job->poisoned=true;closing_=true;
+      for(const auto& [id,pending]:jobs_)pending->cancelled=true;
+      space_.notify_all();wake_.notify_all();
+    } else {
+      job->proof=confirmed;
+      if(offer && !closing_ && !job->terminal && state.terminal && !allocation_pending &&
+         replies_.size()<64 && state.terminal->size()<=1024*1024-queued_bytes_) {
+        try {
+          replies_.push_back({token,*state.terminal,false,true});
+          queued_bytes_+=state.terminal->size();job->terminal_source=state.terminal;
+          job->terminal=true;space_.notify_all();wake_.notify_all();
+        } catch(const std::bad_alloc&) { /* Owner retains terminal for retry. */ }
+        catch(const std::length_error&) { /* Owner retains terminal for retry. */ }
+      }
+    }
+    if(job->callback_done && !closing_ && Releasable(*job))RetireJob(it->first,lock);
+  }
 }
 Dispatcher::CloseResult Dispatcher::Close(std::chrono::milliseconds budget) {
   const auto deadline=std::chrono::steady_clock::now()+
@@ -187,17 +270,25 @@ Dispatcher::CloseResult Dispatcher::Close(std::chrono::milliseconds budget) {
   closing_=true;
   for(const auto& [token,job]:jobs_)job->cancelled=true;
   space_.notify_all();wake_.notify_all();
+  std::array<std::shared_ptr<ManagedOperation>,2> owners;size_t count=0;
+  for(const auto& [token,job]:jobs_)if(job->managed)owners[count++]=job->managed;
+  lock.unlock();for(size_t i=0;i<count;++i){owners[i]->RequestCancel();owners[i].reset();}lock.lock();
   for(;;) {
+    RefreshManaged(lock,false);
     if(JoinFinished(lock))continue;
     bool all=true;
-    for(const auto& [token,job]:jobs_)if(!job->joined){all=false;break;}
+    for(const auto& [token,job]:jobs_)if(!Releasable(*job)){all=false;break;}
     if(all) {
       stop_=true;wake_.notify_all();
       if(dispatcher_done_ && dispatcher_exited_.wait_for(std::chrono::milliseconds(0))==std::future_status::ready) {
         auto thread=std::move(dispatcher_);
         lock.unlock();if(thread.joinable())thread.join();lock.lock();
         replies_.clear();queued_bytes_=0;changed_revision_.reset();
-        changed_=nullptr;changed_data_=nullptr;jobs_.clear();return CloseResult::kDone;
+        changed_=nullptr;changed_data_=nullptr;count=0;
+        for(auto& [token,job]:jobs_)if(job->managed)owners[count++]=std::move(job->managed);
+        jobs_.clear();lock.unlock();
+        for(size_t i=0;i<count;++i)owners[i].reset();
+        return CloseResult::kDone;
       }
     }
     if(std::chrono::steady_clock::now()>=deadline)return CloseResult::kIoPending;
@@ -210,9 +301,11 @@ void Dispatcher::Dispatch() {
     auto ready=[&]{return stop_ || (!closing_ && !active_ &&
       (HasFinishedWorker() || !replies_.empty() || changed_revision_));};
     // Thread-exit futures become ready after the final notification/TLS cleanup.
-    if(jobs_.empty())wake_.wait(lock,ready);
+    if(jobs_.empty())wake_.wait(lock,[&]{return ready() || !jobs_.empty();});
     else wake_.wait_for(lock,std::chrono::milliseconds(2),ready);
     if(stop_){dispatcher_done_=true;wake_.notify_all();return;}
+    if(closing_ || active_)continue;
+    RefreshManaged(lock,true);
     if(closing_ || active_)continue;
     if(JoinFinished(lock))continue;
     if(changed_revision_) {
@@ -230,7 +323,7 @@ void Dispatcher::Dispatch() {
     auto job=it->second;active_=true;lock.unlock();
     try {job->callback(reply.token,reply.json.c_str(),reply.event,job->data);}catch(...){}
     lock.lock();active_=false;
-    if(reply.complete){job->callback_done=true;if(job->joined)jobs_.erase(reply.token);}
+    if(reply.complete){job->callback_done=true;if(Releasable(*job))RetireJob(reply.token,lock);}
     wake_.notify_all();
   }
 }

@@ -435,3 +435,56 @@ WorkerSession Complete. WorkerResult must remain disconnected from that path
 until a distinct retained-owner admission/coordinator path is reviewed. Managed
 cleanup ownership, proof-plus-thread lifetime, nonblocking backend cancellation,
 terminal retry and journal uncertainty are the next implementation scope.
+
+### Managed cleanup ownership (development revision 1, accepted in r3)
+
+ExecuteManaged is a distinct private Dispatcher path; legacy framed mock/Action
+work keeps its existing missing-terminal/exception behavior. A managed owner and
+client/process capacity are retained before a one-use client-token binding and
+tracked Run thread creation. Only that successful creation permits asynchronous
+START; later return/exception never causes synchronous token0 or proves cleanup.
+No production ExecutionBackend/public execute route uses this seam yet.
+
+ManagedOperation owns exactly one coordination thread behind nonvirtual Run.
+Its subclass only implements Coordinate, using no untracked threads or native
+callbacks. All WorkerSession/BrokerJournal operations, exception cleanup and
+session destruction occur there; the Session destructor can fsync and must never
+be deferred to Close/RetireJob. Concrete objects left after coordination have only
+nonblocking destructors. Run and coordinator exit have distinct thread-exit
+futures, both covering C++ TLS destruction; only observed exit plus join permits
+coordinator quiescence. A subclass cannot self-assert that state with a bool.
+
+PollCleanup observes one immutable atomic publication with cleanup state, terminal
+and version under acquire/release ordering. Initial, uncertain, confirmed and
+terminal-publication storage is allocated before admission; publishing confirmed
+Complete allocates nothing. A materialized terminal is attached exactly once to
+a preallocated publication before its atomic visibility. Allocation or a test
+fault during materialization/publication preserves confirmed proof for retry,
+without accepting a second Complete. Unconfirmed session loss remains uncertain;
+it cannot later be converted to proof from Run return, worker exit, EOF or reap.
+Confirmed per-job proof stays monotonic despite later generation loss.
+
+PollCleanup uses only in-memory publication and try-lock/observed-exit joining,
+never the mutex protecting Session/Journal/fsync. RequestCancel is a nonvirtual
+atomic flag retained for Coordinate to process; dispatch serializes acceptance
+against terminal queueing, then sets it outside the callback mutex. A queued
+terminal returns NOT_FOUND. Poll and Close cannot wait for a stalled fsync.
+Out-of-order concurrent snapshots cannot downgrade a newer publication or an
+already observed quiescent owner. Invalid terminal data poisons admission and
+retains ownership instead of synthesizing a managed failure without proof.
+
+Only a matching WorkerSession Complete after ConfirmJobGone fsync may supply
+WorkerResult's proof. A coordinator must bind its worker token before Step and
+consume entitled retired-token State before collector routing. The private test
+adapter exercises this boundary using real Session/Journal, including blocked and
+failed fsync; it is not a deployed worker/backend. Terminal queueing, callback
+delivery/suppression, durable proof, owner quiescence and Run-thread join remain
+separate. Capacity/owner release requires proof plus both thread lifetimes;
+normal delivery additionally requires callback completion. Destroy may suppress a
+pending/queued terminal after those cleanup conditions, preserving BUSY/IO retry
+semantics. Retired owner destruction runs outside the Dispatcher mutex.
+
+No source activation, worker-generation recovery/reset, trusted absence override,
+production authorization, catalog lease or resource-control claim is introduced.
+A production coordinator and public managed admission factory remain integration
+work, including registering every callback/thread and retaining lost generations.
