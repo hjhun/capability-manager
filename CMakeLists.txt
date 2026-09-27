@@ -1,185 +1,43 @@
 # SPDX-License-Identifier: Apache-2.0
-cmake_minimum_required(VERSION 3.20)
-project(capability-manager VERSION 0.1.0 LANGUAGES C CXX)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-include(GNUInstallDirs)
-include(CTest)
-find_package(SQLite3 REQUIRED)
-if(CAPMGR_JSON_SOURCE)
-  set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
-  add_subdirectory(${CAPMGR_JSON_SOURCE} json-dependency EXCLUDE_FROM_ALL)
-else()
-  find_package(nlohmann_json 3.10 REQUIRED)
-endif()
-find_package(Threads REQUIRED)
-add_compile_options(-Wall -Wextra -Werror)
-add_library(capmgr-catalog STATIC src/catalog/database.cc src/catalog/catalog.cc src/catalog/read_lease.cc src/catalog/read_grant.cc)
-target_include_directories(capmgr-catalog PUBLIC src)
-target_link_libraries(capmgr-catalog PUBLIC SQLite::SQLite3 nlohmann_json::nlohmann_json)
-set_target_properties(capmgr-catalog PROPERTIES CXX_VISIBILITY_PRESET hidden)
-add_library(capmgr-adapters STATIC src/pkgmgr-plugin/parser.cc src/amd-module/action_import.cc
-  src/launcher/runner.cc src/launcher/action_exchange.cc src/launcher/owned_children.cc src/launcher/namespace_init.cc src/launcher/broker_journal.cc src/launcher/worker_command.cc src/launcher/worker_loop.cc src/launcher/worker_session.cc src/launcher/worker_spawn.cc src/launcher/worker_catalog.cc src/launcher/worker_supervisor.cc src/launcher/worker_bootstrap.cc src/launcher/worker_result.cc)
-target_link_libraries(capmgr-adapters PUBLIC capmgr-catalog Threads::Threads)
-add_executable(capmgr-package-tool tools/package_tool.cc)
-target_link_libraries(capmgr-package-tool PRIVATE capmgr-adapters)
-install(TARGETS capmgr-package-tool RUNTIME DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/capmgr)
-add_library(capmgr-platform STATIC src/platform/peer.cc src/platform/authorization.cc
-  src/platform/credential_packet.cc src/platform/remount_ticket.cc src/platform/tidl_channels.cc)
-target_include_directories(capmgr-platform PUBLIC src)
-find_package(PkgConfig QUIET)
-option(CAPMGR_REQUIRE_CYNARA "Require real socket-based Cynara authorization" OFF)
-if(PkgConfig_FOUND)
-  pkg_check_modules(CYNARA QUIET IMPORTED_TARGET cynara-client cynara-creds-socket)
-endif()
-if(CYNARA_FOUND)
-  target_compile_definitions(capmgr-platform PRIVATE CAPMGR_HAVE_CYNARA)
-  target_link_libraries(capmgr-platform PRIVATE PkgConfig::CYNARA)
-elseif(CAPMGR_REQUIRE_CYNARA)
-  message(FATAL_ERROR "Socket-based Cynara development libraries are required")
-endif()
-add_library(capmgr SHARED src/api/client.cc src/api/dispatcher.cc src/api/managed_operation.cc src/api/read_admission.cc)
-target_include_directories(capmgr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/api>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/capmgr> PRIVATE src)
-target_link_libraries(capmgr PRIVATE capmgr-adapters Threads::Threads)
-set_target_properties(capmgr PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 0
-  CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN YES)
-target_link_options(capmgr PRIVATE "LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/api/capmgr.map")
-install(TARGETS capmgr LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(FILES src/api/capmgr.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/capmgr)
-configure_file(packaging/capmgr.pc.in capmgr.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/capmgr.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-if(BUILD_TESTING)
-  find_package(GTest REQUIRED)
-  find_package(Python3 REQUIRED COMPONENTS Interpreter)
-  add_executable(capmgr-unit-tests test/unit/catalog_test.cc test/unit/client_test.cc test/unit/search_test.cc test/unit/dispatcher_test.cc
-    test/unit/client_async_test.cc test/unit/client_managed_test.cc test/unit/read_lease_test.cc test/unit/read_grant_test.cc test/unit/managed_dispatcher_test.cc src/api/client.cc src/api/dispatcher.cc src/api/managed_operation.cc src/api/read_admission.cc)
-  target_include_directories(capmgr-unit-tests PRIVATE src src/api)
-  target_link_libraries(capmgr-unit-tests PRIVATE capmgr-adapters GTest::gtest_main GTest::gmock Threads::Threads)
-  add_test(NAME capmgr-unit COMMAND capmgr-unit-tests)
-  add_executable(capmgr-c-consumer test/c_consumer.c)
-  target_link_libraries(capmgr-c-consumer PRIVATE capmgr)
-  add_test(NAME capmgr-c-consumer COMMAND capmgr-c-consumer)
-  add_executable(capmgr-cli-fixture test/fixtures/cli_fixture.cc)
-  target_link_libraries(capmgr-cli-fixture PRIVATE nlohmann_json::nlohmann_json)
-  add_executable(capmgr-adapter-tests test/unit/parser_test.cc test/unit/action_import_test.cc
-    test/unit/runner_test.cc test/unit/action_exchange_test.cc test/unit/owned_children_test.cc test/unit/broker_journal_test.cc test/unit/worker_command_test.cc test/unit/worker_loop_test.cc test/unit/worker_session_test.cc test/unit/worker_catalog_test.cc test/unit/worker_supervisor_test.cc test/unit/worker_result_test.cc)
-  target_link_libraries(capmgr-adapter-tests PRIVATE capmgr-adapters GTest::gtest_main)
-  add_dependencies(capmgr-adapter-tests capmgr-cli-fixture)
-  add_test(NAME capmgr-adapters COMMAND capmgr-adapter-tests)
-  add_executable(capmgr-peer-tests test/unit/peer_test.cc test/unit/credential_packet_test.cc
-    test/unit/tidl_channels_test.cc)
-  target_link_libraries(capmgr-peer-tests PRIVATE capmgr-platform capmgr-catalog GTest::gtest_main GTest::gmock)
-  add_test(NAME capmgr-peer COMMAND capmgr-peer-tests)
-  if(CAPMGR_REQUIRE_CYNARA)
-    set_tests_properties(capmgr-peer PROPERTIES ENVIRONMENT "CAPMGR_REQUIRE_PEER_TESTS=1")
-  endif()
-  add_executable(capmgr-namespace-probe test/integration/namespace_probe.cc)
-  target_link_libraries(capmgr-namespace-probe PRIVATE capmgr-adapters)
-  add_executable(capmgr-worker-probe test/integration/worker_probe.cc)
-  target_link_libraries(capmgr-worker-probe PRIVATE capmgr-adapters)
-  # Separate fixed worker fixture, never installed or activated as a root service.
-  add_executable(capmgr-bootstrap-image-fixture test/fixtures/bootstrap_image.cc)
-  target_link_libraries(capmgr-bootstrap-image-fixture PRIVATE capmgr-adapters)
-  add_custom_command(TARGET capmgr-bootstrap-image-fixture POST_BUILD
-    COMMAND chmod 0755 $<TARGET_FILE:capmgr-bootstrap-image-fixture> VERBATIM)
-  add_executable(capmgr-bootstrap-context-probe test/integration/bootstrap_context_probe.cc)
-  target_link_libraries(capmgr-bootstrap-context-probe PRIVATE capmgr-adapters)
-  add_executable(capmgr-bootstrap-probe test/integration/bootstrap_probe.cc src/launcher/worker_spawn.cc)
-  target_compile_definitions(capmgr-bootstrap-probe PRIVATE
-    CAPMGR_WORKER_IMAGE="$<TARGET_FILE:capmgr-bootstrap-image-fixture>")
-  target_link_libraries(capmgr-bootstrap-probe PRIVATE capmgr-adapters)
-  add_dependencies(capmgr-bootstrap-probe capmgr-bootstrap-image-fixture)
-  # Explicit tests-package probe uses its installed sibling, never a build path
-  # or the production spawn-worker path. It is not registered as a CTest/root run.
-  add_executable(capmgr-installed-bootstrap-probe test/integration/bootstrap_probe.cc src/launcher/worker_spawn.cc)
-  target_compile_definitions(capmgr-installed-bootstrap-probe PRIVATE
-    CAPMGR_WORKER_IMAGE="${CMAKE_INSTALL_FULL_LIBEXECDIR}/capmgr/capmgr-bootstrap-image-fixture")
-  target_link_libraries(capmgr-installed-bootstrap-probe PRIVATE capmgr-adapters)
-  add_dependencies(capmgr-installed-bootstrap-probe capmgr-bootstrap-image-fixture)
-  add_executable(capmgr-worker-image-fixture test/fixtures/worker_image.cc)
-  # The target shell may use umask0000; the trusted test image must not be writable
-  # by other users. This changes only our generated fixture executable.
-  add_custom_command(TARGET capmgr-worker-image-fixture POST_BUILD
-    COMMAND chmod 0755 $<TARGET_FILE:capmgr-worker-image-fixture> VERBATIM)
-  add_executable(capmgr-worker-spawn-tests test/unit/worker_spawn_test.cc src/launcher/worker_spawn.cc)
-  target_compile_definitions(capmgr-worker-spawn-tests PRIVATE CAPMGR_TEST_WORKER_IMAGE
-    CAPMGR_WORKER_IMAGE="$<TARGET_FILE:capmgr-worker-image-fixture>")
-  target_link_libraries(capmgr-worker-spawn-tests PRIVATE capmgr-adapters GTest::gtest_main)
-  add_dependencies(capmgr-worker-spawn-tests capmgr-worker-image-fixture)
-  add_test(NAME capmgr-worker-spawn COMMAND capmgr-worker-spawn-tests)
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/invalid-worker-image "invalid executable format\n")
-  file(CHMOD ${CMAKE_CURRENT_BINARY_DIR}/invalid-worker-image PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
-  add_executable(capmgr-worker-spawn-failure-tests test/unit/worker_spawn_failure_test.cc src/launcher/worker_spawn.cc)
-  target_compile_definitions(capmgr-worker-spawn-failure-tests PRIVATE CAPMGR_TEST_WORKER_IMAGE
-    CAPMGR_WORKER_IMAGE="${CMAKE_CURRENT_BINARY_DIR}/invalid-worker-image")
-  target_link_libraries(capmgr-worker-spawn-failure-tests PRIVATE capmgr-adapters GTest::gtest_main)
-  add_test(NAME capmgr-worker-spawn-failure COMMAND capmgr-worker-spawn-failure-tests)
-  add_executable(capmgr-catalog-benchmark tools/catalog_benchmark.cc)
-  target_link_libraries(capmgr-catalog-benchmark PRIVATE capmgr-catalog)
-  add_test(NAME capmgr-verification-tools COMMAND ${Python3_EXECUTABLE} -m unittest discover
-    -s ${CMAKE_CURRENT_SOURCE_DIR}/test/tools -p *_test.py)
-  add_test(NAME capmgr-offline-package COMMAND ${Python3_EXECUTABLE}
-    ${CMAKE_CURRENT_SOURCE_DIR}/test/integration/package_tool_test.py $<TARGET_FILE:capmgr-package-tool>)
-  add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests capmgr-peer-tests capmgr-catalog-benchmark capmgr-package-tool capmgr-namespace-probe capmgr-worker-probe capmgr-worker-spawn-tests capmgr-worker-spawn-failure-tests capmgr-bootstrap-probe capmgr-bootstrap-context-probe USES_TERMINAL)
-endif()
+CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
+PROJECT(capability-manager VERSION 0.1.0 LANGUAGES C CXX)
 
-find_program(TIDLC_EXECUTABLE tidlc)
-option(CAPMGR_REQUIRE_TIDL "Require platform TIDL code generation" OFF)
-if(CAPMGR_REQUIRE_TIDL AND NOT TIDLC_EXECUTABLE)
-  message(FATAL_ERROR "CAPMGR_REQUIRE_TIDL requires tidlc in PATH")
-endif()
-if(TIDLC_EXECUTABLE)
-  find_package(Python3 REQUIRED COMPONENTS Interpreter)
-  add_custom_target(capmgr-tidl ALL
-    COMMAND ${CMAKE_COMMAND} -E env TIDLC=${TIDLC_EXECUTABLE} PYTHON3=${Python3_EXECUTABLE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/tidl/generate.sh ${CMAKE_CURRENT_BINARY_DIR}/generated
-    BYPRODUCTS generated/capability_manager_stub.cc generated/capability_manager_stub.h
-      generated/capability_manager_proxy.cc generated/capability_manager_proxy.h
-    DEPENDS tidl/capability_manager.tidl tidl/generate.sh tidl/bind_channels.py VERBATIM)
-endif()
-if(TARGET check AND TARGET capmgr-tidl)
-  add_dependencies(check capmgr-tidl)
-endif()
-option(CAPMGR_BUILD_TIDL_TRANSPORT "Compile the platform TIDL transport adapters" OFF)
-if(CAPMGR_BUILD_TIDL_TRANSPORT)
-  if(NOT TIDLC_EXECUTABLE OR NOT CYNARA_FOUND OR NOT PkgConfig_FOUND)
-    message(FATAL_ERROR "TIDL transport requires tidlc and real Cynara development libraries")
-  endif()
-  pkg_check_modules(RPC_PORT REQUIRED IMPORTED_TARGET rpc-port bundle dlog)
-  add_library(capmgr-tidl-transport STATIC generated/capability_manager_stub.cc generated/capability_manager_proxy.cc)
-  add_dependencies(capmgr-tidl-transport capmgr-tidl)
-  target_include_directories(capmgr-tidl-transport PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/generated)
-  target_link_libraries(capmgr-tidl-transport PUBLIC capmgr-platform PkgConfig::RPC_PORT Threads::Threads ${CMAKE_DL_LIBS})
-  # Vendor-generated callback defaults have intentionally unused parameters.
-  target_compile_options(capmgr-tidl-transport PRIVATE -Wno-unused-parameter)
-  if(TARGET check)
-    add_dependencies(check capmgr-tidl-transport)
-  endif()
-  pkg_check_modules(GLIB REQUIRED IMPORTED_TARGET glib-2.0)
-  add_library(capmgr-read-transport STATIC src/platform/tidl_read_channel.cc src/platform/tidl_read_service.cc)
-  target_link_libraries(capmgr-read-transport PUBLIC capmgr-tidl-transport capmgr-catalog PkgConfig::GLIB)
-  target_compile_options(capmgr-read-transport PRIVATE -Wno-unused-parameter)
-  if(TARGET check)
-    add_dependencies(check capmgr-read-transport)
-  endif()
-  if(BUILD_TESTING)
-    add_executable(capmgr-tidl-probe test/integration/tidl_probe.cc)
-    target_link_libraries(capmgr-tidl-probe PRIVATE capmgr-tidl-transport PkgConfig::GLIB)
-    target_compile_options(capmgr-tidl-probe PRIVATE -Wno-unused-parameter)
-    add_dependencies(check capmgr-tidl-probe)
-    add_executable(capmgr-read-transport-probe test/integration/read_transport_probe.cc
-      src/api/client.cc src/api/dispatcher.cc src/api/managed_operation.cc src/api/read_admission.cc)
-    target_include_directories(capmgr-read-transport-probe PRIVATE src src/api)
-    target_link_libraries(capmgr-read-transport-probe PRIVATE capmgr-read-transport capmgr-adapters)
-    target_compile_options(capmgr-read-transport-probe PRIVATE -Wno-unused-parameter)
-    add_custom_command(TARGET capmgr-read-transport-probe POST_BUILD
-      COMMAND chmod 0755 $<TARGET_FILE:capmgr-read-transport-probe> VERBATIM)
-    add_dependencies(check capmgr-read-transport-probe)
-  endif()
-endif()
+## Language and build layout
+SET(CMAKE_CXX_STANDARD 20)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+SET(CMAKE_C_STANDARD 11)
+SET(CMAKE_C_STANDARD_REQUIRED ON)
+SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+
+INCLUDE(GNUInstallDirs)
+INCLUDE(CTest)
+LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules")
+
+## Optional platform integration; default host builds remain independent.
+OPTION(CAPMGR_REQUIRE_CYNARA "Require socket-based Cynara authorization" OFF)
+OPTION(CAPMGR_REQUIRE_TIDL "Require platform TIDL code generation" OFF)
+OPTION(CAPMGR_BUILD_TIDL_TRANSPORT "Compile platform TIDL transport adapters" OFF)
+SET(CAPMGR_JSON_SOURCE "" CACHE PATH "Optional extracted nlohmann/json source")
+INCLUDE(CapmgrDependencies)
+ADD_COMPILE_OPTIONS(-Wall -Wextra -Werror)
+
+## Shared source list for the public library and private injected test variants.
+SET(CAPMGR_API_SOURCES
+  "${PROJECT_SOURCE_DIR}/src/api/client.cc"
+  "${PROJECT_SOURCE_DIR}/src/api/dispatcher.cc"
+  "${PROJECT_SOURCE_DIR}/src/api/managed_operation.cc"
+  "${PROJECT_SOURCE_DIR}/src/api/read_admission.cc"
+)
+SET(CAPMGR_GENERATED_DIR "${PROJECT_BINARY_DIR}/generated")
+
+## Components; target names and root build outputs are part of the tool contract.
+ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(tools)
+IF(BUILD_TESTING)
+  ADD_SUBDIRECTORY(test)
+ENDIF()
+ADD_SUBDIRECTORY(tidl)

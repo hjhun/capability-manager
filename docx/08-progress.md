@@ -27,9 +27,9 @@ Branch main tracks origin/main; upstream initial commit is
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
 | P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
-| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release12 installed tests verified; authenticated app_fw/TIDL broker and resource gates open |
+| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release13 installed style checkpoint verified; authenticated app_fw/TIDL broker and resource gates open |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
-| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff and stress accepted; Release12 package/installed transport fixture accepted; production admission/policy gates open |
+| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff and stress accepted; Release13 style package accepted; Release12 transport fixture accepted; production admission/policy gates open |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -1815,3 +1815,99 @@ verified all134 archive bytes, native build/payload/dependency audit, normal upg
 and installed fixtures above. The initial failed audit remains preserved. This
 closes only the Release12 tests-package checkpoint; production/policy gates remain
 open. Pending-to-accepted status edits do not change source or contract clauses.
+
+Release12 publication: 8a5c560e6554df7b947efce42ced1b95109d0326 on main,
+commit/push exit0 and exact remote ref verified. Working tree was clean.
+
+## STYLE-01 Watcher conventions and build organization (2026-09-28)
+
+The user requested continued development plus Watcher-derived C/C++, CMake/config
+and spec style, a global hjhun-coding-style skill, and the pkg-config filename and
+Name changed to capability-manager. Reference source was read only at
+~/tizen/platform/core/appfw/tizen-watcher: AGENTS, watcher_server/header,
+plugin_registry, root/component CMake, ApplyPkgConfig, pc.in and spec. The referenced
+coding_rules.md is absent there; observed source is the basis, not invented rules.
+
+STYLE-SKILL-r1 ACCEPTED for three global files under
+~/.codex/skills/hjhun-coding-style (the global skills root resolves to ~/.agents/skills).
+The entrypoint, agents metadata and build/package reference pass skill-creator's
+quick_validate. They preserve repository/user authority, C++20/ABI/security gates,
+and do not import Watcher deployment, Gerrit or policy permissions. The skill is
+used for this checkpoint and referenced in AGENTS. It is installed globally, not
+included in the CapMgr source archive. Entry SHA256:
+5be7c4318d1ba5169925858af4d9e49e088e9219dc1ae0c16be0f0f0152775c2.
+
+STYLE-FORMAT-r1 final source/native verification ACCEPTED by w1:pJ. Exact106-file manifest includes AGENTS/.clang-format and104 tracked
+C/C++ files. Google/2-space/80-column layout expands compressed statements while
+keeping include order, string/raw literals and tokens. Owner and reviewer each
+compared against8a5c560 with preprocessing line splices accounted for; all104 token
+streams match. Generated/vendor/build files are excluded. Initial naive token
+comparison stopped on C macro backslash/newline formatting; corrected comparison
+and formatter dry-run pass. No identifier, lifetime or ABI changes were included.
+
+STYLE-BUILD-r1 final source/native/installed verification ACCEPTED by w1:pJ. Exact12-file build manifest uses uppercase CMake, root dependency
+configuration and component source/target files. Runtime/library/archive outputs,
+generated TIDL and invalid-image fixture remain in the root build directory.
+Explicit variant source lists, imported dependencies, visibility/version script,
+required optional flags and root CTest behavior are preserved. check_method_ids.py
+is now an explicit generator dependency. Host BUILD_TESTING=OFF remains supported.
+Spec Release13 aligns fields and consolidates explicit fixture installs while
+preserving Release-O1/parallel1, optional platform flags and four-package split.
+The requested capability-manager.pc / Name: capability-manager replaces capmgr.pc;
+libcapmgr and public capmgr_ names are unchanged. Downstream pkg-config rename is
+documented in tools/README. No service, scriptlet, setuid/filecap or policy is added.
+
+Host evidence under /tmp/capmgr-evidence:
+- style-build-host-r2.log: fresh configure/build/check CTest8/8 PASS.
+- style-testing-off-r1.log: fresh BUILD_TESTING=OFF configure/full build PASS.
+- style-target-map-r1.log: all73 compilation source/variant definition/language,
+  PIC and visibility entries match a separately configured8a5c560 baseline.
+- style-host-all-r1.log and style-host-install-r2.log: full targets/root siblings,
+  generated/invalid paths, unchanged8 CTest names, staged capability-manager.pc,
+  C consumer built with its pkg-config flags exits0,12 unchanged C exports and
+  SONAME libcapmgr.so.0. The initial install-r1 assertion assumed the installed
+  bootstrap target was included in check; historically it is not. Full all-target
+  build resolves that evidence gap without a source workaround.
+
+Frozen source archive /tmp/capmgr-release13.tar.gz contains143 regular project
+files, SHA256 a307a65e95658c753d049d0a34614472be763fadc29d4f00ab29673f2d181f07.
+Reviewer independently compared every member against the frozen tree. First native
+style-build-native-r1.log failed at adapter-test linking: No space left on device,
+remote1/transport0; no native PASS inferred. style-native-space-recovery-r1.log
+records deletion only of reproducible owned Release11/12 BUILD caches after trust
+and process-use checks. Source archives, RPMs and evidence were preserved;701MiB
+became available. Exact-source style-build-native-r2 retry passed as recorded below.
+No explicit root bootstrap/read-transport/policy workload is rerun by style work.
+
+STYLE native/installed evidence completed and independently ACCEPTED:
+- style-build-native-r2.log: same archive/input hashes, full native TIDL/Cynara/
+  transport ON build, %check CTest8/8, clean unpackaged check, four binary RPMs and
+  SRPM, remote0/transport0. The ENOSPC r1 failure remains preserved separately.
+- style-package-payload-r1.log: normalized runtime/devel/offline/tests requirements
+  match Release12; paths match except the explicitly requested devel replacement
+  /usr/lib64/pkgconfig/capmgr.pc -> capability-manager.pc. Auto Provides is now
+  pkgconfig(capability-manager). No scripts, filecaps or setuid/setgid files;
+  fixture executables retain root0755. Audit PASS, remote0/transport0.
+- style-package-install-r1.log: printed normal four-package rpm -U --test then -U,
+  installed0.1.0-13,275 GoogleTests(95+162+18), C consumer0, offline7 PASS and clean
+  rpm -V. Old capmgr.pc is absent; pkg-config capability-manager reports0.1.0 and
+  builds a second native pure C consumer which exits0. The known msm tsm_post
+  warning is retained, without a transaction/test failure; remote0/transport0.
+- style-native-abi-r1.log: installed12 C exports, SONAME libcapmgr.so.0,
+  Name: capability-manager and existing -lcapmgr / include flags preserved.
+  Explicit root transport/bootstrap/policy fixtures were NOT_RERUN for style-only
+  work; no new runtime/production or ARM acceptance is claimed.
+
+Release13 RPM SHA256:
+- runtime: 7377c1be43f8ed5c35d83b233cfeaa158d5f59297c042212d3b314a6991ea611
+- devel: e92ff275e7fade121472d3d4e43b278eb0090516ed5325689c44535b9af9574f
+- offline-tools: a7d361fc330d8542f810bd99a7473125bd9a29a1f5eac5ade57843c4493b093d
+- tests: b636a8d8f20958da21e1fbebc6234043781ce9d09b2993f7bc134c8ce7c0bed8
+- source: c2c4fdfdb1a2ae1bd04394d5c9ee573559bcd0b9785a2ef2134cc1dbbe626449
+
+STYLE-01 final disposition: FORMAT-r1, BUILD-r1 and SKILL-r1 ACCEPTED for
+the unchanged106/12/3-file manifests. Administrative08 evidence was accepted
+at SHA256 e2d096b90fb4677272c8f8c6130b917ee9e0671701155d40d1b6865c934aeae7;
+subsequent status/publication updates do not change the reviewed source clauses.
+Formatting publication f0b520d4d8edb3151143f890a4b799c657ad7027: commit/push0
+and exact origin/main verified. Build/package publication follows separately.

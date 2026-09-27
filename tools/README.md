@@ -326,6 +326,19 @@ writer isolation, executable authorization, frontend authentication and resource
 controls remain production gates. The existing public client stays fail-closed.
 
 
+## C client build metadata
+
+The devel package installs `capability-manager.pc`. Its pkg-config module and
+`Name:` are both `capability-manager`; the library remains `libcapmgr` and the
+public C functions retain the `capmgr_` prefix. For example:
+
+```sh
+cc client.c -o client $(pkg-config --cflags --libs capability-manager)
+```
+
+Release13 replaces the earlier `capmgr.pc` filename. Update downstream pkg-config
+lookups to `capability-manager`; no compatibility alias is installed.
+
 ## Explicit read-only TIDL handoff fixture
 
 Release12 Tizen tests add `capmgr-read-transport-probe`. On the selected
