@@ -965,3 +965,20 @@ which is not proof of AMD's cached context. Actual resolved sequence and provide
 mapping remain gates: de4's bundled sequence moves ten common positional method
 IDs and changes names despite having zero deprecated markers. Never replace that
 sequence alongside old provider stubs without a verified compatibility matrix.
+
+
+Worker engine checkpoint `ad4615fe9c242215a8cca0999ebf9b7b375baccf` pushed to
+main with exit0 and exact remote-ref match. P04-WORKER-PACKAGE-r1 source and final
+publication evidence ACCEPTED by w1:pJ. Release9 source archive SHA256
+`e9828d5c86447d96eef012e19d6e107f167d0204786976742389165ff9b730bf`.
+Native rpmbuild -ba, %check CTest6/6, payload/dependency/unpackaged checks and five
+RPMs PASS (worker-native-rpm-r1.log, remote0). Normal rpm -U --test then rpm -U
+installed runtime/devel/offline-tools/tests0.1.0-9; installed43 unit +80 adapter
++18 required platform tests (141 total), pure C consumer, seven offline tests,
+namespace fixture and worker fixture PASS (worker-native-install-r1.log, remote0).
+Known msm post-hook warning remains an observation. Existing DB-policy fixture
+was unchanged and not rerun merely for this packaging increment. The tests-only
+worker binary has no service activation, setuid or file capabilities. Root fixture
+success requires checked scope removal. The earlier r1 failed fixture scope was
+separately removed after confirmed quiescent normal process exit
+(worker-r1-scope-cleanup.log, remote0). No Action runtime package was installed.

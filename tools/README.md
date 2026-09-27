@@ -254,3 +254,34 @@ of at least180 seconds, longer than normal role and cleanup budgets. A blocked
 cleanup is a failed fixture, not a completed policy test. Root-only JSON receipts
 and inactive kernel UUID label names intentionally remain; raw receipts/logs must
 not enter Git. No production DB, existing policy pair or user data is modified.
+
+## Explicit worker-loop namespace fixture
+
+Release9 tests include `capmgr-worker-probe`, with no setuid/file capabilities or
+service activation. On the selected development emulator as root:
+
+```sh
+python3 /usr/libexec/capmgr/run_bounded.py --seconds 60 -- /usr/libexec/capmgr/capmgr-worker-probe --run-root-fixture
+```
+
+The fixture creates a root-only, uniquely named catalog under `/opt/usr`, reads one registered
+CLI into a bounded immutable snapshot before admission, and runs its own fixed
+workload as app_fw301/System in new PID and mount namespaces. It checks normal
+separate stdout/stderr, setsid-descendant cleanup, cancellation and output queue
+pressure with the actual NamespaceInit/OwnedChildren path. Complete records follow
+exclusive WNOWAIT/reap; output alone is never a completed native result. The GO
+writer remains open until cleanup. The worker has four slots, independent priority
+CANCEL input and a fixed transport queue; no active-job SQLite read is performed.
+
+Success requires checked scope cleanup before the PASS/zero verdict. Early
+no-child failures remove the scope; cleanup errors report the retained exact path
+and return nonzero. Unconfirmed child cleanup retains the scope and fails stop;
+a watchdog or abnormal process exit is not proof that every child has exited.
+Preserve the printed path/evidence and establish absence before deleting residue.
+The `--fail-after-scope` and `--fail-cleanup` options are failure-injection fixtures;
+the latter intentionally retains a root-only scope and returns1 without spawning.
+
+This does not install a broker, launch an application-selected executable, provision
+SMACK/cgroups, prove original-client authorization or enable public CLI execution.
+Production snapshot source/invalidation, fixed worker exec/FD layout, frontend
+journal/status integration and uncertain-worker recovery remain separate gates.
