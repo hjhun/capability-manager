@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "launcher/worker_spawn.hh"
 #include "common/error.hh"
+#include "launcher/worker_supervisor.hh"
+#include <filesystem>
+#include <fstream>
+#include <sys/stat.h>
 #include <gtest/gtest.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -13,13 +18,14 @@ namespace {
 struct Pipe {
   int fds[2]{-1,-1};Pipe(){if(pipe2(fds,O_CLOEXEC))throw std::runtime_error("pipe");}
   ~Pipe(){for(int fd:fds)if(fd>=0)close(fd);}
+  void Close(int i){if(fds[i]>=0)close(fds[i]);fds[i]=-1;}
 };
 struct Fixture {
-  Pipe command,cancel,reply;int parent=open("/proc/self",O_RDONLY|O_DIRECTORY|O_CLOEXEC);
+  Pipe command,cancel,reply,ready;int parent=open("/proc/self",O_RDONLY|O_DIRECTORY|O_CLOEXEC);
   int catalog=open("/tmp",O_RDONLY|O_DIRECTORY|O_CLOEXEC);OwnedChildren children{1};struct sigaction saved{};
   Fixture(){sigaction(SIGCHLD,nullptr,&saved);struct sigaction a{};a.sa_handler=SIG_DFL;sigaction(SIGCHLD,&a,nullptr);}
   ~Fixture(){close(parent);close(catalog);sigaction(SIGCHLD,&saved,nullptr);}
-  WorkerInheritedFds Fds(){return {command.fds[0],cancel.fds[0],reply.fds[1],parent,catalog};}
+  WorkerInheritedFds Fds(){return {command.fds[0],cancel.fds[0],reply.fds[1],parent,catalog,ready.fds[1]};}
   void Mode(char mode){ASSERT_EQ(write(command.fds[1],&mode,1),1);}
   ChildStatus Wait(uint64_t token) {
     ChildStatus status;for(int i=0;i<2000;++i){status=children.Inspect(token);if(status.state==ChildState::Complete)return status;usleep(1000);}
@@ -51,6 +57,8 @@ TEST(WorkerSpawn, InvalidGenerationDirectionAndDirectoriesCreateNoChild) {
   auto input=f.Fds();input.reply_write=f.reply.fds[0];EXPECT_THROW(SpawnFixedWorker(f.children,1,input),Error);
   input=f.Fds();input.cancel_read=input.command_read;EXPECT_THROW(SpawnFixedWorker(f.children,1,input),Error);
   input=f.Fds();input.catalog_directory=f.command.fds[0];EXPECT_THROW(SpawnFixedWorker(f.children,1,input),Error);
+  input=f.Fds();input.ready_write=f.ready.fds[0];EXPECT_THROW(SpawnFixedWorker(f.children,1,input),Error);
+  input=f.Fds();input.ready_write=input.reply_write;EXPECT_THROW(SpawnFixedWorker(f.children,1,input),Error);
   EXPECT_EQ(f.children.Size(),0u);
 }
 TEST(WorkerSpawn, ClosedStdioDoesNotCollideWithSourcesOrFixedTargets) {
@@ -66,4 +74,78 @@ TEST(WorkerSpawn, ClosedStdioDoesNotCollideWithSourcesOrFixedTargets) {
 TEST(WorkerSpawn, Exit127RequiresFailureHandlingDespitePositiveSpawn) {
   Fixture f;f.Mode('X');auto token=SpawnFixedWorker(f.children,2,f.Fds());auto status=f.Wait(token);
   EXPECT_EQ(status.state,ChildState::Complete);EXPECT_EQ(status.exit_code,127);f.children.Release(token);
+}
+
+namespace {
+// Uses the separate fixed fixture image, real posix_spawn/OwnedChildren and
+// anonymous FD8 transport. No NamespaceInit, catalog load or workload is run.
+struct ReadyFixture {
+  Fixture f;std::string root;int directory=-1;uint64_t worker=0;
+  std::unique_ptr<BrokerJournal> journal;std::unique_ptr<WorkerSupervisor> supervisor;
+  struct sigaction previous{};
+  ReadyFixture() {
+    char path[]="/tmp/capmgr-ready-XXXXXX";auto* made=mkdtemp(path);if(!made)throw std::runtime_error("mkdtemp");root=made;
+    chmod(root.c_str(),0700);directory=open(root.c_str(),O_RDONLY|O_DIRECTORY|O_CLOEXEC);
+    std::ofstream(root+"/state.json")<<R"({"version":1,"generation":0,"next":1,"state":"clean","jobs":[]})";
+    chmod((root+"/state.json").c_str(),0600);
+    journal=std::make_unique<BrokerJournal>(directory,geteuid());
+    struct sigaction a{};a.sa_handler=SIG_IGN;sigaction(SIGPIPE,&a,&previous);
+  }
+  ~ReadyFixture() {
+    supervisor.reset();
+    if(worker && f.children.Size()) {
+      auto status=f.children.StopAndWait(worker,2s);
+      if(status.state!=ChildState::Complete)std::abort(); // cannot discard ownership/scope
+      f.children.Release(worker);
+    }
+    journal.reset();close(directory);sigaction(SIGPIPE,&previous,nullptr);
+    std::error_code error;std::filesystem::remove_all(root,error);if(error)std::abort();
+  }
+  void Spawn(bool retain_writer=false) {
+    auto session=std::make_unique<WorkerSession>(*journal,f.command.fds[1],f.cancel.fds[1],f.reply.fds[0]);
+    auto generation=journal->Generation(); // BeginGeneration fsynced by Session
+    f.command.Close(1);f.cancel.Close(1);f.reply.Close(0);
+    worker=SpawnFixedWorker(f.children,generation,f.Fds());
+    f.command.Close(0);f.cancel.Close(0);f.reply.Close(1);
+    if(!retain_writer)f.ready.Close(1);
+    supervisor=std::make_unique<WorkerSupervisor>(std::move(session),f.children,worker,f.ready.fds[0]);f.ready.Close(0);
+  }
+  bool Ready() {
+    for(int i=0;i<2000;++i){if(supervisor->PollStartup())return true;usleep(1000);}return false;
+  }
+};
+}
+TEST(WorkerSpawn, RealFd8ReadyAndCleanOwnedExitCompleteTheCoordinator) {
+  ReadyFixture f;f.f.Mode('S');f.Spawn();
+  ASSERT_TRUE(f.Ready());
+  EXPECT_EQ(f.supervisor->CatalogRevision(),12u);
+  f.supervisor->PrepareStop();bool stopped=false;
+  for(int i=0;i<2000 && !stopped;++i){f.supervisor->Step();stopped=f.supervisor->ConfirmNormalExit();if(!stopped)usleep(1000);}
+  EXPECT_TRUE(stopped);
+  EXPECT_EQ(f.f.children.Size(),0u);
+  EXPECT_FALSE(f.journal->Blocked());
+}
+TEST(WorkerSpawn, RetainedReadyWriterPreventsAdmissionEvenAfterRealRecord) {
+  ReadyFixture f;int report=fcntl(f.f.reply.fds[0],F_DUPFD_CLOEXEC,20);
+  ASSERT_GE(report,20);
+  f.f.Mode('L');f.Spawn(true);
+  // This report is emitted only after the real image writes READY and closes 8.
+  struct pollfd p{report,POLLIN,0};int available=poll(&p,1,2000);
+  uint64_t bytes[2]{};ssize_t count=available>0?read(report,bytes,sizeof(bytes)):-1;close(report);
+  ASSERT_EQ(count,static_cast<ssize_t>(sizeof(bytes)));
+  EXPECT_EQ(bytes[0],1u);
+  EXPECT_FALSE(f.supervisor->PollStartup());
+  EXPECT_FALSE(f.supervisor->PollStartup());
+  EXPECT_THROW(f.supervisor->PollStartup(WorkerSupervisor::Clock::now()+6s),Error);
+  EXPECT_TRUE(f.journal->Blocked());
+  EXPECT_TRUE(f.journal->Reservations().empty());
+}
+TEST(WorkerSpawn, RealWorkerDeathAfterReadyBlocksStartAndRetainsGeneration) {
+  ReadyFixture f;f.f.Mode('L');f.Spawn();
+  ASSERT_TRUE(f.Ready());
+  auto status=f.f.children.StopAndWait(f.worker,2s);
+  ASSERT_EQ(status.state,ChildState::Complete);
+  EXPECT_THROW(f.supervisor->Start(R"({"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"cli:fixture","arguments":{}}})"),Error);
+  EXPECT_TRUE(f.journal->Blocked());
+  EXPECT_TRUE(f.journal->Reservations().empty());
 }

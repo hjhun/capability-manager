@@ -11,10 +11,12 @@ struct WorkerInheritedFds {
   int command_read,cancel_read,reply_write;
   int parent_process; // frontend's preopened proc directory; worker validates live
   int catalog_directory; // trusted catalog parent, NOT a DB FD (WAL needs names)
+  int ready_write; // dedicated bootstrap pipe, closed by worker before admission
 };
 // Sources are duplicated above fixed targets BEFORE file actions. Child receives
-// only null stdio and 3=command,4=cancel,5=reply,6=parent proc,7=catalog directory;
-// addclosefrom_np(8) excludes all other FDs including non-CLOEXEC TIDL handles.
+// only null stdio and 3=command,4=cancel,5=reply,6=parent proc,7=catalog directory,
+// 8=bootstrap READY write;
+// addclosefrom_np(9) excludes all other FDs including non-CLOEXEC TIDL handles.
 // SIGCHLD default/no competing reaper is required; child ownership outlives call.
 // Uses posix_spawn, not post-fork C++ in a multithreaded listener. The call itself
 // is not a hard deadline operation. After successful spawn the exact direct child

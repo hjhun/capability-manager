@@ -1119,3 +1119,26 @@ AMD load/start/stop, team-context semantics or matched Action runtime upgrade.
 P04-WORKER-SUPERVISOR-r1 ACCEPTED by w1:pJ for the exact four-file coordinator
 scope and separate host/native mocked-ownership evidence. No blocking finding;
 actual FD8/bootstrap image behavior remains outside this acceptance.
+
+Worker supervisor checkpoint `f8e8d81444817cc742aaff2f9923edffedb648ec` pushed to
+main, exit0, exact remote-ref match. P04-WORKER-FD8-r1 ACCEPTED by w1:pJ for the
+five-file fixed-spawn/fixture revision. Six sources duplicate above FD8 before
+ordered mapping to3..8; closefrom9 excludes other handles. Dedicated READY pipe
+must be independent and write-only. The separate fixture emits CWB1 revision12
+(synthetic, no catalog load), closes8 and exercises real supervisor admission.
+Host `cmake --build build --target check -j2`, worker-ready-host-r1.log, exit0,
+CTest8/8 PASS. Native worker-ready-native-r1.sh on emulator-26101 x86_64 verifies
+manifest5/5, spawn9/9 and ENOEXEC1/1 PASS, worker-ready-native-r1.log remote0.
+Closed stdio/high descriptors, retained READY writer, clean owned exit and death
+after READY are covered. Generated fixture mode0755 is retained; image checks
+are not relaxed. Installed packages remain Release9.
+
+Root bootstrap remains unimplemented. The independent engineering review requires
+actual creator/procfs anchoring, fixed privilege/SMACK/namespace context, exact
+FD table and CLOEXEC reset, provisioned stable live-WAL catalog path policy and
+executable provenance. Verify one task after startup loading before READY, then
+preserve single-thread behavior structurally; do not add per-clone procfs
+enumeration to the cancellation-critical loop. Quiescence alone cannot prove
+queued Complete/output was flushed. Source revision is not an authorization or
+validity lease. Root service/authentication/cgroups and production enablement are
+still OPEN; these fixture tests do not close them.
