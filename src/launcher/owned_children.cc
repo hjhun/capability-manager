@@ -41,6 +41,30 @@ OwnedChildren::~OwnedChildren() {
   for(const auto& job:jobs_)
     if(job.id && job.status.state!=ChildState::Complete)std::terminate();
 }
+uint64_t OwnedChildren::Reserve() {
+  std::lock_guard lock(mutex_);
+  Job* free=nullptr;
+  for(size_t i=0;i<capacity_;++i)if(!jobs_[i].id){free=&jobs_[i];break;}
+  if(!free || !next_id_)throw std::runtime_error("child admission closed: capacity or ID exhaustion");
+  *free=Job{next_id_,-1,{ChildState::Reserved,-1,0,0},true};
+  next_id_=next_id_==std::numeric_limits<uint64_t>::max()?0:next_id_+1;
+  return free->id;
+}
+void OwnedChildren::AttachReserved(uint64_t id,pid_t pid) noexcept {
+  std::lock_guard lock(mutex_);
+  Job* slot=nullptr;
+  for(auto& job:jobs_) {
+    if(job.id && job.pid==pid && job.status.state!=ChildState::Complete)std::terminate();
+    if(id && job.id==id)slot=&job;
+  }
+  if(pid<=0 || !slot || slot->status.state!=ChildState::Reserved)std::terminate();
+  slot->pid=pid;slot->status={};slot->no_signal=false;
+}
+void OwnedChildren::AbandonUnspawned(uint64_t id) {
+  std::lock_guard lock(mutex_);auto& job=Find(id);
+  if(job.status.state!=ChildState::Reserved)throw std::logic_error("child may exist; reservation cannot be abandoned");
+  job=Job{};
+}
 uint64_t OwnedChildren::Adopt(pid_t pid) {
   std::lock_guard lock(mutex_);
   if(pid<=0)throw std::invalid_argument("direct child PID");
@@ -66,7 +90,8 @@ OwnedChildren::Job& OwnedChildren::Find(uint64_t id) {
   throw std::out_of_range("unknown child job");
 }
 bool OwnedChildren::Refresh(Job& job) {
-  if(job.status.state==ChildState::Complete || job.status.state==ChildState::Uncertain)return false;
+  if(job.status.state==ChildState::Reserved || job.status.state==ChildState::Complete ||
+     job.status.state==ChildState::Uncertain)return false;
   if(!job.no_signal) {
     ChildExit observed;
     int error=operations_.Observe(job.pid,observed);

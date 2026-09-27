@@ -8,7 +8,7 @@
 
 namespace capmgr {
 // Private broker state. These are not C API error values.
-enum class ChildState { Running, CleanupPending, ReapPending, Complete, Uncertain };
+enum class ChildState { Running, CleanupPending, ReapPending, Complete, Uncertain, Reserved };
 struct ChildStatus {
   ChildState state=ChildState::Running;
   int exit_code=-1;
@@ -42,6 +42,14 @@ class OwnedChildren {
   ~OwnedChildren();
   OwnedChildren(const OwnedChildren&)=delete;
   OwnedChildren& operator=(const OwnedChildren&)=delete;
+  // Preferred clone path: reserve capacity/token BEFORE creating a child, then
+  // attach the exact successful clone return immediately. Attach cannot allocate,
+  // inspect/reap or return a failure which loses the child. Invalid call ordering
+  // is a fail-stop programming error. Signals still require a fresh Observe.
+  uint64_t Reserve();
+  void AttachReserved(uint64_t id, pid_t direct_child) noexcept;
+  // Only before clone or after clone returned failure: never abandon a live child.
+  void AbandonUnspawned(uint64_t id);
   uint64_t Adopt(pid_t direct_child); // Failure leaves ownership with the caller.
   ChildStatus Inspect(uint64_t id);
   ChildStatus Stop(uint64_t id);

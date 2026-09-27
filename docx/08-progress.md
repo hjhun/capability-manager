@@ -856,3 +856,26 @@ separate; initial r1 GTest same-line macro compile failure was corrected before
 successful host retries. Installed RPM remains Release8 and excludes this source
 checkpoint. Actual worker-crash/live-or-stuck-PID1 recovery is NOT_RUN, not proved
 by the journal's separate-process persistence fixture.
+
+
+Broker journal checkpoint `52d3b96acaaabc4ef2d485678261952ae704795d` pushed to
+main with exit0 and matched the remote ref. P04-CHILD-RESERVATION-r1 ACCEPTED by
+w1:pJ for reserve-before-clone ownership (owned_children.cc SHA256
+`0065c801e8f61d0cf33fbb489ba78581f54eb5650e23cf81d03f4fc3be16ae5c`).
+Fixed capacity/token reservation precedes clone; positive return immediately
+attaches without allocation or Observe/reap, while failed clone abandons the
+unspawned slot and burns its token. Stop still requires fresh ownership observation;
+EINTR retries and ECHILD/ESRCH keep uncertainty without signaling. Invalid internal
+attach ordering fails stop; a lost worker must preserve frontend journal uncertainty.
+The main namespace fixture now uses the exact adjacent attach/abandon branch.
+Host CTest6/6 including15 ownership tests PASS (child-reservation-host-r1.log,
+exit0); exact-source native15/15 and all namespace isolation/failure/parent-death
+fixtures PASS (child-reservation-native-r1.log, remote0). Installed RPM remains
+Release8. This acceptance does not cover a worker loop or production CLI route.
+
+Independent Action runtime investigation is reopening the dependency build route:
+local source includes a newer matched service/API/TIDL stack, so a read-only source
+archive build may be possible. No Action repository edit/push, runtime upgrade or
+operational database mutation has occurred; migration/compatibility review and
+actual build dependencies must precede any concrete upgrade proposal. Current
+installed1.3.27 still lacks subscription/cancel and those paths stay disabled.

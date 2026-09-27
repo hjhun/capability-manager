@@ -111,11 +111,14 @@ void Run(const std::string& executable,const char* request,int expected_exec_err
   const auto mount_before=ReadFile("/proc/self/mountinfo");
   void* stack=mmap(nullptr,1024*1024,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK,-1,0);
   Require(stack!=MAP_FAILED,"stack allocation");
+  OwnedChildren children;auto job=children.Reserve();
   pid_t init=clone(closed_stdin?ClosedStdinInit:NamespaceInit,static_cast<char*>(stack)+1024*1024,CLONE_NEWPID|(wrong_flags?0:CLONE_NEWNS)|SIGCHLD,&config);
-  int clone_error=errno;munmap(stack,1024*1024);errno=clone_error;Require(init>0,"clone namespace");
+  int clone_error=errno;
+  if(init>0)children.AttachReserved(job,init);
+  else children.AbandonUnspawned(job);
+  munmap(stack,1024*1024);errno=clone_error;Require(init>0,"clone namespace");
   close(control[0]);close(status[1]);close(output[1]);close(error[1]);close(100);
   close(parent_process);close(parent_mount);
-  OwnedChildren children;auto job=children.Adopt(init);
   try {
     auto ready=Receive(status[0]);
     if(wrong_flags)Require(ready.kind==InitMessageKind::Failed && ready.stage==InitStage::Mount && ready.error==EPERM,"reject shared mount namespace");
