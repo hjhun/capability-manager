@@ -36,12 +36,16 @@ class ManagedOperation {
   ManagedOperation& operator=(const ManagedOperation&)=delete;
   uint64_t ClientToken() const noexcept {return token_.load();}
   void Run(); // Starts tracked coordination; return/throw is NEVER cleanup proof.
-  void RequestCancel() noexcept {cancelled_.store(true,std::memory_order_release);}
+  // True means this retained request won the atomic end-marker race, not that
+  // Coordinate observed/processed it. False means the end marker was visible.
+  // Coordinate can return just before Run stores that marker. Neither result
+  // proves termination or child absence.
+  bool RequestCancel() noexcept {return !(cancel_state_.fetch_or(1,std::memory_order_acq_rel)&2);}
   // Memory-only publication + observed-exit join; never Session/Journal locks.
   Snapshot PollCleanup() noexcept;
  protected:
   virtual void Coordinate()=0;
-  bool CancellationRequested() const noexcept {return cancelled_.load(std::memory_order_acquire);}
+  bool CancellationRequested() const noexcept {return cancel_state_.load(std::memory_order_acquire)&1;}
   // Single coordinator writer. All three publications are preallocated before
   // admission. Attaching an already materialized immutable terminal allocates
   // nothing. The fault seam may throw; proof survives and caller retries.
@@ -55,7 +59,7 @@ class ManagedOperation {
     uint64_t unset=0;return token && token_.compare_exchange_strong(unset,token);
   }
   std::atomic<uint64_t> token_{0};
-  std::atomic<bool> cancelled_{false};
+  std::atomic<unsigned> cancel_state_{0};
   ManagedPublicationOperations* operations_;
   std::shared_ptr<const Publication> confirmed_,uncertain_;
   std::shared_ptr<Publication> terminal_publication_;

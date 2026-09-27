@@ -156,7 +156,8 @@ void Dispatcher::Cancel(uint64_t token) {
   if(!it->second->supports_cancel)throw Error(ErrorCode::kUnsupported,"Backend cancellation is unsupported");
   it->second->cancelled=true;space_.notify_all();
   auto owner=it->second->managed;lock.unlock();
-  if(owner)owner->RequestCancel();
+  if(owner && !owner->RequestCancel())
+    throw Error(ErrorCode::kIo,"Managed cancellation coordinator has ended");
 }
 bool Dispatcher::EnterCallback() {
   std::lock_guard lock(mutex_);

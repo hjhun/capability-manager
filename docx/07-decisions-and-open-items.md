@@ -488,3 +488,38 @@ No source activation, worker-generation recovery/reset, trusted absence override
 production authorization, catalog lease or resource-control claim is introduced.
 A production coordinator and public managed admission factory remain integration
 work, including registering every callback/thread and retaining lost generations.
+
+### Injected managed C API route (development revision 1, accepted in r2)
+
+The private ExecutionBackend may supply PrepareManagedCli after side-effect-free
+Admit, only for a catalog-bound CLI entry. Its default nullptr preserves legacy
+CLI and Action behavior. Prepare copies the registered entry and original parsed
+request; it cannot create a Session/Journal, reservation, thread, child or native
+callback, or an object whose pre-admission destructor performs I/O. Factory or
+Dispatcher admission failure returns token0 before START. Once Run is admitted,
+later faults retain its asynchronous token and cleanup ownership.
+
+The C API routes this optional owner through ExecuteManaged with the exact parsed
+request ID and existing C callback/data. Closing-handle rejection precedes both
+Admit and Prepare. A callback-origin cancellation is a retained request, never
+successful termination proof. OK means the retained request won the atomic end-
+marker race, not that Coordinate observed or processed it: Coordinate may return
+just before Run publishes that marker. If the marker was already visible and no
+terminal was queued, cancel returns IO.
+Terminal-queued tokens still return NOT_FOUND. Close always requests shutdown but
+cannot infer absence from either cancellation result.
+
+The test-only owner creates and destroys real Session/Journal exclusively inside
+Coordinate, binds the worker token before Step, and feeds WorkerResult only the
+validated Complete exposed after journal fsync. Its fixture transport sends
+provisional native stdout before that proof. Delayed/failed fsync exercises public
+execute/destroy/cancel and retained borrowed data, while successful completion
+preserves original native bytes, high-precision content and result.isError even
+with nonzero exit. Action never calls the managed CLI factory.
+
+This is an injected test/development route. PlatformAccessGate still fails closed;
+no factory is installed in production and no trusted executable/worker authority
+comes from request fields. Unexpected asynchronous failure before START remains
+conservatively retained, not converted into unreviewed no-child proof. A production
+prepared-admission/allocation strategy, original-client authorization, registered
+launcher integration, generation lifecycle and resource controls remain gates.

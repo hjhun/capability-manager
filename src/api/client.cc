@@ -118,6 +118,13 @@ int capmgr_client_execute(capmgr_client_h client, const char* request,
       throw capmgr::Error(capmgr::ErrorCode::kUnsupported,"Skill execution belongs to the agent");
     if(!client->backend)throw capmgr::Error(capmgr::ErrorCode::kUnsupported,"Execution transport is unavailable");
     auto backend=client->backend;backend->Admit(entry,parsed);
+    if(entry.kind==capmgr::Kind::kCli) {
+      auto managed=backend->PrepareManagedCli(entry,parsed);
+      if(managed) {
+        *token=client->dispatcher.ExecuteManaged(std::move(managed),parsed.id,callback,data);
+        return;
+      }
+    }
     auto id=parsed.id;bool supports_cancel=backend->SupportsCancel(entry);
     auto protocol=entry.kind==capmgr::Kind::kAction?capmgr::Dispatcher::Protocol::kAction:
       capmgr::Dispatcher::Protocol::kGeneric;

@@ -14,6 +14,7 @@ void ManagedOperation::Run() {
   attempted_=true;
   coordinator_=std::thread([this] {
     try{Coordinate();}catch(...){/* Retain last publication; never infer absence. */}
+    cancel_state_.fetch_or(2,std::memory_order_acq_rel);
     try{exit_promise_.set_value_at_thread_exit();}catch(...){/* Retain missing exit proof. */}
   });
 }

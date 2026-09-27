@@ -57,7 +57,7 @@ if(BUILD_TESTING)
   find_package(GTest REQUIRED)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
   add_executable(capmgr-unit-tests test/unit/catalog_test.cc test/unit/client_test.cc test/unit/search_test.cc test/unit/dispatcher_test.cc
-    test/unit/client_async_test.cc test/unit/managed_dispatcher_test.cc src/api/client.cc src/api/dispatcher.cc src/api/managed_operation.cc)
+    test/unit/client_async_test.cc test/unit/client_managed_test.cc test/unit/managed_dispatcher_test.cc src/api/client.cc src/api/dispatcher.cc src/api/managed_operation.cc)
   target_include_directories(capmgr-unit-tests PRIVATE src src/api)
   target_link_libraries(capmgr-unit-tests PRIVATE capmgr-adapters GTest::gtest_main GTest::gmock Threads::Threads)
   add_test(NAME capmgr-unit COMMAND capmgr-unit-tests)

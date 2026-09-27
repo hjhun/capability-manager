@@ -1443,3 +1443,46 @@ Accepted07 SHA256: dd708035d0d694cd78a14dbe7f16bd4145bd1e6b861fb96e5361402e624d6
 Publication changes only the heading status; all accepted clauses remain intact.
 The next checkpoint is private injected C API managed admission and lifetime tests;
 production factory, worker service, authority/resource controls remain OPEN.
+
+## P06 injected managed public C route (2026-09-28, review pending)
+
+Managed cleanup-r3 was committed/pushed as
+b5dd09925e51eef33c9002c3cffd960da3dc6fbd on main; push exit0 and exact remote
+refs/heads/main verified. The next eight-file CLIENT-MANAGED-r1 manifest is
+/tmp/capmgr-client-managed-r1.sha256 (ephemeral local evidence).
+
+Private PrepareManagedCli copies the catalog-bound entry/original request before
+any thread, reservation or START. Only CLI uses it; Action/default legacy behavior
+is unchanged. Public execute returns token0 on factory permission/allocation
+failure and never calls Admit/Prepare after destroy has closed admission. Managed
+cancel now reports IO if the coordinator body already ended, retaining the flag
+without claiming an available processor or termination proof.
+
+Host client-managed-host-r6.log: build plus CTest8/8 PASS, exit0. Exact native
+client-managed-native-r1.log verifies8/8, rebuilds affected API/managed/test targets,
+then capmgr-unit-tests66/66 and C consumer PASS, remote0/transport0. Five new public
+API fixtures cover blocked/failed ConfirmJobGone fsync, IO-retained handle/data,
+pre-Admit/Prepare counters, cancellation request observation and ended-coordinator
+IO, original native bytes after durable proof/nonzero exit, factory denial/OOM
+without reservation, and Action excluding the CLI factory.
+
+Earlier host r1/r3 and focused r2/r4 failures were fixture assumptions that bounded
+CMW1/CWR1 decoders consume header plus body in one call. Diagnostics identified
+request binding before the intended fsync gate. Bounded repeated ReadOne/Step
+resolved this; focused r5 four cases passed before adding factory OOM for final r6.
+The logs are retained. These are anonymous-pipe test-owner results, not a real CLI
+worker job, deployed backend, installed Release10 update or platform authorization.
+The concrete test owner scopes all Session/Journal destruction within Coordinate.
+Production prepared admission, service/generation/resource control gates remain
+OPEN and the platform create gate remains fail-closed.
+
+P06-CLIENT-MANAGED-r2 ACCEPTED by w1:pJ for exact8files, host r7 CTest8/8 and
+native r2 66/66 plus C consumer (remote0/transport0); unchanged12 C exports.
+R1 review requested precise cancellation wording: OK means the atomic request won
+against Run's end marker, not that Coordinate observed/processed it; IO means that
+marker was already visible. R2 also uses bounded receive for Complete. Earlier r1
+native66/66 is separate evidence, superseded by exact r2 rebuild/run.
+Accepted07 SHA256: f27761cce9a05b4a20fc22830cb11ce85b954d66a98a25c9139efc1dc011932a.
+Only the pending-review heading changes for publication; clauses are unchanged.
+The separately accepted Release11 spec revision is only10->11; RPM build/%check,
+payload/script/dependency audit, normal upgrade and installed tests remain pending.

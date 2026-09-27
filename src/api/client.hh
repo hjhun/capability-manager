@@ -24,6 +24,10 @@ class ExecutionBackend {
   // must not launch work. Worker must honor cancellation and a bounded deadline.
   virtual bool SupportsCancel(const Entry&) const {return false;}
   virtual void Admit(const Entry& entry,const Request& request)=0;
+  // Optional private CLI path. Prepare copies the parsed request/registered
+  // binding, with no threads, callbacks, Session/Journal, reservation or START.
+  // Its pre-admission destruction must not perform I/O. nullptr uses legacy Run.
+  virtual std::shared_ptr<ManagedOperation> PrepareManagedCli(const Entry&,const Request&) {return {};}
   virtual std::string Execute(const Entry& entry,const Request& request,
       const std::atomic<bool>& cancelled,const Dispatcher::Emit& event) {
     (void)entry;(void)request;(void)cancelled;(void)event;
