@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "fixture.hh"
 #include "launcher/worker_session.hh"
+#include "launcher/worker_result.hh"
 #include <fcntl.h>
 #include <fstream>
 #include <signal.h>
@@ -275,4 +276,36 @@ TEST_F(SessionTest, AmbiguousCancelConsumptionCannotOverflowBoundedCorrelation) 
   }
   auto last=session->Start(request);EXPECT_THROW(session->Cancel(last),Error);
   EXPECT_TRUE(session->Failed());EXPECT_TRUE(journal->Blocked());EXPECT_EQ(journal->Reservations(),std::vector<uint64_t>{last});
+}
+
+TEST_F(SessionTest, ResultCollectorCannotObserveCompleteWhenJournalConfirmationFails) {
+  WorkerResult collector(9,request);
+  auto token=session->Start(collector.Original());ASSERT_TRUE(collector.Bind(token));SendStart(token);
+  auto ack=Receive(Reply(token,1,WorkerReplyKind::Accepted,WorkerFailure::None));ASSERT_TRUE(ack);
+  EXPECT_FALSE(collector.Accept(*ack));
+  auto data=Receive(Reply(token,2,WorkerReplyKind::Stdout,WorkerFailure::None,R"({"jsonrpc":"2.0","id":1,"result":true})"));ASSERT_TRUE(data);
+  EXPECT_FALSE(collector.Accept(*data));fault.fail=true;
+  EXPECT_THROW(Receive(Reply(token,3,WorkerReplyKind::Complete,WorkerFailure::None,{},0)),Error);
+  collector.LoseSession();EXPECT_TRUE(collector.Uncertain());EXPECT_FALSE(collector.Complete());
+  EXPECT_TRUE(journal->Blocked());EXPECT_EQ(journal->Reservations(),std::vector<uint64_t>{token});
+}
+
+TEST_F(SessionTest, CoordinatorConsumesValidatedLateCancelStateWithoutReopeningCollector) {
+  WorkerResult collector(9,request);
+  auto token=session->Start(collector.Original());ASSERT_TRUE(collector.Bind(token));SendStart(token);
+  unsigned results=0,retired_cancel_acks=0;
+  auto route=[&](const WorkerEvent& event){
+    // State was correlated against the session's exact sent-CANCEL entitlement.
+    // It is coordinator bookkeeping and must never reach the sealed collector.
+    if(event.kind==WorkerReplyKind::State){++retired_cancel_acks;return;}
+    if(collector.Accept(event))++results;
+  };
+  auto ack=Receive(Reply(token,1,WorkerReplyKind::Accepted,WorkerFailure::None));ASSERT_TRUE(ack);route(*ack);
+  session->Cancel(token);session->Step();
+  auto output=Receive(Reply(token,2,WorkerReplyKind::Stdout,WorkerFailure::None,R"({"jsonrpc":"2.0","id":1,"result":true})"));ASSERT_TRUE(output);route(*output);
+  auto done=Receive(Reply(token,3,WorkerReplyKind::Complete,WorkerFailure::None,{},0));ASSERT_TRUE(done);route(*done);
+  auto late=Receive(Reply(token,4,WorkerReplyKind::State,WorkerFailure::Rejected,{},-1,0,ENOENT));ASSERT_TRUE(late);route(*late);
+  EXPECT_EQ(results,1u);EXPECT_EQ(retired_cancel_acks,1u);EXPECT_TRUE(collector.Complete());EXPECT_FALSE(collector.Uncertain());
+  EXPECT_FALSE(session->Failed());EXPECT_TRUE(journal->Reservations().empty());
+  session->PrepareStop();replies.Close(1);session->Step();session->ConfirmNormalExit();EXPECT_FALSE(journal->Blocked());
 }

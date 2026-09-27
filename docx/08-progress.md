@@ -1304,3 +1304,56 @@ PASS; no retained scope appears. Final remote0/transport0. The known platform
 the transaction/test outcomes. This is fixture/package validation, not product
 service activation. P04-BOOTSTRAP-PACKAGE-r1 final publication/runtime review
 ACCEPTED by w1:pJ after unchanged manifest3/3 and read-only evidence inspection.
+
+Release10 packaging checkpoint9865198a50bd4e7cb119abdfe7d4059d073a231f pushed
+to main, exit0, exact remote-ref match. Next private WorkerResult work assembles
+separate provisional output and waits for durable Complete, with no Dispatcher
+backend connection. Review guidance requires coordinator handling of valid late
+CANCEL State separately, lossless conservative dual-response comparison, exact
+client/worker/RPC correlation and retained cleanup uncertainty on session loss.
+Those constraints are in the proposed development clause and unit/session tests;
+source review and native same-source tests remain pending.
+
+P04-WORKER-RESULT-r1 exact6-file review submitted to w1:pJ: CMake, private
+collector header/source, collector tests, Session integration tests and proposed
+07 clause. Host worker-result-host-r3.log `cmake --build build --target check -j2`
+passes CTest8/8. Focused host and native13/13 tests pass: worker-result-host-focused-r1.log
+and worker-result-native-r1.log. Native checks manifest6/6 then configures/builds
+capmgr-adapter-tests in the protected root and runs
+`--gtest_filter=WorkerResult.*:SessionTest.ResultCollector*:SessionTest.Coordinator*`,
+remote0/transport0. Tests include real temporary BrokerJournal fsync failure:
+WorkerSession withholds Complete, the collector remains uncertain and no result
+is delivered. A separate real Session fixture consumes a valid late CANCEL State
+without reentering the sealed collector or producing a second result.
+
+The comparison tree preserves numeric lexemes to prevent high-precision conflicts
+from becoming equal through double rounding, while tolerating object order and
+string-escape differences. One native envelope is returned unchanged only after
+durable Complete; worker failure and signal termination override provisional
+output. Production result delivery and bounded retained-cleanup coordination remain
+OPEN. Installed Release10 predates this collector and is not evidence of its
+production use; this same-source native run is a separate private-test result.
+
+WorkerResult-r1 source review requested changes for a terminal allocation window:
+Complete() could become true before a RunResult existed. The r2 revision retains
+the confirmed event in a fixed terminal-pending state, rejects further events,
+and retries result construction without new cleanup evidence. Only fully built
+nothrow-movable results seal delivery. Parse/comparison/synthetic-failure injection
+covers bad_alloc and length_error, plus one synthetic comparison-range failure.
+Admission now matches WorkerCommand depth64 and nonempty CLI suffix.
+Host worker-result-host-r5.log CTest8/8 PASS supersedes a test compile error caused
+by two EXPECT_THROW macros on one source line (r4 log retained). R2 exact source
+re-review and native focused run are pending; R1 native results do not substitute.
+
+P04-WORKER-RESULT-r2 source/contract and native completion ACCEPTED by w1:pJ.
+worker-result-native-r2.log verifies manifest6/6, recompiles worker_result.cc and
+both changed tests, then focused15/15 passes (13collector+2Session), remote0 and
+transport0. Host CTest8/8 is separate evidence; no installed Release10 collector
+or root/native workload/backend activation is inferred.
+Original accepted07 SHA256: 857f600ee279ac8b0ba6be8e1b032f8fcb1d3fe28c4e1040555c940215a8ccd5.
+The reviewer-authorized heading-only accepted-status edit preserves every clause;
+publication07 SHA256: 9340cecdea254906f5a23e69fca367ec46d5e24088e559cca9d505a93cccf2e7.
+Publication scope is the reviewed6files plus08; generated artifacts/logs excluded.
+Next integration gate is retained cleanup coordination with Dispatcher/API destroy:
+existing framed work returning/throwing while cleanup is uncertain would emit an
+early synthetic terminal and must not be used as the production adapter.

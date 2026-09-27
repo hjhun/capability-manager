@@ -357,3 +357,49 @@ provenance, a bounded subset selection strategy and registration invalidation
 before reusing a worker generation; those paths are not implemented or enabled.
 Potentially blocking snapshot preparation must stay outside a loop with live jobs.
 No public create/query behavior or trusted registered-executable requirement changes.
+
+### Private worker result collection (development revision 2, accepted)
+
+A collector is prepared with the exact original request and client token before
+worker admission. Under coordinator serialization, START uses those unchanged
+bytes, the returned worker token is bound without allocation, and only then may
+Step route events. The collector accepts only validated WorkerSession events;
+that session fsyncs ConfirmJobGone before exposing Complete. The coordinator
+consumes session-validated retired-token State/Rejected/ENOENT cancellation
+acknowledgements without forwarding them to a sealed result collector. They
+produce no terminal or reopened state.
+
+Stdout/stderr remain separate with a combined1MiB ceiling. Output, Accepted,
+worker exit, EOF or State never proves completion. Only a matching durable
+Complete permits one result. Its worker failure overrides provisional JSON;
+signal termination produces a synthetic confirmed signal failure. An ordinary
+nonzero exit with a valid native envelope remains native, including result.isError.
+Synthetic errors retain actual worker failure, exit code, signal and system errno.
+Overflow requests cancellation but cannot emit a result before Complete.
+
+Dual-response comparison is conservative and lossless: object ordering, whitespace
+and decoded string escapes may differ; numeric lexemes must match except integer
+-0/0 normalization. Thus1.0 versus1e0 is rejected as conflict even though it may
+denote the same number; different high-precision decimals cannot collapse through
+floating-point rounding. One original native envelope is retained byte-for-byte.
+Decoded duplicate keys, depth above128, mismatched IDs and a second malformed
+non-whitespace stream fail validation. Numeric values outside the JSON library's
+finite range are rejected as invalid response, never silently normalized to success.
+
+On session loss the collector retains cleanup uncertainty and produces no result.
+It supplies no reset, external absence proof or backend return path. Current
+Dispatcher framed work synthesizes a terminal when its function returns/throws,
+so this collector must not be wired there while cleanup is uncertain. A separately
+reviewed retained-cleanup coordinator must preserve bounded public destroy/retry
+and exactly-once delivery before any production backend integration. This private
+collector does not enable execution, authorize registration or alter the C ABI.
+
+Terminal construction has a separate pending state: the matching confirmed
+Complete is retained before any allocating parse/comparison/synthetic-error work.
+If that work throws, no further worker event is admitted, Complete() stays false,
+and the coordinator retains result-delivery ownership and retries materialization
+without requesting new cleanup evidence. Only a fully materialized, nothrow-movable
+RunResult seals delivery. Later session loss cannot erase the already confirmed
+absence proof. Unexpected comparison range errors become synthetic transport
+errors; allocation/length failures remain pending for retry. Admission validation
+matches WorkerCommand's depth64 and nonempty cli: suffix checks.
