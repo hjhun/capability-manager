@@ -1,0 +1,15 @@
+/build*/
+/.local/
+/graphify-out/
+/evidence/
+*.rpm
+*.deb
+*.o
+*.so
+*.so.*
+*.db
+*.db-wal
+*.db-shm
+__pycache__/
+/docs/design-discussion.md
+/artifacts/verification/
