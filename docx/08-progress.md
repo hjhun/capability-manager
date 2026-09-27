@@ -911,3 +911,57 @@ Missing requires_confirmation is not a de4d7fc1.4.2 requirement. Installed packa
 layout differs from the nominal f9c43cb spec, so version alone does not establish
 binary provenance. Scratch SDK downloads are isolated, not installed or claimed
 ABI-matched; no operational Action DB, service or runtime package was modified.
+
+
+Worker command checkpoint `cfd0dd25baea298ad969e822a217a81dacbe8aba` pushed
+to main with exit0 and matched the remote ref. P04-WORKER-LOOP-r4 ACCEPTED by
+w1:pJ for the seven-file private engine/registry/native fixture scope. Host
+`cmake --build build --target check -j2` CTest6/6 PASS
+(worker-loop-host-r7.log, exit0). Exact native g++ build and13 GoogleTests PASS;
+actual NamespaceInit normal execution, setsid descendants, cancel and output queue
+pressure PASS (worker-loop-native-r4.log, remote0). Early failure removes the owned
+scope; injected cleanup EIO returns1 without PASS, reports/preserves the exact
+root-only directory and is separately verified/recovered. Unknown child cleanup
+retains state and fails stop. No native test skips. Earlier compile/include-path
+failures and the r1 GO-writer HUP failure remain in their original logs; they are
+superseded only by the corresponding successful exact-source runs.
+
+The four-slot single-thread engine prioritizes parent/channel loss and CANCEL,
+uses bounded incremental I/O and a fixed reply queue, and sends no-child Complete
+only after exclusive WNOWAIT/reap/Release or proven no clone. GO's writer stays
+open through cleanup. Review fixed stale precancel slots on capacity rejection,
+replaced potentially blocking resolution with an immutable bounded registry,
+and made cleanup part of the native fixture verdict. The native fixture loads
+one entry from its own temporary SQLite catalog before admission; production
+snapshot provenance/subset/invalidation is still a gate. No broker daemon,
+frontend durable-journal wiring, image policy, cgroups or public execution is
+installed. Package Release9 is a separate pending build/upgrade checkpoint;
+installed RPMs remain0.1.0-8 at this source checkpoint.
+
+Action de4d7fc1.4.2 candidate investigation now has a reproducible isolated native
+build path. Pinned source tar SHA256
+`8719caee9b55f7db594c2e77389e42525eb85ae06eb8629dcc235e11b74c0ad3`;
+98 official SDK archives were hash-checked and extracted only under an owned
+scratch tree. Existing image SDK/runtime paths fill missing overlay paths; newer
+AMD/AUL headers are not thereby declared ABI-compatible. All four TIDL3.1.1
+code generations are individually checked. Correct version flags, system-header
+classification, basename-only TIDL output and scratch library/include search paths
+resolved the recorded configure/compiler/link failures. All candidate targets
+build PASS (action-scratch-build-r6.log, remote0). Twenty-five candidate shared
+objects pass loader relocation checks (action-candidate-elf-audit.log, remote0);
+this verifies symbol resolution, not semantic ABI or service integration.
+
+Full Action CTest4/4 PASS in a distinct mount namespace with recursively private
+propagation and a fresh64MiB tmpfs /tmp (action-isolated-ctest-r1.log, remote0).
+The host /tmp device/inode stayed unchanged. Isolation was required because two
+upstream tests truncate fixed /tmp paths; deploy scripts and live smoke/install
+paths were excluded. No Action checkout/Git/runtime/operational DB change occurred.
+Image shared action.seq hash
+`7620a541552ee57590029d4738795e21f691f4bdd506413e124762840ef18226`
+matches f9c43cb and has zero deprecated markers. AMD has no sequence env override;
+pkgmgr reports the preloaded catalog root but its res/global sequence is absent.
+Ordinary root and app_fw/System fixture resource-API calls return invalid context,
+which is not proof of AMD's cached context. Actual resolved sequence and provider
+mapping remain gates: de4's bundled sequence moves ten common positional method
+IDs and changes names despite having zero deprecated markers. Never replace that
+sequence alongside old provider stubs without a verified compatibility matrix.

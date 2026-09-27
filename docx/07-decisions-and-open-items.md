@@ -342,3 +342,18 @@ resource limits including process-count containment, trusted registration, and t
 full native failure matrix. The current image lacks a pids cgroup controller. No
 root broker service, spawn worker, production CLI route or new policy is enabled by
 this document. This refinement must receive explicit peer acceptance before code.
+
+### Worker-loop lookup boundary (development revision 1)
+
+The single-threaded worker loop cannot perform a synchronous SQLite/filesystem
+lookup while jobs are active without risking cancellation starvation. Its private
+engine therefore accepts an immutable snapshot of at most256 exact registered CLI
+IDs and executable paths, prepared before admission and copied into the engine.
+Lookup has no I/O, callbacks, locks or allocation. This is an internal bounded
+lookup mechanism, not a public catalog cache or authority supplied by a client.
+The native fixture independently loads its one entry from its private fixture DB
+before any child exists. Production must establish the image-owned catalog's
+provenance, a bounded subset selection strategy and registration invalidation
+before reusing a worker generation; those paths are not implemented or enabled.
+Potentially blocking snapshot preparation must stay outside a loop with live jobs.
+No public create/query behavior or trusted registered-executable requirement changes.

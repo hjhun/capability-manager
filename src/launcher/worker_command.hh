@@ -38,6 +38,7 @@ class WorkerCommandReader {
   // allocation failure. Caller closes admission and starts all-job cleanup.
   std::optional<WorkerCommand> ReadOne(Clock::time_point now=Clock::now());
   int fd() const noexcept {return fd_;}
+  bool Incomplete() const noexcept {return started_.has_value();}
  private:
   [[noreturn]] void Reject(const char* message);
   std::optional<WorkerCommand> ReadImpl(Clock::time_point now);
