@@ -23,7 +23,7 @@ target_include_directories(capmgr-catalog PUBLIC src)
 target_link_libraries(capmgr-catalog PUBLIC SQLite::SQLite3 nlohmann_json::nlohmann_json)
 set_target_properties(capmgr-catalog PROPERTIES CXX_VISIBILITY_PRESET hidden)
 add_library(capmgr-adapters STATIC src/pkgmgr-plugin/parser.cc src/amd-module/action_import.cc
-  src/launcher/runner.cc src/launcher/action_exchange.cc src/launcher/owned_children.cc src/launcher/namespace_init.cc src/launcher/broker_journal.cc src/launcher/worker_command.cc src/launcher/worker_loop.cc src/launcher/worker_session.cc)
+  src/launcher/runner.cc src/launcher/action_exchange.cc src/launcher/owned_children.cc src/launcher/namespace_init.cc src/launcher/broker_journal.cc src/launcher/worker_command.cc src/launcher/worker_loop.cc src/launcher/worker_session.cc src/launcher/worker_spawn.cc)
 target_link_libraries(capmgr-adapters PUBLIC capmgr-catalog Threads::Threads)
 add_executable(capmgr-package-tool tools/package_tool.cc)
 target_link_libraries(capmgr-package-tool PRIVATE capmgr-adapters)
@@ -82,6 +82,24 @@ if(BUILD_TESTING)
   target_link_libraries(capmgr-namespace-probe PRIVATE capmgr-adapters)
   add_executable(capmgr-worker-probe test/integration/worker_probe.cc)
   target_link_libraries(capmgr-worker-probe PRIVATE capmgr-adapters)
+  add_executable(capmgr-worker-image-fixture test/fixtures/worker_image.cc)
+  # The target shell may use umask0000; the trusted test image must not be writable
+  # by other users. This changes only our generated fixture executable.
+  add_custom_command(TARGET capmgr-worker-image-fixture POST_BUILD
+    COMMAND chmod 0755 $<TARGET_FILE:capmgr-worker-image-fixture> VERBATIM)
+  add_executable(capmgr-worker-spawn-tests test/unit/worker_spawn_test.cc src/launcher/worker_spawn.cc)
+  target_compile_definitions(capmgr-worker-spawn-tests PRIVATE CAPMGR_TEST_WORKER_IMAGE
+    CAPMGR_WORKER_IMAGE="$<TARGET_FILE:capmgr-worker-image-fixture>")
+  target_link_libraries(capmgr-worker-spawn-tests PRIVATE capmgr-adapters GTest::gtest_main)
+  add_dependencies(capmgr-worker-spawn-tests capmgr-worker-image-fixture)
+  add_test(NAME capmgr-worker-spawn COMMAND capmgr-worker-spawn-tests)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/invalid-worker-image "invalid executable format\n")
+  file(CHMOD ${CMAKE_CURRENT_BINARY_DIR}/invalid-worker-image PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
+  add_executable(capmgr-worker-spawn-failure-tests test/unit/worker_spawn_failure_test.cc src/launcher/worker_spawn.cc)
+  target_compile_definitions(capmgr-worker-spawn-failure-tests PRIVATE CAPMGR_TEST_WORKER_IMAGE
+    CAPMGR_WORKER_IMAGE="${CMAKE_CURRENT_BINARY_DIR}/invalid-worker-image")
+  target_link_libraries(capmgr-worker-spawn-failure-tests PRIVATE capmgr-adapters GTest::gtest_main)
+  add_test(NAME capmgr-worker-spawn-failure COMMAND capmgr-worker-spawn-failure-tests)
   add_executable(capmgr-catalog-benchmark tools/catalog_benchmark.cc)
   target_link_libraries(capmgr-catalog-benchmark PRIVATE capmgr-catalog)
   add_test(NAME capmgr-verification-tools COMMAND ${Python3_EXECUTABLE} -m unittest discover
@@ -89,7 +107,7 @@ if(BUILD_TESTING)
   add_test(NAME capmgr-offline-package COMMAND ${Python3_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/test/integration/package_tool_test.py $<TARGET_FILE:capmgr-package-tool>)
   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests capmgr-peer-tests capmgr-catalog-benchmark capmgr-package-tool capmgr-namespace-probe capmgr-worker-probe USES_TERMINAL)
+    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests capmgr-peer-tests capmgr-catalog-benchmark capmgr-package-tool capmgr-namespace-probe capmgr-worker-probe capmgr-worker-spawn-tests capmgr-worker-spawn-failure-tests USES_TERMINAL)
 endif()
 
 find_program(TIDLC_EXECUTABLE tidlc)

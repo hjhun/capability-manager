@@ -1038,3 +1038,33 @@ CANCEL State fixtures now reject the former permissive path. This closes the
 private session finding only; no spawned production worker, external exit proof,
 TIDL admission/authentication, cgroup or public backend is enabled. Installed
 packages remain Release9, whose tests predate this private source checkpoint.
+
+WorkerSession checkpoint `1ccf11115f147ec6a9e3e8c50fa056d416e44ede` pushed to
+main with exit0 and exact remote-ref match. P04-WORKER-SPAWN-r2 is IN_REVIEW for
+six files: a private fixed-image posix_spawn/descriptor primitive and its fixtures.
+Production image path is compiled in but that worker image is not installed by
+this checkpoint. Five source FDs are duplicated above the fixed child slots,
+null stdio and slots3..7 are mapped, then closefrom8 removes every unrelated FD.
+Signals/environment are fixed, and OwnedChildren reservation precedes spawn with
+immediate Attach on success or Abandon on failure. Success only establishes direct
+child ownership, not exec/READY, catalog trust, no old jobs or production admission.
+No live SQLite object is inherited; passing a directory does not itself implement
+trusted WAL/SHM lookup or snapshot invalidation.
+
+Host worker-spawn-host-r3.log CTest8/8 PASS (exit0). Native first run deliberately
+failed before spawn because target umask0000 generated a root:root0777 fixture;
+worker-spawn-native-r1.log records1/6 PASS,5/6 FAIL, remote1. Mode probes explicitly
+show euid0, old mode777 and new mode755. Only the generated fixture build step was
+changed to chmod0755; image permission checks remain strict. Exact r2 native hash
+checks6/6, six spawn tests and one real ENOEXEC test PASS
+(worker-spawn-native-r2.log, remote0). Fixtures cover non-CLOEXEC socket/high FD
+isolation, closed standard FDs, signal mask/environment reset, immediate owned
+cleanup, exit7/127 distinction and exec-format failure with burned ownership token.
+The separate single-thread worker bootstrap, actual TIDL FD fixture, trusted
+catalog/namespace identity checks, image policy and frontend normal-exit proof
+wiring remain later gates. Installed Release9 does not contain these new tests.
+P04-WORKER-SPAWN-r2 ACCEPTED by w1:pJ for those exact six files and the separate
+host/native evidence. Only the generated fixture's build permissions changed from
+r1; no production permission guard was relaxed. This closes the private descriptor
+transport/ownership review, with all bootstrap/auth/catalog/exit-proof gates above
+still open.
