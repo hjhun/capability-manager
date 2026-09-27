@@ -94,6 +94,13 @@ if(BUILD_TESTING)
     CAPMGR_WORKER_IMAGE="$<TARGET_FILE:capmgr-bootstrap-image-fixture>")
   target_link_libraries(capmgr-bootstrap-probe PRIVATE capmgr-adapters)
   add_dependencies(capmgr-bootstrap-probe capmgr-bootstrap-image-fixture)
+  # Explicit tests-package probe uses its installed sibling, never a build path
+  # or the production spawn-worker path. It is not registered as a CTest/root run.
+  add_executable(capmgr-installed-bootstrap-probe test/integration/bootstrap_probe.cc src/launcher/worker_spawn.cc)
+  target_compile_definitions(capmgr-installed-bootstrap-probe PRIVATE
+    CAPMGR_WORKER_IMAGE="${CMAKE_INSTALL_FULL_LIBEXECDIR}/capmgr/capmgr-bootstrap-image-fixture")
+  target_link_libraries(capmgr-installed-bootstrap-probe PRIVATE capmgr-adapters)
+  add_dependencies(capmgr-installed-bootstrap-probe capmgr-bootstrap-image-fixture)
   add_executable(capmgr-worker-image-fixture test/fixtures/worker_image.cc)
   # The target shell may use umask0000; the trusted test image must not be writable
   # by other users. This changes only our generated fixture executable.

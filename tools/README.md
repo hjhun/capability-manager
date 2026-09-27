@@ -285,3 +285,42 @@ This does not install a broker, launch an application-selected executable, provi
 SMACK/cgroups, prove original-client authorization or enable public CLI execution.
 Production snapshot source/invalidation, fixed worker exec/FD layout, frontend
 journal/status integration and uncertain-worker recovery remain separate gates.
+
+## Explicit fixed-worker bootstrap fixture
+
+Release10 tests add `capmgr-bootstrap-context-probe`, `capmgr-bootstrap-probe`
+and their fixed `capmgr-bootstrap-image-fixture` sibling under the configured
+libexec directory. The installed probe is compiled against that exact installed
+fixture path; the separate build-tree probe keeps its own build-tree path. These
+are development fixtures, with no service, setuid bit, file capability or automatic
+root execution from CTest, package installation or public APIs. Do not invoke the
+worker image directly: its fixed descriptor layout is created by the probe.
+
+On the selected root/User::Shell development emulator, run in this order and stop
+on any nonzero result. Each next command requires the preceding PASS:
+
+```sh
+python3 /usr/libexec/capmgr/run_bounded.py --seconds 120 -- /usr/libexec/capmgr/capmgr-bootstrap-context-probe --run-root-fixture valid
+python3 /usr/libexec/capmgr/run_bounded.py --seconds 120 -- /usr/libexec/capmgr/capmgr-bootstrap-context-probe --run-root-fixture
+python3 /usr/libexec/capmgr/run_bounded.py --seconds 120 -- /usr/libexec/capmgr/capmgr-bootstrap-probe --run-root-fixture
+```
+
+The 19 context cases check exact capabilities, label/groups, creator, threads,
+descriptors and pinned initial-namespace witnesses. The six main modes cover
+startup rejection, retained READY writer timeout, idle exit, and a registered
+fixture `/usr/bin/true` in the real NamespaceInit path. Success requires durable
+Complete, normal owned worker exit and checked scope removal before PASS. This
+workload verifies lifecycle, not a native JSON-RPC result.
+
+The tools enforce root-owned non-writable/no-ACL executable ancestors, local ext4
+backing and platform PID/mount namespace checks before proceeding. Each main mode
+prints its uniquely named root-only `/opt/usr` scope. Preserve a RETAINED_SCOPE or
+watchdog/disconnect result; do not delete a scope until independent child absence
+is established. SIGKILL/worker reap alone is not that proof. No operational DB or
+global SMACK rule is changed. The reduced policy includes fixture-only SYS_PTRACE
+and MAC_ADMIN, never MAC_OVERRIDE; this is not a production capability grant.
+
+Initial platform procfs/PID1 provenance, no hostile root, structural single-thread
+behavior and image policy are explicit premises. Live catalog invalidation/SMACK
+writer isolation, executable authorization, frontend authentication and resource
+controls remain production gates. The existing public client stays fail-closed.

@@ -27,9 +27,9 @@ Branch main tracks origin/main; upstream initial commit is
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
 | P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
-| P04 | IN_PROGRESS | Private PID1 isolation r2 accepted and installed fixture passed; authenticated app_fw/TIDL broker and cgroup integration pending |
+| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release10 installed; authenticated app_fw/TIDL broker and resource gates open |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
-| P06 | IN_PROGRESS | Release7 installed; TIDL binding and injected async frames tested; public transport/AMD integration pending |
+| P06 | IN_PROGRESS | Release10 installed; TIDL binding and injected async frames tested; public transport/AMD integration pending |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -83,7 +83,7 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-Reviewed development checkpoints through `ef3f87964c46f81a2f30cacbfcde7eac27235d20`
+Reviewed development checkpoints through `aed8ffd3d193313b49cf854401131befee78d927`
 are committed and pushed on main, with exact remote refs verified. The chronological
 records below retain earlier failures and pending states as historical evidence;
 later entries supersede their status. Raw evidence/builds/dependencies are excluded
@@ -95,8 +95,8 @@ device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gate
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: finish exact Release5 offline-harness RPM upgrade/installed tests and publish
-the accepted checkpoint; continue platform integration work. PATH-01 remains a
+Next: implement reviewed worker output/result correlation and continue production
+admission/catalog/resource integration afterward. PATH-01 remains a
 product question, not a reason to block unrelated catalog/CLI work.
 
 ### P00 publication checkpoint review
@@ -1235,3 +1235,72 @@ in the native build is retained; explicit affected-target recompilation and the
 subsequent exact-hash executions provide the stated evidence. This acceptance
 is for the private fixture only. Publication scope: reviewed10files plus this
 append-only evidence ledger; raw logs, generated binaries and packages excluded.
+
+Bootstrap checkpoint aed8ffd3d193313b49cf854401131befee78d927 committed and
+pushed to main, push exit0, exact remote-ref SHA match. Next checkpoint prepares
+tests-only Release10 packaging for the accepted bootstrap fixtures with a separate
+installed-path probe. Packaging/source review and native RPM/upgrade evidence are
+pending; no production worker path or service activation is proposed.
+
+### Current requirement coverage after the bootstrap checkpoint
+
+These are scoped implementation/evidence states, not full product acceptance.
+Chronological entries above identify exact revisions and logs; source/test paths
+below are portable entry points. OPEN/NOT_RUN gates prevent claiming completion.
+
+| Requirement | Implemented and verified scope | Remaining product gate |
+|---|---|---|
+| R01 | C++20, C ABI, RPM, generated TIDL and MAIN/callback fixture | Production AMD module and service deployment OPEN |
+| R02 | Local RO foreach/search/get and result lifetime tests in test/unit/client_test.cc | Authorized production create and real client DB policy OPEN |
+| R03 | Direct parser core and explicit offline transaction tool, separate-process tests | Authoritative installer/MIC finalizer BLOCKED; production parser fails before staging |
+| R04 | Action snapshot/import, atomic publish and retry revision replay tests | Actual source writer feed, AMD startup and reconnect notification OPEN |
+| R05 | Repeated/semicolon metadata parser fixtures in test/unit/parser_test.cc | Installed parser lifecycle remains blocked by INSTALL-01 |
+| R06 | Ownership, update, App Skill identity and reservation tests against SQLite | Real installer conflict/rollback propagation OPEN |
+| R07 | Kind/path contracts and private namespace identity experiments | PATH-01 unresolved; actual remount/access/rollback NOT_RUN |
+| R08 | Action projection/entity/provider fixtures and optional outputSchema handling | Full installed source-to-public-client path OPEN |
+| R09 | FTS5/BM25 corpus and fixture benchmark | Product/device corpus and latency acceptance NOT_RUN |
+| R10 | Literal argv runner, private worker/PID1/session/bootstrap fixtures | Authenticated app_fw launcher, executable trust and live invalidation OPEN |
+| R11 | Mock public lifetime/cancel/stream frames; private worker cleanup | Matched Action subscription runtime and production per-client job route OPEN |
+| R12 | Dual-stream errors, native envelope/ID mapper and public callback validation | Actual CLI/Action adapters through production transport NOT_RUN |
+| R13 | Cynara/peer primitives, TIDL binding, UUID DB DAC/SMACK and bootstrap fixtures | Original-client authority, provisioned catalog/job labels and safe remount OPEN |
+| R14 | WAL/FTS publication, schema migration, corruption/replay tests | Production AMD recovery, installer finalization and sidecar policy OPEN |
+| R15 | Bounded queues/requests/output, private admission limits and runtime cleanup | Cross-process client/global enforcement and image resource controls OPEN; pids controller absent |
+| R16 | GTest/GMock, pure C consumer, CTest/RPM failure propagation | Exact Release10 native RPM check PASS; installed test scope recorded below |
+| R17 | Explicit target build/verification tools and installed fixture packages | Whole-product emulator smoke and physical-device execution NOT_RUN |
+| R18 | Fixed-width API/pipe values and overflow tests | ARMv7 build/runtime NOT_RUN; P09 gate remains closed |
+
+### Release10 bootstrap fixture packaging and installed execution
+
+P04-BOOTSTRAP-PACKAGE-r1 source proposal (CMake/spec/tools README, manifest3/3)
+and administrative current-coverage board were ACCEPTED by w1:pJ. The new target
+compiles the accepted probe against the installed fixture path; the build-tree
+probe and default production worker path are unchanged. Host reconfigure/new
+target build and CTest8/8 PASS in bootstrap-package-configure-r1.log and
+bootstrap-package-host-r2.log. An earlier attempt to name the new target before
+reconfigure failed; bootstrap-package-host-r1.log is preserved.
+
+Native archive SHA256:
+51cb9d4881553b1210ebbc1bd59ff7023179ffda056d76ce4d0373f951b45c14.
+Source, spec and pinned JSON archive hashes were checked in a new root0700 RPM
+subtree of the protected bootstrap build scope; no old writable tree was used.
+`rpmbuild -ba --define "_topdir <protected-root>" --define 'capmgr_tizen 1'
+SPECS/capability-manager.spec` used Release -O1/-DNDEBUG, parallel1 and real TIDL/
+Cynara. bootstrap-package-native-r1.log records CTest8/8, a clean unpackaged-file
+check, five RPM outputs, remote0/transport0.
+
+bootstrap-package-path-r1.log confirms RPM _libexecdir and the generated installed
+probe definition agree on /usr/libexec. bootstrap-package-payload-r1.log records
+each binary RPM's SHA/dependencies/scripts/payload/permissions: all three new
+binaries belong only to tests, root:root0755, no file capabilities or scriptlets.
+Tests RPM SHA256 ab4c93dea3e370b398e8f567eae0cce83b3da457c4d737c051f53dc6208a7267.
+
+bootstrap-package-install-r1.log records normal `rpm -U --test` then `rpm -U`
+without force, and runtime/devel/offline-tools/tests all0.1.0-10. Installed unit/
+adapter/peer GoogleTests pass43+147+18=208, pure C consumer exit0, offline tests7/7.
+Then installed valid-only context, all19 context cases, and all6 main modes pass
+in the documented order under120s watchdogs. Each main scope is removed before
+PASS; no retained scope appears. Final remote0/transport0. The known platform
+`Plugin msm: hook tsm_post failed` warning remains in the log; it did not change
+the transaction/test outcomes. This is fixture/package validation, not product
+service activation. P04-BOOTSTRAP-PACKAGE-r1 final publication/runtime review
+ACCEPTED by w1:pJ after unchanged manifest3/3 and read-only evidence inspection.
