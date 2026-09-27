@@ -1911,3 +1911,40 @@ at SHA256 e2d096b90fb4677272c8f8c6130b917ee9e0671701155d40d1b6865c934aeae7;
 subsequent status/publication updates do not change the reviewed source clauses.
 Formatting publication f0b520d4d8edb3151143f890a4b799c657ad7027: commit/push0
 and exact origin/main verified. Build/package publication follows separately.
+
+
+STYLE build/package publication: 9883709c5921138fcf7317598ff5cee5fe3508be,
+commit/push0 and exact origin/main verified; tree clean before functional work.
+
+## P06-WRITER-WAL-r2 (2026-09-28, accepted local source)
+
+Exact five-file manifest /tmp/capmgr-writer-wal-r2.sha256 reviewed by w1:pJ:
+Database setter, test-only linker wrapping, lifecycle tests, existing missing-
+sidecar negative fixture and07 contract. Original accepted07 SHA256:
+3aaef5cdc31ebf0b043c5967b844a0ac90cc376f32297345de559ad9cf68fb8b.
+Only the heading changes administratively after acceptance.
+
+Every internal Database writer sets checked PERSIST_WAL after verifying WAL.
+Failure rejects construction with operation/rc/errstr; no public ABI or production
+injection seam. Tests exercise real SQLite independent/reopened connections,
+last-writer/last-reader close without keepers, stable DB/WAL/SHM identities,
+revision/FTS queries, live update and TRUNCATE checkpoint; NOTFOUND/IOERR injection
+is one-shot/thread-local and linked only into capmgr-unit-tests.
+
+Evidence under /tmp/capmgr-evidence:
+- writer-wal-host-check-r1 and writer-wal-native-r1: retained failures in the old
+  WorkerCatalog test which expected normal writer close to delete sidecars.
+  No PASS claimed. The revised test explicitly removes only owned fixture files
+  after its sole writer closes, preserving unsafe-generation denial/recreation.
+- writer-wal-host-check-r2: CTest8/8 PASS. Unchanged focused4/4 test bytes pass
+  against host SQLite3.45.1 (writer-wal-host-tests-r1).
+- writer-wal-native-r2: exact5/5, affected rebuild, CTest8/8 and focused4/4 PASS,
+  SQLite3.50.2/sourceid logged, C_CONSUMER_EXIT0, unchanged12 C exports,
+  CAPMGR_REMOTE_EXIT0/TRANSPORT_EXIT0. Owned Release13 build tree only; no RPM
+  rebuild/upgrade, root workload or policy change. InstalledRelease13 does not
+  include this subsequent source change.
+
+OFD maintenance cooperation, trusted image/path/generation, real DAC/SMACK and
+direct-read authorization subset remain open. No empty/lazy-sidecar provisioning,
+raw external writer, crash recovery, production create/CLI/remount guarantee.
+User's later peer-API request is a separate pending design/source checkpoint.

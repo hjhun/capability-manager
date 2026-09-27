@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 SET(CAPMGR_UNIT_TEST_SOURCES
+  unit/database_test.cc
   unit/catalog_test.cc
   unit/client_test.cc
   unit/search_test.cc
@@ -25,6 +26,10 @@ TARGET_LINK_LIBRARIES(capmgr-unit-tests PRIVATE
   Threads::Threads
 )
 ADD_TEST(NAME capmgr-unit COMMAND capmgr-unit-tests)
+# Interpose only in this test executable; production has no failure hook.
+TARGET_LINK_OPTIONS(capmgr-unit-tests PRIVATE
+  "LINKER:--wrap=sqlite3_file_control"
+)
 
 ADD_EXECUTABLE(capmgr-c-consumer c_consumer.c)
 TARGET_LINK_LIBRARIES(capmgr-c-consumer PRIVATE capmgr)

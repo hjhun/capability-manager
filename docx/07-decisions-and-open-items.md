@@ -566,8 +566,9 @@ All relevant writer connections must set SQLITE_FCNTL_PERSIST_WAL or a verified
 fixture keeper must prevent last-close sidecar deletion. Check the file-control
 return and test last writer close -> fresh RO open, as well as a live commit ->
 newer local query. Require existing readable DB/WAL/SHM; no immutable workaround.
-Current ordinary Catalog/Database writers do not comply with this lease contract;
-only explicitly cooperating fixture writers can participate in the first checkpoint.
+Ordinary Database writer connections set and check SQLITE_FCNTL_PERSIST_WAL,
+but do not yet cooperate with the external OFD generation lease. Only explicitly
+cooperating fixture maintainers can participate in the first checkpoint.
 Production replacement/migration and sidecar recreation remain disabled until wired.
 
 Authorization: generated TIDL binds and revalidates actual distinct MAIN/callback
@@ -729,4 +730,30 @@ No new SMACK rules, operational catalog changes or root worker jobs are involved
 The exact r2 native root fixture passed all eight cases; evidence is recorded
 in08. This scoped fixture acceptance does not close image endpoint/ancestor provisioning,
 original-peer/delegation/relabel behavior, same-UID/different-label/direct-open
-matrix, ordinary writer lease/PERSIST cooperation or production admission gates.
+matrix, ordinary writer OFD maintenance cooperation or production admission gates.
+
+
+### Writer persistent WAL prerequisite (development revision 2, accepted locally)
+
+Every Database::kWriter connection requires SQLITE_FCNTL_PERSIST_WAL on main
+with value1 after verified WAL mode, before Catalog schema/publication work.
+An unsupported or failed file control rejects construction and closes the handle;
+the diagnostic includes the operation, numeric return and sqlite3_errstr. The
+setting is per connection, not a cached result or persisted journal-mode pragma.
+READONLY/query_only, synchronous=FULL and ordinary SQLite checkpoint/reset behavior
+are unchanged. No production failure-injection hook is added.
+
+Local tests publish real catalog/FTS data, close all writers without keepers, then
+verify existing DB/WAL/SHM identities and fresh RO queries. Independent/reopened
+writers, both close orders, last-reader close, in-place commits and a TRUNCATE
+checkpoint are covered. Test-executable-only linker interposition injects NOTFOUND
+and IOERR at the setter; ordinary tests call real SQLite. Native runtime evidence
+must be recorded separately from host results.
+
+This does not promise sidecar creation for an empty/lazy connection, arbitrary
+crash/recovery RO availability, modes/labels, hostile-path safety or coordination
+of raw external SQLite/Python writers. Image provisioning, trusted pathname and
+generation, external OFD cooperation for replacement/migration/sidecar recreation,
+and actual DAC/SMACK direct-read subset plus real-label authorization remain open.
+Normal in-place WAL commits/checkpoints do not require an exclusive generation
+lease; persistence neither freezes file contents nor prohibits checkpointing.

@@ -141,6 +141,10 @@ TEST_F(WorkerCatalogTest,
 TEST_F(WorkerCatalogTest,
        MissingSidecarsRequireVerifiedRecreationBeforeReload) {
   writer.reset();
+  // Persistence keeps sidecars after ordinary close. Simulate explicit offline
+  // removal with no remaining connections; loader must still reject the gap.
+  ASSERT_TRUE(std::filesystem::remove(path_ + "-wal"));
+  ASSERT_TRUE(std::filesystem::remove(path_ + "-shm"));
   EXPECT_FALSE(std::filesystem::exists(path_ + "-wal"));
   EXPECT_THROW(LoadWorkerCatalog(directory, Policy()), Error);
   writer = std::make_unique<Catalog>(path_, Database::Access::kWriter);

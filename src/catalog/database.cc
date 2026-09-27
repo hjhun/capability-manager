@@ -65,6 +65,13 @@ Database::Database(const std::string& path, Access access) {
       Statement mode(db_, "PRAGMA journal_mode=WAL");
       if (!mode.Step() || mode.Text(0) != "wal")
         throw Error(ErrorCode::kDatabase, "WAL mode required");
+      int persistent = 1;
+      rc = sqlite3_file_control(db_, "main", SQLITE_FCNTL_PERSIST_WAL,
+                                &persistent);
+      if (rc != SQLITE_OK)
+        throw Error(ErrorCode::kDatabase, "SQLITE_FCNTL_PERSIST_WAL failed (" +
+                                              std::to_string(rc) +
+                                              "): " + sqlite3_errstr(rc));
       Exec("PRAGMA synchronous=FULL;");
     } else {
       Exec("PRAGMA query_only=ON;");
