@@ -150,7 +150,7 @@ int Server(const std::string& root,const std::string& endpoint,const std::string
   g_main_loop_unref(loop);registration.Close();return 0;
 }
 void PublicClient(const std::string& root,const std::string& endpoint,const std::string& mode) {
-  auto* previous=g_main_context_get_thread_default();const int loops=mode=="normal"?24:1;
+  auto* previous=g_main_context_get_thread_default();const int loops=mode=="normal"?24:4;
   size_t baseline=0;
   for(int i=0;i<loops;++i) {
     {
@@ -165,6 +165,7 @@ void PublicClient(const std::string& root,const std::string& endpoint,const std:
       }else Check(result!=0 && !client,"negative create must remain NULL");
     }
     Check(g_main_context_get_thread_default()==previous,"context restored on all exits");
+    if(mode!="normal")std::cout<<"NEGATIVE_ITERATION mode="<<mode<<" iteration="<<(i+1)<<" fds="<<Fds()<<std::endl;
     if(i==0)baseline=Fds();else Check(Fds()<=baseline,"client descriptor leak");
   }
   std::cout<<"PUBLIC_CLIENT_"<<mode<<"_PASS fd_count="<<Fds()<<std::endl;
@@ -280,7 +281,7 @@ void Run() {
     Check(std::filesystem::exists(std::string(scope.path)+"/ready"),"server ready deadline");
     const auto endpoint_path="/run/aul/rpcport/."+endpoint+"::CapabilityManager";
     try {
-      stage="client start/wait";Child client;client.Start({Self(),"client",scope.path,endpoint,mode});client.Wait();
+      stage="client start/wait";Child client;client.Start({Self(),"client",scope.path,endpoint,mode});client.Wait(45s);
     }catch(...) {
       // Let the server destroy Stub/unlink its endpoint before a forced stop.
       // Preserve the original failure; never count killed server as endpoint cleanup.

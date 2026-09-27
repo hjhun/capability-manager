@@ -1720,3 +1720,21 @@ Original accepted07 hash: a5bece1712e9d9e3a1a857df5031de2e0c6d212b177556e658f09e
 Publication07 hash: a6ead476cf19e3541cf7a213088bb0c29f97446c722a352d4f35d0d2f2a9db7c.
 Only heading/runtime-status text changed administratively after acceptance;
 all transport/development clauses remain unchanged.
+
+
+Read-transport publication: dde3d6b3b8d31193d51cf0bef9044d0badfa4567 on main,
+commit/push exit0 and exact remote ref verified.
+
+READ-TRANSPORT-STRESS-r1 ACCEPTED for fixture-only manifest
+/tmp/capmgr-read-transport-stress-r1.sha256, source SHA256
+26e64f1ee67aaa38ed6ab0c9a4c7df5ba268c730fdcbea368b053d5234bd5a47.
+Negative public modes repeat4 with45s owned-client bound; normal24 and180s outer
+watchdog are unchanged. read-transport-stress-native-build-r1.log checks1/1 and
+recompiles the fixture, remote0/transport0. read-transport-stress-native-r1.log
+checks source, protected path and binary SHA256
+a09bf1d2e327ebdf92ff33d60cf03f43c447356dd42949ae2589d38d74a91c10.
+All eight cases PASS. Deny/malformed/oversize FD counts are9/9/9/9; stalled/lost
+reply10/10/10/10. Counts remain stable within each process; differences across
+modes are not leak evidence. Eight server drains and owned normal exits, endpoint
+absence, REMOVED_SCOPE before FIXTURE_PASS; remote0/transport0, no retained scope.
+This extends failure-path fixture evidence only, not production policy or RPM12.
