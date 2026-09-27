@@ -415,3 +415,33 @@ was denied or unresolved by real Cynara (`peer-native-policy-dropped-uid-probe.l
 remote exit 0); it does not distinguish the underlying denial code or substitute
 for a full real-label policy matrix. The new credential_packet source is separate
 unreviewed WIP and excluded from this checkpoint.
+
+Connection-principal checkpoint `e38252ff56af6b5807b17391532251e566db0cf3`
+pushed to origin/main, exit 0; remote ref verified identical.
+
+P06-PACKET-r1 review requested for private seqpacket/ticket primitives. The packet
+receiver requires AF_UNIX SOCK_SEQPACKET, enabled credential/security ancillary,
+one PID/UID/GID cmsg and one matching security label, no truncation, no unexpected
+ancillary and a live connector. Unexpected SCM_RIGHTS FDs are closed before
+rejection. An inherited sender is rejected even while the connector stays alive.
+Tickets use 256 bits from getrandom, five-second expiry, a 64-ticket bound and
+atomic one-use consumption; destination is bound server-side. A valid packet from
+another connector cannot use a stolen ticket. No mount or public API is enabled;
+MAIN binding, actual policy recheck at mount, namespace transaction and rollback
+remain separate gates. Native standalone peer/packet tests passed 15/15 with no
+skips (`packet-native-tests-r1.log`, remote exit 0). This is private transport
+validation, not platform remount integration acceptance.
+
+P06-PACKET-r1 CHANGES_REQUESTED for the distinction between socket and current task
+label. r2 corrects credential_packet.hh and 07: SCM_SECURITY carries the sending
+socket's Smack label, not proof of the current sender task label after exec/relabel.
+No implementation bytes changed. Current-label validation/race strategy is an
+explicit production authorization gate. The tests cover payload truncation; a
+received ancillary truncation fixture remains pending. Host final CTest5/5 is in
+`packet-check-r2.log`; native 15/15 remains the exact tested implementation.
+
+P06-PACKET-r2 ACCEPTED by w1:pJ for the nine-file private packet/ticket scope.
+Only socket-label comments/contracts changed from r1; tested implementation bytes
+remain identical. No acceptance closes current-task label, MAIN binding, initial
+PID reuse, privilege, mount or rollback gates. TidlChannels and generator binding
+work are excluded from this publication.

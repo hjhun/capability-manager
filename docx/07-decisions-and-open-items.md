@@ -167,8 +167,14 @@ authorization, not permission to act in an arbitrary sender's namespace.
 
 The target 4.4 kernel exposes SO_PASSCRED/SCM_CREDENTIALS and SO_PASSSEC/SCM_SECURITY
 on an actual AF_UNIX SOCK_SEQPACKET connection. A repo-owned remount sidechannel
-can bind one bounded packet to kernel sender credentials and security label, then
+can bind one bounded packet to kernel sender credentials and its sending socket's
+security label, then
 match a short-lived one-use TIDL ticket bound to MAIN's principal and destination.
 This is the next implementation direction, not a completed transport or mount
 policy. Packet truncation, ancillary ambiguity, delegation, replay, disconnect,
 PID lifecycle, namespace access and rollback remain required negative tests.
+SCM_SECURITY under Smack carries the sending socket's label; it does not prove
+the current task label after exec/relabel while retaining that socket. Current
+task-label validation and its race strategy remain production authorization gates.
+Neither socket-label comparison nor Cynara's socket-derived identity alone closes
+this gate. No private packet/ticket acceptance enables remount.

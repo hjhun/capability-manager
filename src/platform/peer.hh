@@ -22,6 +22,8 @@ class Peer {
   int namespace_fd() const{return namespace_;}
   const std::string& security_label() const{return label_;}
   bool Alive() const;
+  // Compare two pinned connections to one live process and namespace object.
+  bool SameConnector(const Peer& other) const;
  private:
   Peer()=default;
   int socket_=-1,proc_=-1,namespace_=-1;

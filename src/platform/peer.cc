@@ -7,6 +7,7 @@
 #include <poll.h>
 #include <sstream>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <unistd.h>
 namespace capmgr {
 namespace {
@@ -56,6 +57,13 @@ bool Peer::Alive() const {
     if(poll(&socket,1,0)<0 || (socket.revents&(POLLHUP|POLLRDHUP|POLLERR|POLLNVAL)))return false;
     return StartTime(proc_)==start_time_;
   } catch(...) {return false;}
+}
+bool Peer::SameConnector(const Peer& other) const {
+  struct stat left{},right{};
+  return pid_==other.pid_ && uid_==other.uid_ && gid_==other.gid_ &&
+      label_==other.label_ && start_time_==other.start_time_ &&
+      fstat(namespace_,&left)==0 && fstat(other.namespace_,&right)==0 &&
+      left.st_dev==right.st_dev && left.st_ino==right.st_ino && Alive() && other.Alive();
 }
 Peer::~Peer() {
   if(namespace_>=0)close(namespace_);
