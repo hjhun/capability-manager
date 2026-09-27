@@ -403,3 +403,35 @@ RunResult seals delivery. Later session loss cannot erase the already confirmed
 absence proof. Unexpected comparison range errors become synthetic transport
 errors; allocation/length failures remain pending for retry. Admission validation
 matches WorkerCommand's depth64 and nonempty cli: suffix checks.
+
+### Bounded dispatcher close foundation (development revision 1, accepted)
+
+Private Close returns DONE, BUSY or IO_PENDING. An active result/changed/foreach
+callback yields BUSY without changing admission or dispatch. Otherwise Close
+atomically closes admission and callback dispatch, requests cooperative worker
+shutdown and waits at most its selected budget (100ms public default; private
+budgets clamped to0..1000ms). Scheduler/syscall delays are not real-time guarantees.
+IO_PENDING maps to the existing public IO error, retaining the handle, jobs,
+process-wide capacity and borrowed callback data for destroy retry. A closing
+handle rejects execute before parsing/catalog lookup or side-effect-free backend
+Admit. No public declaration, symbol or numeric error changes.
+
+Terminal queueing, callback completion and worker thread exit are separate states.
+A terminal token rejects cancel immediately, but releases capacity only after
+callback completion and worker join; destroy may suppress queued callbacks while
+retaining ownership until join. Callback-active covers only the callback itself,
+never the post-callback join. Join occurs outside the callback/cancel mutex only
+after a thread-exit future is ready: set_value_at_thread_exit readiness follows
+thread-local destruction (C++ futures.promise), whereas a work-body-done flag does
+not. Work captures are destroyed before registering completion. Dispatcher-thread
+TLS is covered by the same exit readiness rule. There is no detach fallback;
+unresolved object destruction is a private programming error and fail-stops.
+Private backend object destructors must be nonblocking; their execution/cleanup
+belongs in the tracked worker or the future retained coordinator, not delete.
+
+This checkpoint preserves legacy mock/Action framed-work terminal synthesis.
+Thread return/exception proves neither managed CLI child absence nor durable
+WorkerSession Complete. WorkerResult must remain disconnected from that path
+until a distinct retained-owner admission/coordinator path is reviewed. Managed
+cleanup ownership, proof-plus-thread lifetime, nonblocking backend cancellation,
+terminal retry and journal uncertainty are the next implementation scope.

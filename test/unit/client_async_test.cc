@@ -185,3 +185,38 @@ TEST_F(CatalogTest, TerminalActionAckRejectedButIdenticalCliResultPreserved) {
     EXPECT_EQ(status,0);
   }
 }
+
+TEST_F(CatalogTest, DestroyIoRetainsHandleAndRejectsBeforeBackendAdmission) {
+  class HeldBackend:public ExecutionBackend {
+   public:
+    std::promise<void> release,entered;
+    std::shared_future<void> allowed=release.get_future().share();
+    int admissions=0;
+    void Admit(const Entry&,const Request&) override{++admissions;}
+    std::string Execute(const Entry&,const Request& request,const std::atomic<bool>&,
+                        const Dispatcher::Emit&) override {
+      entered.set_value();allowed.wait();
+      return Json{{"jsonrpc","2.0"},{"id",request.id},{"result",0}}.dump();
+    }
+  };
+  Catalog writer(path_,Database::Access::kWriter);Publish(writer,"pkg.one",{Make("test","pkg.one",Kind::kCli)});
+  Gate gate(path_);auto backend=std::make_shared<HeldBackend>();capmgr_client_h client=nullptr;
+  ASSERT_EQ(CreateClient(gate,backend,&client),0);std::atomic<int> callbacks=0;
+  auto callback=+[](uint64_t,const char*,bool,void* p){++*static_cast<std::atomic<int>*>(p);};
+  auto request=Json{{"jsonrpc","2.0"},{"id",1},{"method","tools/call"},
+    {"params",{{"name","cli:test"},{"arguments",Json::object()}}}}.dump();
+  uint64_t token=0;
+  ASSERT_EQ(capmgr_client_execute(client,request.c_str(),callback,&callbacks,&token),0);
+  EXPECT_EQ(backend->entered.get_future().wait_for(2s),std::future_status::ready);
+  auto before=std::chrono::steady_clock::now();
+  EXPECT_EQ(capmgr_client_destroy(client),CAPMGR_ERROR_IO);
+  EXPECT_LT(std::chrono::steady_clock::now()-before,500ms);
+  token=99;
+  EXPECT_EQ(capmgr_client_execute(client,request.c_str(),callback,&callbacks,&token),CAPMGR_ERROR_BUSY);
+  EXPECT_EQ(token,0u);EXPECT_EQ(backend->admissions,1);EXPECT_EQ(callbacks,0);
+  EXPECT_EQ(capmgr_client_set_changed_callback(client,nullptr,nullptr),CAPMGR_ERROR_BUSY);
+  EXPECT_EQ(capmgr_client_destroy(client),CAPMGR_ERROR_IO);
+  backend->release.set_value();
+  int status;do{status=capmgr_client_destroy(client);}while(status==CAPMGR_ERROR_IO);
+  EXPECT_EQ(status,0);EXPECT_EQ(callbacks,0);
+}

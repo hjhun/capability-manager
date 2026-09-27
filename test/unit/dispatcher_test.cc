@@ -23,10 +23,10 @@ TEST(Dispatcher, ActiveCallbackRejectsReplaceRemoveAndExternalDestroyWithoutClos
   ASSERT_EQ(old.entered.get_future().wait_for(2s),std::future_status::ready);
   EXPECT_FALSE(dispatcher.SetChanged(nullptr,nullptr));
   EXPECT_FALSE(dispatcher.SetChanged(Blocked::Changed,nullptr));
-  EXPECT_FALSE(dispatcher.Close());old.release.set_value();
+  EXPECT_EQ(dispatcher.Close(),Dispatcher::CloseResult::kBusy);old.release.set_value();
   for(int i=0;i<200 && !dispatcher.SetChanged(nullptr,nullptr);++i)std::this_thread::sleep_for(1ms);
   ASSERT_TRUE(dispatcher.SetChanged(nullptr,nullptr));
-  dispatcher.Changed(2);EXPECT_TRUE(dispatcher.Close());EXPECT_EQ(old.calls,1);
+  dispatcher.Changed(2);EXPECT_EQ(dispatcher.Close(),Dispatcher::CloseResult::kDone);EXPECT_EQ(old.calls,1);
 }
 TEST(Dispatcher, CallbackCanCancelButCannotDestroyOrReplaceItself) {
   Dispatcher dispatcher;
@@ -34,7 +34,7 @@ TEST(Dispatcher, CallbackCanCancelButCannotDestroyOrReplaceItself) {
   auto callback=+[](uint64_t token,const char* response,bool event,void* data) {
     auto& state=*static_cast<State*>(data);
     if(event) {
-      state.busy=!state.dispatcher->Close() && !state.dispatcher->SetChanged(nullptr,nullptr);
+      state.busy=(state.dispatcher->Close()==Dispatcher::CloseResult::kBusy) && !state.dispatcher->SetChanged(nullptr,nullptr);
       state.dispatcher->Cancel(token);
     } else {state.cancelled=nlohmann::json::parse(response)["result"]=="cancelled";state.done.set_value();}
   };
@@ -44,7 +44,7 @@ TEST(Dispatcher, CallbackCanCancelButCannotDestroyOrReplaceItself) {
   },"id",callback,&state);
   ASSERT_EQ(state.done.get_future().wait_for(2s),std::future_status::ready);
   EXPECT_TRUE(state.busy);EXPECT_TRUE(state.cancelled);
-  while(!dispatcher.Close())std::this_thread::yield();
+  while(dispatcher.Close()!=Dispatcher::CloseResult::kDone)std::this_thread::yield();
 }
 TEST(Dispatcher, SuccessfulDestroyCancelsWorkersAndPreventsFutureCallbacks) {
   Dispatcher dispatcher;std::atomic<int> calls=0;
@@ -54,7 +54,7 @@ TEST(Dispatcher, SuccessfulDestroyCancelsWorkersAndPreventsFutureCallbacks) {
     return std::string("finished");
   },i,callback,&calls);
   EXPECT_THROW(dispatcher.Execute([](const auto&,const auto&){return std::string("x");},9,callback,&calls),Error);
-  EXPECT_TRUE(dispatcher.Close());EXPECT_EQ(calls,0);
+  EXPECT_EQ(dispatcher.Close(),Dispatcher::CloseResult::kDone);EXPECT_EQ(calls,0);
 }
 TEST(Dispatcher, TokenExhaustionDoesNotWrapAndExceptionsHaveOneTerminalReply) {
   Dispatcher dispatcher(UINT64_MAX);std::promise<std::string> response;
@@ -66,7 +66,7 @@ TEST(Dispatcher, TokenExhaustionDoesNotWrapAndExceptionsHaveOneTerminalReply) {
   EXPECT_THROW(dispatcher.Execute(work,"id",cb,&response),Error);
   auto future=response.get_future();ASSERT_EQ(future.wait_for(2s),std::future_status::ready);
   auto json=nlohmann::json::parse(future.get());EXPECT_EQ(json["id"],INT64_MIN);EXPECT_TRUE(json.contains("error"));
-  while(!dispatcher.Close())std::this_thread::yield();
+  while(dispatcher.Close()!=Dispatcher::CloseResult::kDone)std::this_thread::yield();
 }
 
 TEST(Dispatcher, GlobalLimitAndDuplicateIdsAreIndependentOfClientTokens) {
@@ -81,8 +81,8 @@ TEST(Dispatcher, GlobalLimitAndDuplicateIdsAreIndependentOfClientTokens) {
   first.Execute(work,"0",callback,&calls);
   second.Execute(work,0,callback,&calls);second.Execute(work,1,callback,&calls);
   EXPECT_THROW(third.Execute(work,0,callback,&calls),Error);
-  EXPECT_TRUE(first.Close());EXPECT_TRUE(second.Close());
-  EXPECT_NO_THROW(third.Execute(work,0,callback,&calls));EXPECT_TRUE(third.Close());
+  EXPECT_EQ(first.Close(),Dispatcher::CloseResult::kDone);EXPECT_EQ(second.Close(),Dispatcher::CloseResult::kDone);
+  EXPECT_NO_THROW(third.Execute(work,0,callback,&calls));EXPECT_EQ(third.Close(),Dispatcher::CloseResult::kDone);
 }
 
 TEST(Dispatcher, UnsupportedCancellationIsNeverReportedAsSuccess) {
@@ -95,7 +95,7 @@ TEST(Dispatcher, UnsupportedCancellationIsNeverReportedAsSuccess) {
   auto token=dispatcher.Execute(work,"id",callback,nullptr,false);
   try {dispatcher.Cancel(token);FAIL();}
   catch(const Error& error){EXPECT_EQ(error.code(),ErrorCode::kUnsupported);}
-  EXPECT_TRUE(dispatcher.Close());
+  EXPECT_EQ(dispatcher.Close(),Dispatcher::CloseResult::kDone);
 }
 
 TEST(Dispatcher, MalformedAfterAckAndMissingTerminalRetireWithOneFailure) {
@@ -113,7 +113,7 @@ TEST(Dispatcher, MalformedAfterAckAndMissingTerminalRetireWithOneFailure) {
     },1,callback,&state);
     auto future=state.done.get_future();ASSERT_EQ(future.wait_for(2s),std::future_status::ready);
     EXPECT_EQ(future.get()["error"]["data"]["cause"],malformed?"malformed response":"backend ended without terminal response");
-    while(!dispatcher.Close())std::this_thread::yield();
+    while(dispatcher.Close()!=Dispatcher::CloseResult::kDone)std::this_thread::yield();
     EXPECT_EQ(state.calls,2);
   }
 }
@@ -140,7 +140,7 @@ TEST(Dispatcher, ClosedEventReleasesCapacityAndDropsLaterFrames) {
     catch(const Error&) {std::this_thread::sleep_for(1ms);}
   }
   EXPECT_TRUE(admitted);
-  while(!dispatcher.Close())std::this_thread::yield();
+  while(dispatcher.Close()!=Dispatcher::CloseResult::kDone)std::this_thread::yield();
   EXPECT_EQ(state.calls,2);
 }
 TEST(Dispatcher, DestroyAfterAcknowledgementCancelsAndSuppressesLateEvents) {
@@ -155,7 +155,7 @@ TEST(Dispatcher, DestroyAfterAcknowledgementCancelsAndSuppressesLateEvents) {
     if(++*state.calls==1)state.ack->set_value();
   },&state);
   ASSERT_EQ(ack.get_future().wait_for(2s),std::future_status::ready);
-  while(!dispatcher.Close())std::this_thread::yield();
+  while(dispatcher.Close()!=Dispatcher::CloseResult::kDone)std::this_thread::yield();
   EXPECT_EQ(calls,1);
 }
 
@@ -173,7 +173,7 @@ TEST(Dispatcher, QueuedTerminalCannotBeCancelledWhileAnotherCallbackBlocks) {
     try {dispatcher.Cancel(token);ADD_FAILURE()<<"Completed token accepted cancellation";}
     catch(const Error& error){EXPECT_EQ(error.code(),ErrorCode::kNotFound);}
   }
-  blocker.release.set_value();while(!dispatcher.Close())std::this_thread::yield();
+  blocker.release.set_value();while(dispatcher.Close()!=Dispatcher::CloseResult::kDone)std::this_thread::yield();
 }
 
 TEST(Dispatcher, PostTerminalEmitDoesNotWaitBehindSaturatedQueue) {
@@ -196,7 +196,115 @@ TEST(Dispatcher, PostTerminalEmitDoesNotWaitBehindSaturatedQueue) {
       full.set_value();while(!cancel)std::this_thread::sleep_for(1ms);
     },2,+[](uint64_t,const char*,bool,void*){},nullptr);
     if(finished.get_future().wait_for(1s)!=std::future_status::ready)_exit(4);
-    blocker.release.set_value();while(!dispatcher.Close())std::this_thread::yield();
+    blocker.release.set_value();while(dispatcher.Close()!=Dispatcher::CloseResult::kDone)std::this_thread::yield();
     _exit(0);
   }()),testing::ExitedWithCode(0),"");
+}
+
+TEST(Dispatcher, BoundedCloseRetainsUnfinishedWorkerAndRejectsAdmissionUntilRetry) {
+  ASSERT_EXIT(([] {
+    alarm(5);Dispatcher dispatcher;std::promise<void> release,entered;
+    auto allowed=release.get_future().share();std::atomic<int> calls=0;
+    auto token=dispatcher.Execute([&](const auto&,const auto&) {
+      entered.set_value();allowed.wait();return std::string(R"({"jsonrpc":"2.0","id":1,"result":0})");
+    },1,+[](uint64_t,const char*,bool,void* p){++*static_cast<std::atomic<int>*>(p);},&calls);
+    if(entered.get_future().wait_for(1s)!=std::future_status::ready)_exit(2);
+    auto before=std::chrono::steady_clock::now();
+    if(dispatcher.Close(10ms)!=Dispatcher::CloseResult::kIoPending)_exit(3);
+    if(std::chrono::steady_clock::now()-before>200ms)_exit(4);
+    try{dispatcher.CheckAdmission();_exit(5);}catch(const Error& e){if(e.code()!=ErrorCode::kBusy)_exit(6);}
+    dispatcher.Cancel(token);
+    if(dispatcher.Close(10ms)!=Dispatcher::CloseResult::kIoPending)_exit(7);
+    release.set_value();
+    if(dispatcher.Close(1s)!=Dispatcher::CloseResult::kDone || calls!=0)_exit(8);
+    _exit(0);
+  }()),testing::ExitedWithCode(0),"");
+}
+TEST(Dispatcher, CallbackCompletionDoesNotHideAnUnfinishedWorkerBehindBusy) {
+  ASSERT_EXIT(([] {
+    alarm(5);Dispatcher dispatcher;std::promise<void> release,callback;
+    auto allowed=release.get_future().share();
+    dispatcher.ExecuteFrames([&](const auto&,const auto& emit) {
+      emit({R"({"jsonrpc":"2.0","id":1,"result":0})",false,true});allowed.wait();
+    },1,+[](uint64_t,const char*,bool,void* p){static_cast<std::promise<void>*>(p)->set_value();},&callback);
+    if(callback.get_future().wait_for(1s)!=std::future_status::ready)_exit(2);
+    Dispatcher::CloseResult result;
+    do{result=dispatcher.Close(10ms);}while(result==Dispatcher::CloseResult::kBusy);
+    if(result!=Dispatcher::CloseResult::kIoPending)_exit(3);
+    release.set_value();if(dispatcher.Close(1s)!=Dispatcher::CloseResult::kDone)_exit(4);
+    _exit(0);
+  }()),testing::ExitedWithCode(0),"");
+}
+TEST(Dispatcher, WorkerAndDispatcherThreadLocalDestructionRemainBounded) {
+  ASSERT_EXIT(([] {
+    alarm(8);
+    struct HeldTls {
+      std::shared_future<void> released;std::promise<void>* entered;
+      ~HeldTls(){entered->set_value();released.wait();}
+    };
+    for(bool callback_thread:{false,true}) {
+      Dispatcher dispatcher;std::promise<void> release,entered;
+      auto allowed=release.get_future().share();
+      if(callback_thread) {
+        std::promise<void> callback;
+        struct State {std::shared_future<void> allowed;std::promise<void>* entered;std::promise<void>* callback;} state{allowed,&entered,&callback};
+        dispatcher.SetChanged(+[](uint64_t,void* p){
+          auto& state=*static_cast<State*>(p);
+          thread_local std::unique_ptr<HeldTls> held;
+          held.reset(new HeldTls{state.allowed,state.entered});state.callback->set_value();
+        },&state);
+        dispatcher.Changed(1);
+        if(callback.get_future().wait_for(1s)!=std::future_status::ready)_exit(5);
+        Dispatcher::CloseResult result;
+        do{result=dispatcher.Close(10ms);}while(result==Dispatcher::CloseResult::kBusy);
+        if(result!=Dispatcher::CloseResult::kIoPending)_exit(6);
+        if(entered.get_future().wait_for(1s)!=std::future_status::ready)_exit(7);
+        release.set_value();if(dispatcher.Close(1s)!=Dispatcher::CloseResult::kDone)_exit(8);
+      } else {
+        dispatcher.Execute([&](const auto&,const auto&) {
+          thread_local std::unique_ptr<HeldTls> held;
+          held.reset(new HeldTls{allowed,&entered});
+          return std::string(R"({"jsonrpc":"2.0","id":1,"result":0})");
+        },1,+[](uint64_t,const char*,bool,void*){},nullptr);
+        if(entered.get_future().wait_for(1s)!=std::future_status::ready)_exit(2);
+        Dispatcher::CloseResult result;
+        do{result=dispatcher.Close(10ms);}while(result==Dispatcher::CloseResult::kBusy);
+        if(result!=Dispatcher::CloseResult::kIoPending)_exit(3);
+        release.set_value();if(dispatcher.Close(1s)!=Dispatcher::CloseResult::kDone)_exit(4);
+      }
+    }
+    _exit(0);
+  }()),testing::ExitedWithCode(0),"");
+}
+TEST(Dispatcher, PendingCloseRetainsProcessCapacity) {
+  ASSERT_EXIT(([] {
+    alarm(5);Dispatcher first,second,third;std::promise<void> release;
+    auto allowed=release.get_future().share();
+    auto work=[&](const auto&,const auto&){allowed.wait();return std::string(R"({"jsonrpc":"2.0","id":1,"result":0})");};
+    auto callback=+[](uint64_t,const char*,bool,void*){};
+    first.Execute(work,1,callback,nullptr);first.Execute(work,2,callback,nullptr);
+    second.Execute(work,3,callback,nullptr);second.Execute(work,4,callback,nullptr);
+    if(first.Close(1ms)!=Dispatcher::CloseResult::kIoPending)_exit(2);
+    try{third.Execute(work,5,callback,nullptr);_exit(3);}
+    catch(const Error& e){if(e.code()!=ErrorCode::kLimit)_exit(4);}
+    release.set_value();
+    if(first.Close(1s)!=Dispatcher::CloseResult::kDone)_exit(5);
+    third.Execute(work,5,callback,nullptr);
+    while(second.Close(1s)!=Dispatcher::CloseResult::kDone){}
+    while(third.Close(1s)!=Dispatcher::CloseResult::kDone){}
+    _exit(0);
+  }()),testing::ExitedWithCode(0),"");
+}
+TEST(Dispatcher, BlockedResultCallbackKeepsDestroyBusyWithoutClosingAdmission) {
+  Dispatcher dispatcher;Blocked blocked;
+  dispatcher.Execute([](const auto&,const auto&){return std::string(R"({"jsonrpc":"2.0","id":1,"result":0})");},
+    1,+[](uint64_t,const char*,bool,void* p){Blocked::Changed(1,p);},&blocked);
+  ASSERT_EQ(blocked.entered.get_future().wait_for(2s),std::future_status::ready);
+  auto before=std::chrono::steady_clock::now();
+  EXPECT_EQ(dispatcher.Close(),Dispatcher::CloseResult::kBusy);
+  EXPECT_LT(std::chrono::steady_clock::now()-before,50ms);
+  EXPECT_NO_THROW(dispatcher.CheckAdmission());
+  EXPECT_FALSE(dispatcher.SetChanged(nullptr,nullptr));
+  blocked.release.set_value();
+  while(dispatcher.Close()!=Dispatcher::CloseResult::kDone)std::this_thread::yield();
 }

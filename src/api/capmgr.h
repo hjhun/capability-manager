@@ -40,6 +40,8 @@ typedef void (*capmgr_changed_cb)(uint64_t revision, void* user_data);
 /* No resource mounts. On any failure *client is NULL. */
 CAPMGR_API int capmgr_client_create(capmgr_client_h* client);
 /* BUSY during callbacks leaves handle open with no partial destruction.
+ * IO retains the handle with admission/callback dispatch closed; keep callback
+ * user_data alive and retry destroy. No worker state is freed while live.
  * Successful destroy ends all callback lifetime. NULL is invalid. */
 CAPMGR_API int capmgr_client_destroy(capmgr_client_h client);
 /* Caller serializes calls on one handle. Foreach callback must not re-enter it.

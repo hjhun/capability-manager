@@ -56,7 +56,9 @@ int capmgr_client_create(capmgr_client_h* client) {
 int capmgr_client_destroy(capmgr_client_h client) {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
   return Guard([&] {
-    if(!client->dispatcher.Close())throw capmgr::Error(capmgr::ErrorCode::kBusy,"Callback active");
+    auto result=client->dispatcher.Close();
+    if(result==capmgr::Dispatcher::CloseResult::kBusy)throw capmgr::Error(capmgr::ErrorCode::kBusy,"Callback active");
+    if(result==capmgr::Dispatcher::CloseResult::kIoPending)throw capmgr::Error(capmgr::ErrorCode::kIo,"Cleanup pending");
     delete client;
   });
 }
@@ -109,6 +111,7 @@ int capmgr_client_execute(capmgr_client_h client, const char* request,
   if (token) *token=0;
   if (!client || !request || !callback || !token) return CAPMGR_ERROR_INVALID_ARGUMENT;
   return Guard([&] {
+    client->dispatcher.CheckAdmission();
     auto parsed=capmgr::ParseRequest(request);
     auto entry=client->catalog.GetPrivate(parsed.capability_id);
     if(entry.kind!=capmgr::Kind::kCli && entry.kind!=capmgr::Kind::kAction)

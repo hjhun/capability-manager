@@ -1357,3 +1357,42 @@ Publication scope is the reviewed6files plus08; generated artifacts/logs exclude
 Next integration gate is retained cleanup coordination with Dispatcher/API destroy:
 existing framed work returning/throwing while cleanup is uncertain would emit an
 early synthetic terminal and must not be used as the production adapter.
+
+## P06 bounded destroy foundation (2026-09-28, review pending)
+
+Prior WorkerResult-r2 was committed/pushed as
+1b5cd464f3c9504fb63845f54307f55a19fe4a29 on main; push exit0 and exact
+origin/main were verified at publication. The next eight-file CLOSE-BOUNDS-r1
+manifest is /tmp/capmgr-close-bounds-r1.sha256 (ephemeral local evidence).
+It changes private Close to DONE/BUSY/IO_PENDING, preserves handles/capacity on IO,
+rejects new execute before backend Admit, and moves observed-exited joins outside
+the active callback interval. Public symbols/declarations/errors are unchanged;
+header changes document the existing retained-IO lifetime contract.
+
+Commands: cmake --build build --parallel2 then ctest --test-dir build
+--output-on-failure: close-bounds-host-r3.log exit0, CTest8/8 PASS. R1/r2 host logs
+are earlier successful iterations, superseded by exact r3 source. In the protected
+root0700 /opt/usr/capmgr-bootstrap-build-p4h4og7o/source scope, sha256sum -c
+verifies8/8; cmake --build build --target capmgr-unit-tests capmgr-c-consumer
+--parallel1, capmgr-unit-tests and capmgr-c-consumer complete with remote0 and
+transport0 in close-bounds-native-r1.log. Native49/49 GTests PASS (33 CatalogTest,
+16 Dispatcher); native clock-skew warnings are retained alongside explicit affected
+source recompiles. close-bounds-exports-r1.log lists the unchanged12 C exports.
+
+Tests cover bounded IO/retry, closed admission before Admit, retained process
+capacity, callback BUSY without mutation, post-callback unfinished workers, and
+both worker and dispatcher blocked thread-local destructors. Exit readiness uses
+std::promise::set_value_at_thread_exit, whose shared-state readiness follows TLS
+destruction (C++ draft futures.promise); a body-done flag is not equivalent.
+No test claims real-time scheduling or bounded arbitrary backend destructors.
+
+This is a legacy thread-lifetime foundation, not managed child-absence proof.
+WorkerResult remains unwired; a distinct retained-owner path and concrete
+Session/journal coordinator remain OPEN. No RPM/installed Release10, root workload,
+production backend, authentication or ARM result is inferred from these checks.
+
+P06-CLOSE-BOUNDS-r1 ACCEPTED by w1:pJ for exact8files and host/native evidence.
+Accepted07 hash: 56f9f46372f6453444e5808d4307297a0cab76a23f6105f1f6fd47d3d8904851.
+The publication-only heading edit marks acceptance without changing clauses.
+Managed cleanup/journal proof remains the next scope; legacy thread exit is not
+child-absence evidence. Publication includes those8files plus08 bookkeeping.

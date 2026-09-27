@@ -18,6 +18,7 @@ int CreateClient(AccessGate& gate, capmgr_client_h* client) noexcept;
 namespace capmgr {
 class ExecutionBackend {
  public:
+  // Destruction is nonblocking; execution/cleanup belongs to tracked work.
   virtual ~ExecutionBackend()=default;
   // Admission authorization/registered binding happens synchronously; failures
   // must not launch work. Worker must honor cancellation and a bounded deadline.
