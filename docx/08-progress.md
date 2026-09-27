@@ -834,3 +834,25 @@ active fixture rule pairs and no remaining data scopes (db-access-kernel-rule-au
 remote0); each journal planned three distinct pairs. Root-only receipts remain.
 No production DB policy/template, privilege provisioning or public create/remount
 was enabled. Broker journal source WIP is excluded from this package checkpoint.
+
+
+DB fixture checkpoint `add9c3bcfd5f9e37f69f2211fd6aa3d4f953cfe6` on main
+pushed successfully and matched the remote ref (exit0).
+P04-BROKER-JOURNAL-r2 ACCEPTED by w1:pJ for the four-file private durable store;
+implementation SHA256 `82f8dc74a6756a73694795405d432dfccade62e1b2851d37b96e96938994c49a`.
+Generation/reservation writes fsync the file, rename and fsync the directory before
+returning admission. Active/uncertain/corrupt/missing/partial state blocks restart;
+there is no reset or inferred worker-cleanup path. Four global slots and monotonic
+64-bit tokens are serialized with getters; snapshots own their data. Private
+completion methods require the caller's trusted normal-cleanup proof. Exact root
+storage provenance/image seed and caller quiescence at destruction remain explicit
+preconditions. No worker/front-end or production service is connected yet.
+Review r1 found unsynchronized access and special-mode acceptance; r2 fixed both
+and added concurrent admission plus write/file-fsync/rename/dir-fsync failure tests.
+Host `cmake --build build --target check -j2` CTest6/6 PASS
+(broker-journal-host-r2.log, exit0); exact-source native g++ build and11 journal
+GoogleTests PASS (broker-journal-native-r2.log, remote0). Earlier r1 native8/8 is
+separate; initial r1 GTest same-line macro compile failure was corrected before
+successful host retries. Installed RPM remains Release8 and excludes this source
+checkpoint. Actual worker-crash/live-or-stuck-PID1 recovery is NOT_RUN, not proved
+by the journal's separate-process persistence fixture.
