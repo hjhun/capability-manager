@@ -83,7 +83,7 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-Reviewed development checkpoints through `8f100b8d8a98f6adcebe1b11fef6c7abf5bad4da`
+Reviewed development checkpoints through `75145f4dc005a5b732ce4c046b7c470bd579607e`
 are committed and pushed on main, with exact remote refs verified. The chronological
 records below retain earlier failures and pending states as historical evidence;
 later entries supersede their status. Raw evidence/builds/dependencies are excluded
@@ -1655,3 +1655,68 @@ primitive. Those are next integration gates. Production create stays denied.
 Accepted07 hash: c0081a32f5f49b97eef149561fb927b0d1ff070026adc6f2c0afb4f54a3330fb.
 Publication07 hash: 6c81e32fed1c8d1a8f2bbbd05755d9d49ba4f79fb9935003df4305382a4307b4.
 Only the review-status heading changed after acceptance.
+
+
+Read-grant publication: 75145f4dc005a5b732ce4c046b7c470bd579607e on main,
+commit/push exit0, exact remote ref verified. Apache LICENSE remains SHA256
+c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4.
+
+## P06 optional TIDL read transport (2026-09-28, integration in progress)
+
+READ-TRANSPORT-r1 exact11-file manifest /tmp/capmgr-read-transport-r1.sha256
+received pre-execution source/safety ACCEPTED only. It adds a same-proxy nonce
+confirmation, private uniterated client context and owner-context service timer;
+no production PlatformAccessGate/factory or package activation. New generated
+ConfirmCatalog method10 leaves0..9 unchanged. Method checker positive exit0 and
+intentional temporary renumbering negative exit1 are in
+read-transport-method-ids-r1.log. Host check-r1 and native check-r1 CTest8/8 PASS;
+native optional adapter/probe compiled, exact11/11 hashes, remote0/transport0.
+
+First native root fixture FAILED (read-transport-native-fixture-r1.log): exact
+source/binary/owner-mode checks passed, then client Connect threw before any grant.
+Dlog records AUL PrepareStub -13 for a non-daemon test endpoint. Target-version
+rpc-port1.21.17 release6292196 treats only d::/ud:: names as daemon; registration
+alone does not make an arbitrary application endpoint installed. No private-context
+or Cynara failure is inferred from this pre-connect error. Child was reaped and
+owned catalog scope removed; remote1/transport0, no runtime PASS.
+
+The forced server stop left its task-owned hashed socket endpoint. Actual
+libaul get_path identified /run/aul/rpcport/.0@6916fd2540efe6712107a858e82be4983a559f4d;
+inspection confirmed root socket dev20/inode13628357, single link. Owner confirmed
+ECONNREFUSED and unchanged identity before unlinking ONLY that fixture entry.
+read-transport-endpoint-inspection-r1.log and endpoint-cleanup-r1.log record this
+additional cleanup; scope deletion alone was not complete endpoint cleanup.
+
+R2 uses a unique d:: fixture endpoint, per-stage/native-type diagnostics and
+process-registration cleanup. Client failure first asks the server to drain and
+destroy Stub; success requires endpoint removal, while failed cleanup reports its
+exact retained path. Only fixture/doc bytes differ from r1; exact manifest is
+/tmp/capmgr-read-transport-r2.sha256. Native check-r2 verifies11/11, rebuilds the
+changed fixture and passes CTest8/8, remote0/transport0. Root rerun awaits narrow
+source/safety re-review; no runtime acceptance is inferred here.
+
+
+READ-TRANSPORT-r2 final runtime/publication ACCEPTED by w1:pJ after the separately
+accepted bounded rerun. read-transport-native-fixture-r2.log checks exact11/11,
+binary SHA256a6a7f7898b73972498f40657716f0da38070729566792209d01e95fff656c44f,
+root0755 executable and protected root0700 build scope, then runs under180s watchdog.
+All eight cases PASS: normal24 create/local-query/destroy with stable FD baseline;
+raw wrong-instance/replay/expiry; actual four split sockets with each of the two
+write halves shut down; fixed UID-rule denial; malformed and oversized responses;
+stalled context; and consumed confirmation with lost reply. Both split cases
+observe read_revents0,0 immediately after write-half shutdown, yet Confirm fails.
+This experimentally confirms why read-FD polling alone is insufficient.
+
+All eight servers report GRANTS_SERVICES_DRAINED; parent verifies normal child
+exit/reap and endpoint absence. REMOVED_SCOPE precedes FIXTURE_PASS, with no
+retained scope/endpoint, remote0/transport0. No global policy, operational DB,
+CLI/root-worker job, package install or production access route was enabled.
+Negative modes each run once; their FD counts across different processes prove
+neither repeated-failure leak nor leak freedom. A separate negative stress revision
+will test that boundary. Real same-UID/different-label/direct-open and writer
+cooperation remain required before production admission.
+
+Original accepted07 hash: a5bece1712e9d9e3a1a857df5031de2e0c6d212b177556e658f09ed69751368b.
+Publication07 hash: a6ead476cf19e3541cf7a213088bb0c29f97446c722a352d4f35d0d2f2a9db7c.
+Only heading/runtime-status text changed administratively after acceptance;
+all transport/development clauses remain unchanged.

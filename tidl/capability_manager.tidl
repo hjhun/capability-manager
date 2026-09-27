@@ -10,4 +10,5 @@ interface CapabilityManager {
   void Changed(string catalog_revision) delegate;
   int RegisterChanged(Changed callback);
   bool UnregisterChanged(int callback_id);
+  int ConfirmCatalog(string nonce);
 }

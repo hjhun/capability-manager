@@ -686,3 +686,47 @@ successful validation can release the issuer lease before reply serialization
 because the compliant client already holds its own. Lost reply still fails create.
 Generated MAIN/callback and real policy checks must precede both Issue and Confirm;
 this private class neither authenticates callers nor enables production create.
+
+### TIDL catalog handoff adapter (development revision 2, fixture accepted)
+
+Private ConfirmCatalog is appended as method10; existing generated methods0..9
+retain their wire numbers, checked in both generated headers. The optional
+CAPMGR_BUILD_TIDL_TRANSPORT adapter is not selected by PlatformAccessGate and has
+no installed production factory/service. A provisioned endpoint/policy remains
+trusted configuration, never a public caller argument.
+
+TidlReadChannel constructs and pushes a new private GMainContext before proxy
+construction/ConnectSync. One creator thread owns it and never iterates or shares
+it. Listener outlives the proxy; Authorize parses CMG1, Confirm matches CMR1 and
+uses the retained nonce on that same proxy, and Finish disconnects/destroys proxy
+before popping/unrefing the context. Any error closes the channel; it cannot
+reconnect/reuse. CheckSameLive reports only known lifecycle loss, not split-socket
+liveness. Failed create owns cleanup in its caller, and no proxy survives C-handle
+publication. This is a deliberately narrow context-ownership premise, not a claim
+that GLib source destruction joins arbitrary cross-thread callbacks.
+
+TidlReadService relies on the generated pre-parcel MAIN/callback/Cynara checks
+and adds a fixed raw UID/GID/socket-label rule. Each ServiceBase owns one grant
+and a100ms expiry source attached to its dispatch context. Its creator thread
+serializes all methods/timer/destruction; OnTerminate destroys/unrefs the source
+before revoking the grant, and destruction repeats that idempotently. No I/O or
+join occurs on termination beyond owned-descriptor close. Delayed context dispatch
+retains grants/budget past the5s confirmation deadline; Confirm still denies.
+
+The explicit root fixture creates only a protected uniquely named catalog under
+/opt/usr, checks its own executable ancestry and scope dev/inode before cleanup,
+and owns/reaps each spawned server/client. The fixture uses a unique registered
+d:: daemon endpoint, drains the server on client failure and checks endpoint
+removal after normal Stub destruction. It uses actual socket-derived Cynara
+and real file labels for a root/User::Shell positive route, with a deliberately
+mismatched UID rule negative. It adds repeated create/local query/destroy, raw
+wrong-instance/replayed/expired nonce, malformed/oversized response, stalled
+context and dropped confirmation reply cases. Split-socket fixture observes four
+sockets through the public rpc-port C surface, shuts down each non-read half and
+requires confirmation failure. It never uses this instrumentation as authority.
+No new SMACK rules, operational catalog changes or root worker jobs are involved.
+
+The exact r2 native root fixture passed all eight cases; evidence is recorded
+in08. This scoped fixture acceptance does not close image endpoint/ancestor provisioning,
+original-peer/delegation/relabel behavior, same-UID/different-label/direct-open
+matrix, ordinary writer lease/PERSIST cooperation or production admission gates.

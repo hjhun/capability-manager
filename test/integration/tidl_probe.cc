@@ -28,6 +28,7 @@ class Service : public Stub::ServiceBase {
     if(warm_fds.load()==0)warm_fds.store(FdCount());
     return std::to_string(MainPrincipal()->pid());
   }
+  int ConfirmCatalog(std::string) override {return -6;}
   int Execute(std::string,std::string) override {return -6;}
   int Cancel(std::string) override {return -6;}
   int RemountResources(std::string) override {return -6;}
