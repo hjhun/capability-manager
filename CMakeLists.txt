@@ -25,6 +25,9 @@ set_target_properties(capmgr-catalog PROPERTIES CXX_VISIBILITY_PRESET hidden)
 add_library(capmgr-adapters STATIC src/pkgmgr-plugin/parser.cc src/amd-module/action_import.cc
   src/launcher/runner.cc)
 target_link_libraries(capmgr-adapters PUBLIC capmgr-catalog Threads::Threads)
+add_executable(capmgr-package-tool tools/package_tool.cc)
+target_link_libraries(capmgr-package-tool PRIVATE capmgr-adapters)
+install(TARGETS capmgr-package-tool RUNTIME DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/capmgr)
 add_library(capmgr-platform STATIC src/platform/peer.cc src/platform/authorization.cc
   src/platform/credential_packet.cc src/platform/remount_ticket.cc src/platform/tidl_channels.cc)
 target_include_directories(capmgr-platform PUBLIC src)
@@ -79,8 +82,10 @@ if(BUILD_TESTING)
   target_link_libraries(capmgr-catalog-benchmark PRIVATE capmgr-catalog)
   add_test(NAME capmgr-verification-tools COMMAND ${Python3_EXECUTABLE} -m unittest discover
     -s ${CMAKE_CURRENT_SOURCE_DIR}/test/tools -p *_test.py)
+  add_test(NAME capmgr-offline-package COMMAND ${Python3_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/integration/package_tool_test.py $<TARGET_FILE:capmgr-package-tool>)
   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests capmgr-peer-tests capmgr-catalog-benchmark USES_TERMINAL)
+    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests capmgr-peer-tests capmgr-catalog-benchmark capmgr-package-tool USES_TERMINAL)
 endif()
 
 find_program(TIDLC_EXECUTABLE tidlc)

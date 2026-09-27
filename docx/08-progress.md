@@ -1,6 +1,6 @@
 # Development progress and verification
 
-Updated: 2026-09-27. This board distinguishes implementation, review, test execution,
+Updated: 2026-09-28. This board distinguishes implementation, review, test execution,
 packaging and publication. Product completion has not been reached.
 
 ## Ownership and checkout
@@ -25,11 +25,11 @@ Branch main tracks origin/main; upstream initial commit is
 |---|---|---|
 | P00 | IN_PROGRESS | Baseline accepted; concrete ABI r4 accepted; environment inspected |
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
-| P02 | IN_PROGRESS | Private catalog/parser core tested; authoritative finalizer/MIC integration BLOCKED |
+| P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
 | P04 | IN_PROGRESS | CLI runner core tested; app_fw/TIDL/cgroup integration pending |
-| P05 | BLOCKED (paths) | PATH-01 user question pending; independent work continues |
-| P06 | IN_PROGRESS | Foundation RPM installed; TIDL/AMD runtime integration pending |
+| P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
+| P06 | IN_PROGRESS | Release4 installed; real TIDL MAIN/callback allow/deny/rejection cleanup fixture passed; public transport/AMD integration pending |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -83,19 +83,21 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-No development commit/push yet; initial document/contract-header checkpoint is
-awaiting P00-PUBLISH-r2 review. Implementation .cc files are excluded from it. Raw evidence/builds/dependencies are excluded from Git. Future commits
-record their SHA, branch, push exit and verified remote ref in a subsequent record
-(to avoid a self-referential commit SHA).
+Reviewed development checkpoints through `ef3f87964c46f81a2f30cacbfcde7eac27235d20`
+are committed and pushed on main, with exact remote refs verified. The chronological
+records below retain earlier failures and pending states as historical evidence;
+later entries supersede their status. Raw evidence/builds/dependencies are excluded
+from Git. Each publication records SHA, branch, push exit and verified remote ref
+in a subsequent entry to avoid a self-referential commit SHA.
 
-R01–R18 acceptance tests: NOT_RUN until linked to actual product evidence. Physical
+Full R01–R18 product acceptance: NOT_RUN; scoped tests are linked below. Physical
 device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gated.
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: build meaningful GTest/GMock and C consumer tests under accepted r4;
-review/commit/push P00 checkpoint; then reviewed implementation checkpoints. Pending
-PATH-01 is a product question, not a reason to block unrelated catalog/CLI work.
+Next: finish exact Release5 offline-harness RPM upgrade/installed tests and publish
+the accepted checkpoint; continue platform integration work. PATH-01 remains a
+product question, not a reason to block unrelated catalog/CLI work.
 
 ### P00 publication checkpoint review
 
@@ -529,3 +531,53 @@ policy or mount configuration was changed. Graphify update exited0; generated
 output and all raw evidence remain outside the commit. Commit/push results follow
 in the next board update. Next work: actual parser plugin/offline harness and
 INSTALL-01 finalization integration investigation; ARMv7 remains NOT_RUN until P08.
+
+Binding checkpoint commit `ef3f87964c46f81a2f30cacbfcde7eac27235d20` on main
+pushed to origin/main, exit0; `git ls-remote` confirmed that exact commit.
+Graphify's successful update retained a partial C-header extraction warning; it
+is navigation evidence only, not a compiler or test result.
+
+### Offline package harness (P02-OFFLINE-r1 review pending)
+
+The explicit administrative package tool stages complete metadata for an offline
+image catalog, reports pending/completed operations and accepts an explicit final
+outcome. It uses private parser/SQLite code directly, with no AMD/TIDL service.
+Seven subprocess integration tests exercise hidden pending rows across process
+exit, stage/finalize replay, publication/FTS, failed and successful update/removal,
+foreign ownership, mixed keys/App Skill scope, malformed/oversized manifests,
+missing outcome, and no DB creation after invalid descriptors. Host check6/6 PASS
+(`offline-check-r1.log`, exit0). Release5 packaging adds an offline-tools subpackage;
+exact native RPM build/install remain pending. This is not production MIC acceptance.
+
+Independent INSTALL-01 source investigation by w1:pJ confirms no authoritative
+finalizer in the installed pkgmgr-parser surface. In app-installers,
+StepRunParserPlugin is interior to install/update/uninstall; TagPlugin POST runs
+inside that same step. CLEAN results are discarded both by the step and runner.
+Uninstall lacks plugin UNDO, and Process can reset a late error after non-undoable
+RemoveFiles to OK. Thus even backend exit0 does not universally prove a clean
+uninstall. pkg_initdb invokes backends and checks child exits without a post-result
+plugin callback; offline operation omits online signals. Existing backend symlinks
+are image-owned and direct invocations can bypass them.
+
+Online/MIC publication therefore requires a supported post-transaction/rollback
+hook, or an image-adopted orchestrator covering every invocation path, with durable
+operation IDs and explicit success/failure/partial/unknown outcomes. It must work
+without AMD and reconcile partial uninstall from authoritative platform state.
+Neither this harness nor a parser-only library closes that prerequisite. No
+unrelated installer or image configuration was modified. Source pointers are
+app-installers app_installer.cc:254-268,364-441; installer_runner.cc:71-92;
+step_run_parser_plugins.cc:53-99,135-193; tag_plugin.cc:115-160; pkgmgr-info
+pkg_initdb/init_pkg_db.cc:67-150; pkgmgr-server backend_queue.rs:271-298,336-386.
+
+P02-OFFLINE-r1 ACCEPTED by w1:pJ for five-file manifest; all hashes remain exact.
+Release5 source archive SHA256
+`d074db46d61e41f31d9cf26b42b164835371aa5097b6175af81266b704c9b10b`.
+Native `rpmbuild -ba` with capmgr_tizen1 passed CTest6/6, unpackaged-file checks,
+five RPM outputs and payload/dependency inspection (`offline-native-rpm-r1.log`,
+remote exit0). Normal `rpm -U --test` then `rpm -U` installed runtime, devel,
+offline-tools and tests at 0.1.0-5. Installed36+23+18 GoogleTests, C consumer and
+seven subprocess offline tests passed (`offline-native-install-r1.log`, remote
+exit0). ldd confirms the offline tool uses SQLite/C++/C runtime libraries without
+AMD, TIDL or Cynara. The repeated msm post-hook warning is retained; version and
+execution checks establish this package transaction, not general policy health.
+No production parser/MIC finalizer acceptance is inferred. Commit/push follow.

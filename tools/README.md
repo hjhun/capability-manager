@@ -113,3 +113,59 @@ an unchecked binding. MAIN and callback channels must be distinct sockets of the
 same live process/namespace. Every dispatch rechecks the actual channels and
 Cynara on MAIN. Callback extension getters are not used as authority. Initial
 PID binding and current-task-label gates described in docx/07 remain open.
+
+## Offline package transaction harness
+
+`capmgr-package-tool` is an administrative tool in the `offline-tools` RPM. It
+uses the same private catalog/parser code without AMD, TIDL or a public client.
+It has no default database, environment-selected path, installer hook or inferred
+outcome. The explicit `--offline` flag and an absolute image DB path are required.
+Use only an owned offline image/fixture directory with trusted ancestors and
+exclusive administrative control of the DB, sidecars, manifests and resources.
+The regular-file/symlink checks are input hygiene, not protection against a
+malicious process concurrently replacing paths in that directory.
+
+A version-1 manifest replaces the **complete** capability set of one package.
+Repeated metadata keys and semicolon entries are supported; App Skill entries
+also require `appId`. CLI uses the capability/cli key. Action keys are rejected.
+An empty metadata array intentionally stages replacement with an empty set.
+Operation IDs must be unique across the image's catalog lifetime.
+
+```json
+{"version":1,"operation":"image-build-42-package-1","owner":"org.example.pkg",
+ "mode":"replace","root":"/owned/image/opt/usr/apps/org.example.pkg",
+ "metadata":[{"key":"http://tizen.org/metadata/capability/skill",
+              "value":"skill.json;other-skill.json"}]}
+```
+
+```sh
+/usr/libexec/capmgr/capmgr-package-tool --offline /owned/image/catalog.db stage /owned/package.json
+/usr/libexec/capmgr/capmgr-package-tool --offline /owned/image/catalog.db status image-build-42-package-1
+/usr/libexec/capmgr/capmgr-package-tool --offline /owned/image/catalog.db finalize image-build-42-package-1 success
+```
+
+`stage` validates all descriptors before opening/creating the DB and durably
+records hidden pending rows. Stage replay must have identical owner/payload.
+`finalize ... success` atomically replaces that owner's rows and FTS and advances
+the revision. `finalize ... failure` discards pending rows and preserves the
+published generation. Repeating the same final outcome is idempotent; changing an
+already recorded outcome conflicts. A crash or unknown result leaves pending data
+hidden; `status` uses read-only access and never infers success. Exit0 means the
+requested catalog operation succeeded, exit1 has a JSON error on stderr, and
+exit2 indicates invalid command syntax. Success emits one JSON object on stdout.
+
+Removal uses `{"version":1,"operation":"remove-42","owner":"org.example.pkg",
+"mode":"remove"}` without root or metadata, allowing already-removed package
+resources. Published rows remain until explicit success; failure preserves them.
+The caller is the authority for the supplied outcome. This harness does not prove
+MIC/online installer finalization or make a partial non-undoable uninstall safe.
+Do not wire it to CLEAN, POST, backend exit0 or package DB presence as a substitute
+for an authoritative finalizer. Production parsing remains fail-closed.
+
+Run its separate-process fixture tests without platform services:
+
+```sh
+python3 test/integration/package_tool_test.py build/capmgr-package-tool
+# Installed tests RPM:
+python3 /usr/libexec/capmgr/package_tool_test.py /usr/libexec/capmgr/capmgr-package-tool
+```
