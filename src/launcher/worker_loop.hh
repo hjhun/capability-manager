@@ -78,6 +78,10 @@ class WorkerLoop {
   // without delivery loss. This is NOT frontend receipt/durable confirmation;
   // frontend still drains CWR1 EOF and verifies every Complete plus owned exit.
   bool CanExitCleanly() const noexcept;
+  // Startup-only witness for the fixed image: command/cancel/reply/parent/self/
+  // mount descriptor aliases. Throws once admission has closed or any START was
+  // seen. No transfer of ownership; never exposed over IPC.
+  std::array<int,6> StartupDescriptors() const;
   bool DeliveryLost() const noexcept;
   size_t Jobs() const noexcept;
  private:

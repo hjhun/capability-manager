@@ -267,6 +267,10 @@ void WorkerLoop::Shutdown() noexcept {impl_->Close(WorkerFailure::ParentLost);}
 bool WorkerLoop::AdmissionOpen() const noexcept {return impl_->open;}
 bool WorkerLoop::Quiescent() const noexcept {return !impl_->open && impl_->children.Size()==0;}
 bool WorkerLoop::CanExitCleanly() const noexcept {return Quiescent() && Jobs()==0 && !impl_->lost && impl_->count==0 && impl_->offset==0;}
+std::array<int,6> WorkerLoop::StartupDescriptors() const {
+  Check(impl_->open && !impl_->last_token && !Jobs(),"worker descriptor witness after admission");
+  return {impl_->commands.fd(),impl_->cancels.fd(),impl_->reply.value,impl_->parent.value,impl_->self.value,impl_->mount.value};
+}
 bool WorkerLoop::DeliveryLost() const noexcept {return impl_->lost;}
 size_t WorkerLoop::Jobs() const noexcept {size_t n=0;for(auto& j:impl_->jobs)if(j.token)++n;return n;}
 }

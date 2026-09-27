@@ -1155,3 +1155,83 @@ Host worker-drain-host-r1.log: `cmake --build build --target check -j2`, exit0,
 CTest8/8 PASS. Native worker-drain-native-r1.sh, manifest3/3 and14/14 loop/registry
 tests PASS, worker-drain-native-r1.log remote0. Native tests use forked protocol
 fixtures; no new root worker image or production route is installed or activated.
+
+Worker drain checkpoint `cd5d71f93649bfa764303a6865fda6e5ad3e3a61` pushed to
+main with exit0 and exact remote-ref match. P04-WORKER-BOOTSTRAP-r1 received
+CHANGES_REQUESTED before native root execution. Root fixture cleanup lacked
+ancestor/mount/ACL and pinned-scope checks; fixed-image leaf permissions did not
+prove trusted ancestors; post-load validation did not detect unexpected FDs.
+Native r1 was BUILD_ONLY (bootstrap-build-native-r1.log remote0), never executed.
+Read-only bootstrap-path-preflight-r1.log found the historical development parent
+root:root0777 even though image/probe leaves were0755. The old tree is preserved.
+
+The r2 source revision adds enforced fixture ancestor/no-ACL/local-ext4/PID1-
+namespace preflight, scope inode pinning and cleanup checks, and exact post-load
+FD verification including only six known WorkerLoop aliases. Separate fork-only
+context checks cover invalid expected caps/label/groups, NNP, early/late threads,
+missing/extra/aliased descriptors and post-load/post-loop FD leakage. These are
+build-only fixtures with no installed service, global policy write or operational
+DB use. Host bootstrap-host-r8.log CTest8/8 PASS; earlier build diagnostics (new
+target before reconfigure and -Werror indentation) are retained and superseded.
+A new root0700 build scope directly under verified /opt/usr was created using
+fail-closed preflight; bootstrap-trusted-build-create.log records its exact local
+path. Source and pinned JSON3.11.3 archive hashes are checked before fresh native
+compilation there. Root execution remains NOT_RUN pending revised fixture review;
+production root image/policy/proc provenance/catalog invalidation remain OPEN.
+
+Bootstrap r2 safety/source review was ACCEPTED before execution, but the first
+native context run failed (bootstrap-context-native-r2-retry.log, manifest10/10,
+remote1). An earlier watchdog invocation used incorrect CLI syntax and exited2
+without executing the fixture; that log is retained separately. The reduced
+fixture could inspect itself but not the full-cap parent's namespace. Exact
+4.4-string source and bootstrap-cap-inspection-native.log identify ptrace cap
+checks. Adding SYS_PTRACE only to the explicit fixture policy was reviewed;
+a diagnostic aliased-FD SIGPIPE bug was fixed before native r3 execution (NOT_RUN).
+
+R4 source/staged-execution review was ACCEPTED, but its named valid-only context
+also failed before every other case/main workload: bootstrap-context-valid-native-r4.log
+remote1, creator procfs stage. bootstrap-cap-inspection-native-r4.log confirms the
+parent namespace now opens, but /proc/1 directory and namespace still return EACCES.
+The actual PID1 label is System::Privileged; read-only smack policy evidence shows
+User::Shell has wx, not read, to that label. No MAC_OVERRIDE, task relabel or global
+policy rule was added. Main NamespaceInit fixture remains NOT_RUN.
+
+A full-cap read-only pre-drop probe opens PID1 pid/mnt namespace objects and
+matches self (bootstrap-predrop-namespace-probe.log remote0). The r5 revision
+captures these two handles before reduction, checks their original identity
+against self after loading, and closes them plus rechecks the exact final FD table
+before READY. It never reopens cross-label PID1 after reduction. Four additional
+negative witness cases bring the context matrix to19; native outcomes are pending
+r5 review. Host bootstrap-host-r13.log CTest8/8 PASS. The namespace checks still
+assume image-trusted procfs/platform PID1 and no hostile root mount administrator;
+this is no production policy/provenance acceptance.
+
+P04-WORKER-BOOTSTRAP-r5 source/staged execution was ACCEPTED by w1:pJ for
+exact10-file manifest capmgr-bootstrap-r5.sha256. Native build in the protected
+root0700 scope: bootstrap-trusted-build-r5.log manifest10/10, remote0. The required
+execution order then passed: bootstrap-context-valid-native-r5.log valid-only;
+bootstrap-context-native-r5.log all19 context cases; bootstrap-main-native-r5.log
+all6 modes (wrong-parent, wrong-directory, unsafe-catalog, retained-ready, idle,
+run). Each invocation checked manifest10/10 and used
+`python3 tools/run_bounded.py --seconds 120 -- build/<probe> --run-root-fixture`
+(with `valid` only on the first context invocation). All three logs record
+CAPMGR_REMOTE_EXIT=0 and SDB transport0. Earlier failed r2/r4 logs remain evidence
+of the resolved namespace-read issue, not successful runs.
+
+The main run uses real NamespaceInit with registered fixture /usr/bin/true,
+verifies durable Complete and owned normal worker exit, and checks cleanup before
+PASS. All6 uniquely named scope paths report REMOVED_SCOPE; no uncertainty scope
+was retained. This is lifecycle evidence, not CLI JSON result/product execution.
+No operational DB, global SMACK rule, live service, package installation or old
+writable build tree was changed. Native runtime evidence was sent to w1:pJ for
+final checkpoint review. Fixture-only SYS_PTRACE, trusted initial procfs/PID1,
+no hostile root and structural single-thread assumptions remain explicit.
+Production catalog SMACK/writer isolation, revision invalidation, executable
+registration, caller/broker authorization and resource controls remain OPEN.
+
+P04-WORKER-BOOTSTRAP-r5 runtime checkpoint ACCEPTED by w1:pJ after exact10/10
+hash recheck and independent read-only log/source review. The clock-skew warning
+in the native build is retained; explicit affected-target recompilation and the
+subsequent exact-hash executions provide the stated evidence. This acceptance
+is for the private fixture only. Publication scope: reviewed10files plus this
+append-only evidence ledger; raw logs, generated binaries and packages excluded.
