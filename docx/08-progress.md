@@ -1541,3 +1541,51 @@ Release11 publication: 973dae817fc59b357a5ecbfafc6b1e089340e106 on main,
 commit exit0 / push exit0. git ls-remote origin refs/heads/main returned that exact
 SHA after push; the remote initial history and Apache-2.0 LICENSE remain intact.
 Only the reviewed spec and administrative progress record were committed.
+
+
+## P06 local read admission lease (2026-09-28, r2 accepted)
+
+Design r2 was ACCEPTED by w1:pJ for /tmp/capmgr-read-admission-design-r2.md,
+SHA25652aa8160b72c96f9ea6fdb9e499ac108df3cf060de6963ae307d4ece82742eb2.
+The contract is copied into07 with same-connection handoff and fork inheritance
+clarifications. P06-READ-LEASE-r2 exact8-file source manifest is
+/tmp/capmgr-read-lease-r2.sha256; peer ACCEPTED after host/native review.
+Accepted07 SHA256:
+f783c12af31c0e982ed131833e821421a5e2ab610e4439676e4da6fe684001c9.
+
+CatalogReadLease independently opens an O_RDONLY whole-file OFD RDLCK outside the
+writer catalog directory, pins DB/WAL/SHM, and checks exact generation/metadata.
+Local ReadAccess is retained before SQLite construction until after its close,
+including public destroy IO retry. Open validation completes before the dispatcher
+thread exists and failed create never publishes a handle. Query failure defaults
+remain NULL. Every client-handle C entry rejects inherited creator TGID before
+locks, SQLite or callbacks; child exit/exec, not inherited destroy, releases its
+OFD references. No hostile-child or relabel revocation guarantee is inferred.
+
+Evidence (ephemeral /tmp/capmgr-evidence):
+- read-lease-preflight-r1.log: target OFD shared/exclusive separation,
+  O_RDONLY->WRLCK EBADF, release, persistent WAL/SHM identity through last writer
+  close and fresh READONLY query PASS; owned scope removed, remote0/transport0.
+- read-lease-host-check-r3.log: CTest8/8 PASS after build-r5. Fourteen lease cases
+  include independent lifetimes, maintenance BUSY, unsafe/missing/symlink/hardlink
+  files, poisoned replacement/policy, local committed-update visibility, explicit
+  persistent-WAL fixture, failed post-open admission, destroy-IO retention and fork.
+- read-lease-native-r2.log: exact8/8 manifest and explicit affected recompiles,
+  80/80 unit tests PASS, remote0/transport0. read-lease-native-abi-r2.log explicitly
+  records C_CONSUMER_EXIT0 and unchanged12 C exports, remote0/transport0.
+- Historical native-r1 failed only because the owner selected the wrong build
+  directory (remote1/transport0); native-r1-retry at source/build passed79/79+C.
+  R2 adds the inherited public-handle case. Earlier host build-r1/r2 rejected a
+  misleading test indentation; build-r3 and later supersede it. Native retry/r2
+  used the existing protected scope and 600s watchdog; no global policy changes.
+
+The Label operation is explicitly substituted in these unit tests; native execution
+is not real SMACK/ACL or image-provenance proof. Existing path-only AccessGate
+compatibility remains private test behavior. Production PlatformAccessGate stays
+denied and must override owned admission before eventual activation. Ordinary
+Catalog writers still do not take the generation lease or set PERSIST_WAL; only
+the explicit fixture sets the latter. This checkpoint is not installed Release11.
+Next: bounded identity receipt plus SAME TIDL connection through local open and
+validation, followed by separately reviewed recoverable native policy fixture.
+Read-only vertical-slice completion still requires that integration and policy
+matrix. CLI/remount, physical device and ARM/P09 gates are unchanged.

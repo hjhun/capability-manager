@@ -8,15 +8,27 @@
 #include <new>
 #include <string>
 #include <vector>
-struct capmgr_client {
-  explicit capmgr_client(const std::string& path)
-      : catalog(path, capmgr::Database::Access::kReadOnly) {}
+#include <unistd.h>
+struct capmgr_read_catalog {
+  explicit capmgr_read_catalog(std::unique_ptr<capmgr::ReadAccess> admission)
+      : access(std::move(admission)),catalog(access->Path(), capmgr::Database::Access::kReadOnly) {
+    access->Opened(catalog.database());
+  }
+  // Declared first, destroyed last: lease outlives SQLite and destroy-IO retry.
+  std::unique_ptr<capmgr::ReadAccess> access;
   capmgr::Catalog catalog;
+};
+struct capmgr_client:capmgr_read_catalog {
+  explicit capmgr_client(std::unique_ptr<capmgr::ReadAccess> admission)
+      :capmgr_read_catalog(std::move(admission)){}
+  const pid_t creator=getpid();
+  // Base validation finishes before any dispatcher thread exists.
   capmgr::Dispatcher dispatcher;
   std::shared_ptr<capmgr::ExecutionBackend> backend;
 };
 struct capmgr_search_results { std::vector<std::string> items; };
 namespace {
+bool SameProcess(capmgr_client_h client) noexcept {return client->creator==getpid();}
 template<class F> int Guard(F&& function) noexcept {
   try { function(); return CAPMGR_OK; }
   catch (const capmgr::Error& e) { return static_cast<int>(e.code()); }
@@ -34,6 +46,18 @@ class PlatformAccessGate final : public capmgr::AccessGate {
 };
 }
 namespace capmgr {
+namespace {
+class LegacyReadAccess final:public ReadAccess {
+ public:explicit LegacyReadAccess(std::string path):path_(std::move(path)){}
+  const std::string& Path() const noexcept override{return path_;}
+  void Check() override{}
+  void Opened(Database&) override{}
+ private:std::string path_;
+};
+}
+std::unique_ptr<ReadAccess> AccessGate::AuthorizeReadAccess() {
+  return std::make_unique<LegacyReadAccess>(AuthorizeAndGetDatabase());
+}
 int CreateClient(AccessGate& gate, capmgr_client_h* client) noexcept {
   return CreateClient(gate,{},client);
 }
@@ -41,12 +65,14 @@ int CreateClient(AccessGate& gate,std::shared_ptr<ExecutionBackend> backend,
                  capmgr_client_h* client) noexcept {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
   *client = nullptr;
-  return Guard([&] { auto path=gate.AuthorizeAndGetDatabase();
-                     auto out=std::make_unique<capmgr_client>(path);
+  return Guard([&] { auto access=gate.AuthorizeReadAccess();
+                     if(!access)throw Error(ErrorCode::kPermission,"Missing catalog admission");
+                     access->Check();
+                     auto out=std::make_unique<capmgr_client>(std::move(access));
                      out->backend=std::move(backend);*client=out.release(); });
 }
 void NotifyChanged(capmgr_client_h client,uint64_t revision) {
-  if(client)client->dispatcher.Changed(revision);
+  if(client && SameProcess(client))client->dispatcher.Changed(revision);
 }
 }
 extern "C" {
@@ -55,6 +81,7 @@ int capmgr_client_create(capmgr_client_h* client) {
 }
 int capmgr_client_destroy(capmgr_client_h client) {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!SameProcess(client))return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&] {
     auto result=client->dispatcher.Close();
     if(result==capmgr::Dispatcher::CloseResult::kBusy)throw capmgr::Error(capmgr::ErrorCode::kBusy,"Callback active");
@@ -65,21 +92,24 @@ int capmgr_client_destroy(capmgr_client_h client) {
 int capmgr_client_foreach_capability(capmgr_client_h client, capmgr_kind_t kind,
                                      capmgr_foreach_cb callback, void* data) {
   if (!client || !callback) return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!SameProcess(client))return CAPMGR_ERROR_PERMISSION_DENIED;
   if(!client->dispatcher.EnterCallback())return CAPMGR_ERROR_BUSY;
   struct Scope {capmgr::Dispatcher& dispatcher;~Scope(){dispatcher.LeaveCallback();}} scope{client->dispatcher};
-  return Guard([&] { client->catalog.Foreach(static_cast<capmgr::Kind>(kind),
-    [&](const auto& entry) {auto json=entry.dump();return callback(json.c_str(),data);}); });
+  return Guard([&] { client->access->Check(); client->catalog.Foreach(static_cast<capmgr::Kind>(kind),
+    [&](const auto& entry) {auto json=entry.dump();client->access->Check();return callback(json.c_str(),data);}); client->access->Check(); });
 
 }
 int capmgr_client_search_capabilities(capmgr_client_h client, const char* query,
                                       capmgr_kind_t kind, capmgr_search_results_h* results) {
   if (results) *results=nullptr;
   if (!client || !query || !results) return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!SameProcess(client))return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&] {
+    client->access->Check();
     auto out=std::make_unique<capmgr_search_results>();
     for (const auto& entry : client->catalog.Search(query,static_cast<capmgr::Kind>(kind)))
       out->items.push_back(entry.dump());
-    *results=out.release();
+    client->access->Check();*results=out.release();
   });
 }
 void capmgr_search_results_free(capmgr_search_results_h results) { delete results; }
@@ -98,8 +128,11 @@ int capmgr_search_results_item(capmgr_search_results_h results, size_t index,
 int capmgr_client_get_capability(capmgr_client_h client, const char* id, char** detail) {
   if (detail) *detail=nullptr;
   if (!client || !id || !detail) return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!SameProcess(client))return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&] {
+    client->access->Check();
     auto json=client->catalog.Get(id).dump();
+    client->access->Check();
     if (json.size()==SIZE_MAX) throw capmgr::Error(capmgr::ErrorCode::kLimit,"JSON too large");
     auto* out=static_cast<char*>(std::malloc(json.size()+1));
     if (!out) throw std::bad_alloc();
@@ -110,10 +143,13 @@ int capmgr_client_execute(capmgr_client_h client, const char* request,
                           capmgr_result_cb callback, void* data, capmgr_request_token_t* token) {
   if (token) *token=0;
   if (!client || !request || !callback || !token) return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!SameProcess(client))return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&] {
     client->dispatcher.CheckAdmission();
     auto parsed=capmgr::ParseRequest(request);
+    client->access->Check();
     auto entry=client->catalog.GetPrivate(parsed.capability_id);
+    client->access->Check();
     if(entry.kind!=capmgr::Kind::kCli && entry.kind!=capmgr::Kind::kAction)
       throw capmgr::Error(capmgr::ErrorCode::kUnsupported,"Skill execution belongs to the agent");
     if(!client->backend)throw capmgr::Error(capmgr::ErrorCode::kUnsupported,"Execution transport is unavailable");
@@ -136,14 +172,17 @@ int capmgr_client_execute(capmgr_client_h client, const char* request,
 }
 int capmgr_client_cancel(capmgr_client_h client, capmgr_request_token_t token) {
   if (!client || !token) return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!SameProcess(client))return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&]{client->dispatcher.Cancel(token);});
 }
 int capmgr_client_remount_resources(capmgr_client_h client, const char* destination) {
   if (!client || !destination || destination[0]!='/') return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!SameProcess(client))return CAPMGR_ERROR_PERMISSION_DENIED;
   return CAPMGR_ERROR_NOT_SUPPORTED;
 }
 int capmgr_client_set_changed_callback(capmgr_client_h client, capmgr_changed_cb callback, void* data) {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
+  if(!SameProcess(client))return CAPMGR_ERROR_PERMISSION_DENIED;
   return client->dispatcher.SetChanged(callback,data)?CAPMGR_OK:CAPMGR_ERROR_BUSY;
 }
 }

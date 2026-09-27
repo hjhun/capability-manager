@@ -523,3 +523,102 @@ comes from request fields. Unexpected asynchronous failure before START remains
 conservatively retained, not converted into unreviewed no-child proof. A production
 prepared-admission/allocation strategy, original-client authorization, registered
 launcher integration, generation lifecycle and resource controls remain gates.
+
+
+### Read-only catalog admission (development revision 2, accepted; implementation pending)
+
+R02/R13/DB-ACCESS-01 vertical slice; production create remains denied until the
+complete provisioned image/identity matrix is accepted. No CLI START, remount,
+request-selected path or resource authority. All filesystem policy is fixed
+trusted internal configuration, never an application/IPC argument.
+
+A root-owned lock file lives in a root-owned ancestor outside the catalog writer's
+writable directory. Verify lock type, link count, dev/ino, exact mode/owner/group,
+ACL absence and SMACK label, plus trusted ancestry/mount. A writer cannot replace
+its directory entry. Service and client use independently opened O_RDONLY OFD
+F_RDLCK descriptions, not a shared/duplicated description. Exclusive maintenance
+uses trusted O_RDWR F_WRLCK and a finite acquisition deadline; no blocking SETLKW.
+Unsupported OFD locking denies. The target preflight proved support and that
+O_RDONLY cannot obtain F_WRLCK. Leases exclude cooperative replacement, migration
+and name/inode/policy-changing lifecycle, not ordinary in-place WAL commits,
+auto-checkpoint or WAL reset (SQLite's own locking remains authoritative there).
+Fork inherits OFD descriptions even with O_CLOEXEC; descendants can retain them.
+An untrusted process can deny maintenance by retaining read locks; this is an
+availability limit, not permission to reclaim or override a live lock.
+
+The service holds its shared lease/pinned generation through descriptor issuance
+and client validation. The SAME TIDL connection must remain live through local
+lock acquisition and DB identity validation; premature HUP rejects before handle
+publication. Successful deliberate proxy teardown occurs during create. The client acquires an independent shared lease before
+opening, validates bounded receipt identities against fixed local configuration,
+and retains its lease until AFTER SQLite closes, including destroy-IO retry.
+The server TIDL connection need only remain live through this handoff; closing it
+intentionally after validation avoids adding an untracked proxy destructor to
+public bounded destroy. A receipt is descriptive, not a bearer authority; no
+service-supplied arbitrary DB path is trusted. Client read permission remains
+kernel-enforced in its own context. File checks compare identity/mode/owner/label,
+never size/mtime that may change during valid in-place commits. Replacement or
+policy mismatch poisons local access before returning query data. Admission checks
+before/after SQLite opening keep output NULL on failure. The lifetime lease is a
+file-generation lease and does not freeze catalog data or represent a revision lease.
+
+All relevant writer connections must set SQLITE_FCNTL_PERSIST_WAL or a verified
+fixture keeper must prevent last-close sidecar deletion. Check the file-control
+return and test last writer close -> fresh RO open, as well as a live commit ->
+newer local query. Require existing readable DB/WAL/SHM; no immutable workaround.
+Current ordinary Catalog/Database writers do not comply with this lease contract;
+only explicitly cooperating fixture writers can participate in the first checkpoint.
+Production replacement/migration and sidecar recreation remain disabled until wired.
+
+Authorization: generated TIDL binds and revalidates actual distinct MAIN/callback
+FDs; real socket-derived Cynara runs on MAIN including system UIDs. Fixed UID,
+GID and socket-label rules are additional constraints. Neither socket peer labels
+nor the initial proc lookup become current-message/task-label or mount authority.
+New connections after relabel must be used for label tests. Service returns only
+a bounded identity descriptor for its provisioned generation, and never reads
+catalog values or opens privileged data on the caller's behalf. Client local
+DAC/SMACK-readable principals must be a subset of those authorized by this gate;
+a broader direct-open policy would invalidate production authorization regardless
+of successful create tests. Existing inherited endpoints and already-open SQLite
+handles after fork/relabel require separate tests. Client creator-TGID rejection
+is defense in depth only, not a hostile-process security guarantee.
+
+Native matrix: actual known registered Cynara-positive principal plus UUID-label
+negative, same UID/GID/groups, fresh sockets. Also injected-Allow policy native
+case isolates explicit socket-label rejection without changing operational Cynara
+grants. File/namespace/lease grant has no production bypass in either fixture case.
+Test direct SQLite open for denied principal, RO write denial, generation replacement,
+unsafe lock/sidecars, lost/swapped channels, failure before handle publication,
+client destroy-IO retention and cooperative exclusive-lock admission after close.
+Global fixture SMACK rules may touch only new UUID subjects/objects, using the
+previously accepted root0700 durable journal/inherited recovery lock, child-exit
+proof, safe cleanup and per-rule revocation; exact new fixture must receive source
+review before any such native mutation. No production-policy inference.
+
+Planned implementation increment: first implement local CatalogReadLease and private
+AccessGate lease ownership with host/native filesystem tests; then fixed TIDL
+service/proxy + recoverable policy fixture connects the same path for the vertical
+slice. Both are required before the read-only admission slice is called verified.
+A root-owned stable pathname and trusted writer/cooperating maintainer are explicit
+provisioning premises: stat checks are not hostile-writer ABA prevention.
+
+
+Local read-lease implementation scope: private AccessGate can provide owned
+ReadAccess, with the default adapting existing path-only injected tests. A
+CatalogReadLease checks independently opened whole-file OFD RDLCK, fixed
+DB/WAL/SHM identity and exact owner/group/mode/label/ACL policy. Opened checks
+SQLite READONLY/WAL and its reported path before any dispatcher thread or C
+handle is published. Local foreach/search/get recheck generation/policy without
+IPC; failures poison lease access. Admission storage outlives SQLite, including
+client destroy IO retry. File ancestor/mount and writer cooperation remain trusted
+provisioning prerequisites; these checks do not independently establish them.
+
+All C client operations reject an inherited creator-TGID mismatch before touching
+Dispatcher or SQLite. Output pointers/tokens retain their failure defaults. The
+child must exec or exit to release inherited descriptors; destroy does not attempt
+to join vanished parent threads or close a potentially inconsistent SQLite object.
+This is defensive library behavior, not hostile-child revocation of cached data,
+already-open descriptors or OFD lease availability. Parent behavior is unchanged.
+Production gate, TIDL handoff, current-label behavior and DAC/SMACK policy matrix
+are not enabled or proved by these local tests. Label reads use an explicit test
+substitution in host/native unit tests, not a production permissive fallback.

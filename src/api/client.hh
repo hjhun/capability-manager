@@ -3,12 +3,18 @@
 #include <memory>
 #include <string>
 #include "api/capmgr.h"
+#include "catalog/read_access.hh"
 namespace capmgr {
 // Private injection seam. Never installed or exported in libcapmgr.
 class AccessGate {
  public:
   virtual ~AccessGate() = default;
   virtual std::string AuthorizeAndGetDatabase() = 0;
+  // Optional owned admission; default adapts legacy path-only test gates.
+  // Concrete TIDL gate must keep the SAME connection/issuer lease alive until
+  // Opened validates the client's independent lease, then finish teardown here
+  // during create. No IPC state may leak into bounded client destruction.
+  virtual std::unique_ptr<ReadAccess> AuthorizeReadAccess();
 };
 int CreateClient(AccessGate& gate, capmgr_client_h* client) noexcept;
 }
