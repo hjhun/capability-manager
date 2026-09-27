@@ -581,3 +581,47 @@ exit0). ldd confirms the offline tool uses SQLite/C++/C runtime libraries withou
 AMD, TIDL or Cynara. The repeated msm post-hook warning is retained; version and
 execution checks establish this package transaction, not general policy health.
 No production parser/MIC finalizer acceptance is inferred. Commit/push follow.
+
+Offline checkpoint commit `7594e991cf968e33560d2a4833cdbb55f22640f6` on main
+pushed to origin/main, exit0; exact remote ref verified.
+
+### Action execution compatibility investigation
+
+Native RPM DB reports capi-appfw-tizen-action/tizen-action1.3.27-1. Runtime exports
+create/destroy/execute but not action_client_cancel (`action-native-symbols.log`).
+Read-only local source release f9c43cb matches version1.3.27; callback is disposed
+after its first result and TIDL has no Cancel. Subscription/event/closed/cancel
+support was introduced by de4d7fc after that release. Modern local HEAD headers
+must not be linked as evidence that this runtime supports subscriptions. A matched
+Action service/C API/TIDL upgrade and target tests are prerequisites for R11
+subscription completion; ordinary Action cancellation remains NOT_SUPPORTED.
+
+A bounded ctypes probe against the actual existing C API connected successfully
+(create0), submitted a unique nonexistent Action name (execute-5), then destroyed
+its client (destroy0), remote exit0 (`action-native-capi-probe.log`). This validates
+a connection and synchronous rejection path, not successful Action execution or
+streaming. It changed no Action definitions, providers or source DB. An initial
+package probe used unavailable target rg; the corrected grep/RPM/symbol probes
+establish actual installation rather than inferring absence from PATH.
+
+Independent review also identified the service-delegation privilege gate: the
+Action service authorizes its own peer, so an app_fw proxy must not substitute
+its privilege for an unverified original caller. Callback data are borrowed and
+the C API has no proven cross-thread destroy fence. Production integration needs
+original-caller authorization, serialized native callback ownership and bounded
+cleanup. No production backend is enabled by protocol-only tests below.
+
+P04-ACTION-WIRE-r1 ACCEPTED by w1:pJ for the four-file private mapper scope.
+It binds canonical Action identity, an independently supplied positive native int,
+and original string/int64 ID; rejects unverified provider override and unsupported
+subscription runtime; rewrites only the outer reply ID and preserves payload bytes.
+Its explicit frame distinguishes acknowledgement, event and completion. Seven new
+GoogleTests pass; host `action-exchange-check-r1.log` CTest6/6 and isolated emulator
+native Debug CTest6/6 PASS (`action-wire-native-r1/summary.json`, all transport and
+remote exits0, owned scope cleanup0). Native archive SHA256
+`71f708f8d8b83b1b6e3dc677f19dc65c38b51d221817e62c18903b348bb063f9`.
+This is a source/core checkpoint, not an RPM replacement: installed Release5
+remains the previously verified offline/TIDL fixture package. Dispatcher framed
+response changes are separate WIP and excluded from this mapper commit.
+Allocator uniqueness, native callback lifetime/deadline, original caller privilege
+and upgraded subscription runtime remain production adapter gates.
