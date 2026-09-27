@@ -205,8 +205,10 @@ registration trust and original client authorization remain integration gates.
 Broker FDs must never reach jobs. A fixed image policy must provision this boundary
 before deployment; no matching policy is assumed or added by these experiments.
 
-A dedicated long-lived spawning thread (or a single-threaded broker) owns each
-namespace-init child. A small non-exec PID1 supervisor creates private mount
+The namespace-init creator must be single-threaded for its whole spawning
+lifetime. A dedicated thread inside a multithreaded TIDL listener does not satisfy
+this constraint; the proposed front-end/worker separation below requires its own
+review before implementation. The spawning process owns each namespace-init child. A small non-exec PID1 supervisor creates private mount
 propagation and a procfs mounted from its active PID namespace. It closes inherited
 FDs except defined control/stdio pipes and sets a safe cwd. Privileged mount/SMACK
 setup and bounding-set reduction occur while required capabilities, including
@@ -247,3 +249,96 @@ unproven. Required tests include setsid descendants, parent death before/after G
 FD/cap/UID/label isolation, host proc invisibility, no propagated mounts, setup/exec
 failure, simulated cleanup-pending state and spoofed app_fw broker callers.
 This contract permits isolated implementation/tests, not production enablement.
+
+
+## BROKER-01 front-end/worker refinement (revision 2, accepted for development)
+
+The rpc-port listener can create Cynara and message-sending threads even when TIDL
+is generated without `-t`. NamespaceInit must therefore never run after clone from
+that listener process. The proposed root broker consists of a TIDL admission front
+end and a separately exec'd, fixed-image single-threaded spawn worker. This is a
+refinement of the development-only root broker above, not production authorization.
+
+The front end starts only the package-owned worker at a fixed absolute executable
+path, with a fixed environment, using posix_spawn and explicit file actions. No
+client selects that path, arguments, UID, label, capabilities or inherited FDs.
+Only fixed anonymous control/status and workload-output pipes cross this internal
+boundary. They coordinate parent/child ownership and do not add a public endpoint
+or custom UDS protocol. All unrelated descriptors, including TIDL MAIN, callback,
+listener, policy and catalog descriptors, must be explicitly excluded from worker
+exec; upstream accepted-socket CLOEXEC helpers cannot be relied upon. The worker
+must independently validate its image/configuration and fixed descriptor layout,
+reject unexpected open FDs, remain single-threaded, and keep all untrusted jobs
+from inheriting control channels. Root-owned worker/unit/catalog provenance remains
+an image provisioning gate. This refinement does not permit arbitrary root exec.
+
+Internal bounded START/CANCEL/STATUS records identify registered CLI IDs and owned
+job tokens. START carries the bounded request and the front end's accepted request
+context; it does not carry an executable path, namespace, UID, capability set or
+file descriptor chosen by the caller. The worker resolves the private trusted
+catalog and checks the fixed app_fw execution context before spawning. It owns
+OwnedChildren and the unreaped PID1 children; the front end never signals a numeric
+worker-reported PID. Status/output flow control must not prevent cancel or cleanup.
+Invalid/truncated records and front-end loss close admission and trigger cleanup
+of every owned job. The front end must retain the direct worker process until exit
+is observed and it is reaped; restarting a worker cannot forget pending jobs.
+
+The worker holds a trusted parent proc anchor opened by the front end before spawn
+and a control pipe whose only writer remains in that front end. It checks anchored
+parent liveness and control EOF independently. The worker uses a long-lived creating
+thread's PDEATHSIG only as an additional mechanism, not as the sole parent-loss
+proof; the TIDL front end's thread lifetime and posix_spawn behavior must be tested.
+On parent loss it denies new work, kills owned namespace inits and keeps retrying
+bounded cleanup while retaining uncertain jobs. Killing the worker also kills its
+PID1 children through their verified creator-death setup; D-state completion may
+still be delayed. Systemd control-group cleanup is additional containment. Tests
+must cover front-end crash during spawn/READY/GO and output backpressure, worker
+crash, retained control writers, descriptor leakage and cleanup-pending restart.
+
+Abnormal worker exit or loss of trustworthy status blocks every START and retains
+all global job reservations. Reaping the worker, delivering PDEATHSIG/SIGKILL or
+checking a recorded numeric PID does not prove old namespace inits or descendants
+have exited. The root front end owns an exclusive, root-only persistent recovery
+journal, fsynced before worker/job admission, recording the worker generation and
+outstanding/uncertain reservations. A missing, corrupt or unclean journal fails
+closed on front-end restart; a new front end reconstructs uncertainty and must not
+start a replacement worker merely because its predecessor was reaped. Clear the
+journal only after confirmed normal cleanup, or through a separately authenticated
+external supervisor which proves every old job cgroup/namespace init is gone.
+The supervisor proof and durable journal update must themselves tolerate crashes.
+On an image without that trusted external proof, keep the broker unavailable until
+a controlled image/service reset that establishes old-job absence; restarting the
+unit alone is not such a reset. No automatic capacity release or recovery from an
+uncertain record is allowed. Required fixtures include worker SIGKILL with live and
+simulated stuck children, front-end restart reading the uncertainty record, and
+refusal of new jobs until independent cleanup proof. Persistent recovery storage,
+external supervision and proof of full old-job absence remain production gates.
+
+For the trusted launcher ONLY, admission may use a conditional connection-principal
+proof: verify the actual bound AF_UNIX MAIN socket with raw SO_PEERCRED, reject
+POLLHUP/POLLRDHUP/POLLERR/POLLNVAL or poll failure before and after the anchored proc,
+exact active unit MainPID, cgroup, executable and policy snapshots, and recheck
+immediately before START. Require the launcher to keep every client MAIN endpoint
+reference inside its own process, with no fork inheritance, SCM_RIGHTS/in-flight
+transfer, daemon/helper duplicate or exposure to untrusted code. This nondelegation
+property belongs to the image-owned launcher TCB and must be demonstrated across
+its entire lifecycle. UID app_fw, label System or membership in the same cgroup is
+insufficient. Callback and MAIN bindings must match, but authority is MAIN.
+
+The conditional argument uses the 4.4.35-string source ref39b6687: last client file
+release shuts down the opposite Unix endpoint before exit releases the numeric PID.
+If the old PID has already been reused during the proc lookup, post-snapshot MAIN
+poll must observe HUP/RDHUP under the strict no-other-reference premise. Holding a
+socket's struct pid alone does not prevent numeric reuse. Retained endpoint holders
+invalidate the proof, and unread parcel bytes do not cancel HUP. The target image's
+exact kernel/rpc-port provenance is not established; forced numeric reuse tests,
+buffered-after-exit rejection and retained-endpoint boundary fixtures remain gates.
+This proves identity only at admission and permits neither public untrusted-client
+identity claims nor resource remount authorization.
+
+Production enablement additionally requires original-client authorization, distinct
+job policy preventing an app_fw CLI from writing the catalog or invoking the broker,
+resource limits including process-count containment, trusted registration, and the
+full native failure matrix. The current image lacks a pids cgroup controller. No
+root broker service, spawn worker, production CLI route or new policy is enabled by
+this document. This refinement must receive explicit peer acceptance before code.

@@ -758,3 +758,60 @@ platform tests (`namespace-native-install-r2.log`, remote exit0). The known msm
 post-hook warning is retained; package/test outcome does not establish full image
 policy health. No setuid bit or file capability is installed for the fixture.
 Reviewed hashes were rechecked before publication. Commit/push follows below.
+
+
+Namespace checkpoint `04cb3356fdc6c5856a5004935f20798b30f0a817` on main pushed
+successfully and matched the remote ref (exit0). Subsequent read-only/native
+policy investigation found app_fw UID301 with socket label System is actually
+ALLOWED by Cynara (`appfw-system-policy-probe.log`, exit0); this does not distinguish
+our trusted launcher unit from another process with the same credentials.
+Cgroup preflight found v1 CPU/memory/devices/freezer controllers and root-owned
+0644 tasks files; no pids controller appears in /proc/cgroups, and its directory
+lookup failed as expected (`cli-cgroup-preflight.log`). No cgroup/policy was changed.
+The exact image's privilege-group mapping contains priv_platform GID10212, while
+security-manager source supports privilege-to-SMACK templates. These are candidate
+DB access integration mechanisms, not a verified CapMgr DB policy.
+
+
+BROKER-01 follow-up source review supports pre/post MAIN socket HUP checks only
+under strict trusted-launcher endpoint nondelegation; it does not authorize public
+clients or remount. A separately exec'd single-threaded spawn worker is proposed
+because rpc-port creates internal threads even without TIDL -t. Contract refinement
+is pending peer review; no root broker implementation or service is installed.
+Native forced-PID-reuse probe could not complete: unshare --kill-child required
+unavailable pidfd_open (`broker-pid-reuse-probe.log`, remote1); retry using a private
+PID/mount namespace without that option found no /proc/sys/kernel/ns_last_pid
+(`broker-pid-reuse-probe-r2.log`, remote1). Neither attempt proves PID reuse behavior.
+DB fixture r1 review requested durable recovery before policy mutation and safe
+root deletion. r2 adds a fsynced UUID recovery journal before load2 changes, an
+inherited flock preventing recovery while any fixed role survives, best-effort
+rule revocation and symlink-resistant cleanup checks. Four unprivileged recovery
+tests pass (`db-access-recovery-host-r2.log`, exit0); native policy execution is
+NOT_RUN pending re-review. Actual production DB policy remains unprovisioned.
+
+
+BROKER-01-CONTRACT-r2 ACCEPTED by w1:pJ for doc07 contract SHA256
+`fa21036f38cfba562ef747e4268ba41589608a767d1bada9af08cbdc10574698`.
+Publication changes only its pending-review heading to accepted. The contract now
+requires a separately exec'd single-threaded worker and persistent uncertainty
+across worker/front-end crashes; no new START until independent old-job absence
+proof. Root services, recovery supervisor and production authorization remain
+NOT_RUN. This contract checkpoint is separate from DB fixture implementation.
+
+P07-DB-ACCESS-FIXTURE-r3 ACCEPTED for safety-gated execution, exact script SHA256
+`0d6975b2450b89e9da519b7c04cbf435707b1f658817e3912c350cd634d813c9` and tests
+`5893088cb5b8cf8a84a157261afedb3563fc319db207e9c36eb2b5b83adc2b1e`.
+Host CTest6/6 and seven native recovery tests PASS (db-access-host-check-r3.log,
+db-access-recovery-native-r3.log, exit0). Enforced native trusted-parent preflight
+passes without policy writes (db-access-parent-native-r3.log, remote0). Explicit
+root fixture under180s watchdog passes all eight role/generation checks: real
+mode=ro SQLite WAL queries, separate DAC and SMACK read denials, same-UID different
+label denial, MAC write denial on DAC-writable fixture objects, and DB/WAL/SHM
+0640 owner/group/label preservation after last-close removal and recreation
+(db-access-native-r3.log, remote0). Cleanup PASS with no remaining children/rules.
+Injected SIGKILL immediately after the first actual load2 write leaves the fsynced
+journal recoverable; --recover removes the owned scope and revokes all planned
+rules (db-access-abrupt-recovery-r3.log, remote0). Inactive UUID labels and root-only
+recovery receipts remain intentionally. These are fixture policy results, not
+security-manager provisioning, privileged application end-to-end access or a
+production catalog policy. Tool publication/package review follows separately.
