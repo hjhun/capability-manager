@@ -815,3 +815,22 @@ rules (db-access-abrupt-recovery-r3.log, remote0). Inactive UUID labels and root
 recovery receipts remain intentionally. These are fixture policy results, not
 security-manager provisioning, privileged application end-to-end access or a
 production catalog policy. Tool publication/package review follows separately.
+
+
+Broker contract checkpoint `aa9120236f925f50770b63609ec11dee266b6865` on main
+pushed with exit0 and matched the remote ref. P07-DB-PACKAGE-r5 ACCEPTED by w1:pJ
+for the unchanged r3 fixture/tests plus Release8 spec and usage documentation;
+r4 was superseded before any build after self-check caught a stray install line.
+Exact Release8 source archive SHA256
+`3b4b0f550226d5409573845f1431b3fe8c13f4380289a406f50c607fdf56f19d`.
+Native rpmbuild -ba, %check CTest6/6, payload/dependency/unpackaged checks and five
+RPM outputs PASS (db-access-native-rpm-r5.log, remote0). Normal rpm -U --test then
+rpm -U installed runtime/devel/offline-tools/tests0.1.0-8; installed102 GoogleTests,
+pure C consumer, seven offline tests, namespace fixture and DB policy fixture PASS
+(db-access-native-install-r5.log, remote0). Known msm post-hook warning retained.
+The fixture's remaining_rules reports failed revocation writes, not enumeration.
+A separate read-only kernel load2 audit verified all three run journals had zero
+active fixture rule pairs and no remaining data scopes (db-access-kernel-rule-audit.log,
+remote0); each journal planned three distinct pairs. Root-only receipts remain.
+No production DB policy/template, privilege provisioning or public create/remount
+was enabled. Broker journal source WIP is excluded from this package checkpoint.

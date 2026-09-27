@@ -205,3 +205,52 @@ image SMACK policy and cgroup limits. D-state teardown has no unconditional boun
 OwnedChildren reserves pending jobs and preserves signal errors for retry. Its
 fail-stop destructor cannot substitute for a long-lived broker/reaper. Installed
 fixture success does not enable public execution or resource remount.
+
+
+## Explicit SQLite WAL DAC/SMACK fixture
+
+The tests RPM includes `db_access_probe.py` without setuid or file capabilities.
+On an explicitly selected disposable development image, run as root:
+
+```sh
+python3 /usr/libexec/capmgr/run_bounded.py --seconds 180 -- python3 /usr/libexec/capmgr/db_access_probe.py --run
+```
+
+This writes temporary SMACK load2 rules only for fresh UUID labels. Existing
+System/current-label subjects gain access only to the new fixture DB label; new
+reader labels gain only needed ancestor traversal. It does not install production
+policy. It requires the platform-owned procfs/PID1 context, the same mount and PID
+namespaces as PID1, root-owned ancestors without group/other write or POSIX ACLs,
+local ext4 backing for /opt/usr, app_fw, priv_platform and symlink-safe rmtree.
+A hostile root or mount administrator is outside this explicit fixture's model.
+Failed preflight leaves policy unchanged. Ordinary CTest runs unprivileged recovery
+tests, not this root policy operation.
+
+The writer uses app_fw and System. Two SQLite generations exercise committed WAL
+queries using mode=ro while sidecars exist, then last-writer close/removal and
+sidecar recreation with inherited ownership/mode/label. Read denial is checked
+separately for missing DAC group, denied SMACK label and an app_fw-UID process with
+a denied label. Allowed readers cannot write; additional DAC-writable objects
+isolate the MAC write denial. No immutable option or reader DB write grant is used.
+The fixture does not prove that a reader can recover absent WAL/SHM without a writer,
+that production privilege registration works, or that an actual privileged app has
+end-to-end access to the future catalog.
+
+Before the first policy write, the tool fsyncs a root-only recovery journal outside
+the app_fw-owned tree and prints an absolute recovery command. Every fixed fork role
+holds an inherited shared lock until exit. Normal completion reports cleanup,
+remaining children and remaining rules. If a watchdog/SIGKILL/disconnection prevents
+completion, preserve that output and execute the printed command, for example:
+
+```sh
+python3 /usr/libexec/capmgr/db_access_probe.py --recover /opt/usr/capmgr-db-recovery-<printed-UUID>
+```
+
+Recovery reruns the parent trust checks and refuses while any fixture role retains
+the lock. Do not delete the lock, journal or owned tree to bypass refusal. Once all
+roles have exited, it checks scope identity, safely removes the tree, attempts every
+rule revocation and records exact remaining rules/errors for retry. Use a watchdog
+of at least180 seconds, longer than normal role and cleanup budgets. A blocked
+cleanup is a failed fixture, not a completed policy test. Root-only JSON receipts
+and inactive kernel UUID label names intentionally remain; raw receipts/logs must
+not enter Git. No production DB, existing policy pair or user data is modified.
