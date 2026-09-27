@@ -1535,3 +1535,9 @@ platform authorization, live worker service, catalog invalidation or resource
 control is enabled. The unchanged privileged bootstrap fixture was not rerun for
 this cleanup-only scope; its Release10 evidence remains historical. ARM/P09 and
 physical-device verification remain NOT_RUN.
+
+
+Release11 publication: 973dae817fc59b357a5ecbfafc6b1e089340e106 on main,
+commit exit0 / push exit0. git ls-remote origin refs/heads/main returned that exact
+SHA after push; the remote initial history and Apache-2.0 LICENSE remain intact.
+Only the reviewed spec and administrative progress record were committed.
