@@ -15,23 +15,41 @@
 #include <unistd.h>
 using namespace capmgr;
 using namespace capmgr::fixture;
-int main(int argc,char** argv) {
+int main(int argc, char** argv) {
   try {
-    Require(argc==3 && !std::strcmp(argv[1],"--generation"));uint64_t generation=0;
-    auto* end=argv[2]+std::strlen(argv[2]);auto parsed=std::from_chars(argv[2],end,generation);
-    Require(parsed.ec==std::errc{} && parsed.ptr==end && generation);
-    WorkerInitialNamespaces namespaces;Reduce();WorkerBootstrapPolicy policy{kCaps,{},"User::Shell",namespaces};ValidateWorkerBootstrap(policy);
-    auto snapshot=LoadWorkerCatalog(7,{0,0,0700,0600}); // fixture root-only publication
+    Require(argc == 3 && !std::strcmp(argv[1], "--generation"));
+    uint64_t generation = 0;
+    auto* end = argv[2] + std::strlen(argv[2]);
+    auto parsed = std::from_chars(argv[2], end, generation);
+    Require(parsed.ec == std::errc{} && parsed.ptr == end && generation);
+    WorkerInitialNamespaces namespaces;
+    Reduce();
+    WorkerBootstrapPolicy policy{kCaps, {}, "User::Shell", namespaces};
+    ValidateWorkerBootstrap(policy);
+    auto snapshot = LoadWorkerCatalog(
+        7, {0, 0, 0700, 0600});  // fixture root-only publication
     WorkerRuntime runtime;
-    WorkerLoop loop({generation,3,4,5,6,301,301,"System"},snapshot.registry,runtime);
-    FinishWorkerBootstrap(policy,loop.StartupDescriptors()); // SQLite is closed, fixed runtime loaded, one task
-    auto ready=EncodeWorkerReady(generation,snapshot.revision);
-    ssize_t sent;do{sent=write(8,ready.data(),ready.size());}while(sent<0 && errno==EINTR);
-    Require(sent==static_cast<ssize_t>(ready.size()));Require(!close(8));
+    WorkerLoop loop({generation, 3, 4, 5, 6, 301, 301, "System"},
+                    snapshot.registry, runtime);
+    FinishWorkerBootstrap(
+        policy,
+        loop.StartupDescriptors());  // SQLite is closed, fixed runtime loaded, one task
+    auto ready = EncodeWorkerReady(generation, snapshot.revision);
+    ssize_t sent;
+    do {
+      sent = write(8, ready.data(), ready.size());
+    } while (sent < 0 && errno == EINTR);
+    Require(sent == static_cast<ssize_t>(ready.size()));
+    Require(!close(8));
     // The loop owns CLOEXEC duplicates. No inherited writer alias survives here.
-    for(int fd=3;fd<=7;++fd)Require(!close(fd));
-    for(;;){loop.Step();if(loop.CanExitCleanly())return 0;
-      if(loop.DeliveryLost() && loop.Quiescent() && !loop.Jobs())return 125;
-      usleep(1000);}
-  }catch(...){return 125;}
+    for (int fd = 3; fd <= 7; ++fd) Require(!close(fd));
+    for (;;) {
+      loop.Step();
+      if (loop.CanExitCleanly()) return 0;
+      if (loop.DeliveryLost() && loop.Quiescent() && !loop.Jobs()) return 125;
+      usleep(1000);
+    }
+  } catch (...) {
+    return 125;
+  }
 }

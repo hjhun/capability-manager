@@ -81,6 +81,13 @@ user only when product intent is ambiguous or an actual external decision is nee
 
 ## Implementation and validation
 
+Use the global `hjhun-coding-style` skill under `~/.codex/skills/` for C/C++,
+CMake/configuration and RPM work. The repository `.clang-format` records the
+Watcher-derived Google/2-space layout. Preserve C++20, the public C ABI, explicit
+target/install paths and fail-closed contracts. Keep mechanical formatting,
+build/package restructuring and behavior changes in separate review checkpoints.
+Do not copy Watcher's service activation or platform policy as a style change.
+
 Follow P00–P09 in `docx/04-implementation-plan.md` and the acceptance matrix in
 `docx/05-verification.md`. Establish Google Test/Google Mock, CTest/RPM checks, and a
 pure C consumer early. Use actual temporary SQLite databases for transaction/FTS

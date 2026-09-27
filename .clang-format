@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+# tizen-watcher-derived Google C++ layout; preserve reviewed token/include order.
+BasedOnStyle: Google
+IndentWidth: 2
+ColumnLimit: 80
+SortIncludes: Never
+IncludeBlocks: Preserve
+BreakStringLiterals: false
+ReflowComments: Never
+FixNamespaceComments: false

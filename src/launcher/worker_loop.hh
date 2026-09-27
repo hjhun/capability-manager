@@ -14,11 +14,14 @@ namespace capmgr {
 // not authorization: production must independently load a trusted private catalog
 // and invalidate/restart quiescent generations on changes before using a snapshot.
 // That refresh/source trust path is not implemented by this fixture engine.
-struct RegisteredCli { std::string id,executable; };
+struct RegisteredCli {
+  std::string id, executable;
+};
 class WorkerRegistry {
  public:
   explicit WorkerRegistry(std::vector<RegisteredCli> entries);
   std::string_view Resolve(std::string_view id) const noexcept;
+
  private:
   std::vector<RegisteredCli> entries_;
 };
@@ -26,15 +29,30 @@ class WorkerRegistry {
 // durably reserve the token before sending START. Single-threaded worker only.
 class WorkerRuntime {
  public:
-  virtual ~WorkerRuntime()=default;
+  virtual ~WorkerRuntime() = default;
   // Returns clone's direct child or -1/errno. No allocation, Observe or callback
   // may occur after a positive clone return. Default uses NamespaceInit.
-  virtual pid_t Spawn(NamespaceInitConfig& config,void* stack_top) noexcept;
+  virtual pid_t Spawn(NamespaceInitConfig& config, void* stack_top) noexcept;
 };
-enum class WorkerReplyKind : uint16_t { Accepted=1, Stdout=2, Stderr=3, Complete=4, State=5 };
+enum class WorkerReplyKind : uint16_t {
+  Accepted = 1,
+  Stdout = 2,
+  Stderr = 3,
+  Complete = 4,
+  State = 5
+};
 enum class WorkerFailure : uint32_t {
-  None=0, Rejected, Clone, Setup, Timeout, Cancelled, ParentLost, Protocol,
-  OutputLimit, Backpressure, Channel
+  None = 0,
+  Rejected,
+  Clone,
+  Setup,
+  Timeout,
+  Cancelled,
+  ParentLost,
+  Protocol,
+  OutputLimit,
+  Backpressure,
+  Channel
 };
 struct WorkerContext {
   uint64_t generation;
@@ -47,8 +65,8 @@ struct WorkerContext {
   std::string smack_label;
 };
 struct WorkerLimits {
-  std::chrono::milliseconds runtime{30000},setup{5000};
-  size_t output_bytes=1024*1024;
+  std::chrono::milliseconds runtime{30000}, setup{5000};
+  size_t output_bytes = 1024 * 1024;
 };
 // Single-threaded fixed worker only, SIGPIPE ignored, SIGCHLD default, no competing
 // reaper. Not a daemon, public endpoint, authorization or resource-control policy.
@@ -65,15 +83,17 @@ struct WorkerLimits {
 // reaps everything. No automatic worker restart or reservation clearing is valid.
 class WorkerLoop {
  public:
-  using Clock=std::chrono::steady_clock;
-  WorkerLoop(const WorkerContext&,const WorkerRegistry&,WorkerRuntime&,WorkerLimits={});
-  ~WorkerLoop(); // Fail-stop with unreaped children; keep stepping during cleanup.
-  WorkerLoop(const WorkerLoop&)=delete;
-  WorkerLoop& operator=(const WorkerLoop&)=delete;
-  void Step(Clock::time_point now=Clock::now()) noexcept;
+  using Clock = std::chrono::steady_clock;
+  WorkerLoop(const WorkerContext&, const WorkerRegistry&, WorkerRuntime&,
+             WorkerLimits = {});
+  ~WorkerLoop();  // Fail-stop with unreaped children; keep stepping during cleanup.
+  WorkerLoop(const WorkerLoop&) = delete;
+  WorkerLoop& operator=(const WorkerLoop&) = delete;
+  void Step(Clock::time_point now = Clock::now()) noexcept;
   void Shutdown() noexcept;
   bool AdmissionOpen() const noexcept;
-  bool Quiescent() const noexcept; // Closed + no owned child; NOT remote delivery.
+  bool Quiescent()
+      const noexcept;  // Closed + no owned child; NOT remote delivery.
   // Local normal-exit gate: closed, no child/job, and all queued bytes flushed
   // without delivery loss. This is NOT frontend receipt/durable confirmation;
   // frontend still drains CWR1 EOF and verifies every Complete plus owned exit.
@@ -81,9 +101,10 @@ class WorkerLoop {
   // Startup-only witness for the fixed image: command/cancel/reply/parent/self/
   // mount descriptor aliases. Throws once admission has closed or any START was
   // seen. No transfer of ownership; never exposed over IPC.
-  std::array<int,6> StartupDescriptors() const;
+  std::array<int, 6> StartupDescriptors() const;
   bool DeliveryLost() const noexcept;
   size_t Jobs() const noexcept;
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;

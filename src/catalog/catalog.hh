@@ -7,7 +7,13 @@
 #include "catalog/database.hh"
 namespace capmgr {
 using Json = nlohmann::json;
-enum class Kind : int { kAll = 0, kSkill = 1, kAppSkill = 2, kCli = 3, kAction = 4 };
+enum class Kind : int {
+  kAll = 0,
+  kSkill = 1,
+  kAppSkill = 2,
+  kCli = 3,
+  kAction = 4
+};
 struct Entry {
   std::string id;
   std::string name;
@@ -38,6 +44,7 @@ class Catalog {
   Entry GetPrivate(const std::string& id);
   uint64_t Revision() { return db_.Revision(); }
   Database& database() { return db_; }
+
  private:
   void ValidateVersion();
   void Migrate();

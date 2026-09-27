@@ -15,20 +15,23 @@ namespace capmgr {
 // callback/proxy teardown during create, never during bounded destroy.
 class CatalogAdmissionChannel {
  public:
-  virtual ~CatalogAdmissionChannel()=default;
-  virtual std::string AuthorizeCatalog()=0;
-  virtual void CheckSameLive()=0;
-  virtual void ConfirmCatalog(std::string_view descriptor)=0;
-  virtual void Finish()=0;
+  virtual ~CatalogAdmissionChannel() = default;
+  virtual std::string AuthorizeCatalog() = 0;
+  virtual void CheckSameLive() = 0;
+  virtual void ConfirmCatalog(std::string_view descriptor) = 0;
+  virtual void Finish() = 0;
 };
 // Caller owns the channel across the whole CreateClient call (and failure cleanup).
 // Gate and channel are serialized, no concurrent reuse. Fixed policy and ancestor/
 // mount provisioning are caller-owned; no request-selected path is introduced.
-class LeasedCatalogGate final:public AccessGate {
+class LeasedCatalogGate final : public AccessGate {
  public:
-  LeasedCatalogGate(ReadLeasePolicy,CatalogAdmissionChannel&,ReadLeaseOperations* =nullptr);
-  std::string AuthorizeAndGetDatabase() override; // forbidden path-only fallback
+  LeasedCatalogGate(ReadLeasePolicy, CatalogAdmissionChannel&,
+                    ReadLeaseOperations* = nullptr);
+  std::string AuthorizeAndGetDatabase()
+      override;  // forbidden path-only fallback
   std::unique_ptr<ReadAccess> AuthorizeReadAccess() override;
+
  private:
   ReadLeasePolicy policy_;
   CatalogAdmissionChannel& channel_;

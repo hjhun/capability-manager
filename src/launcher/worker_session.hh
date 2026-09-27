@@ -11,10 +11,10 @@ struct WorkerEvent {
   WorkerReplyKind kind;
   uint64_t token;
   WorkerFailure failure;
-  int code,signal,error;
-  std::array<char,4096> bytes{};
-  size_t size=0;
-  std::string_view Data() const noexcept {return {bytes.data(),size};}
+  int code, signal, error;
+  std::array<char, 4096> bytes{};
+  size_t size = 0;
+  std::string_view Data() const noexcept { return {bytes.data(), size}; }
 };
 // Private frontend end of one trusted worker generation. NOT an authorization,
 // spawn, public result adapter, worker-death proof or restart mechanism. Exclusive
@@ -37,16 +37,20 @@ struct WorkerEvent {
 // a separate adapter must validate both native streams before reporting success.
 class WorkerSession {
  public:
-  using Clock=std::chrono::steady_clock;
-  WorkerSession(BrokerJournal&,int command_write,int cancel_write,int reply_read);
-  ~WorkerSession(); // Unfinished generation is made uncertain; never reset here.
-  WorkerSession(const WorkerSession&)=delete;
-  WorkerSession& operator=(const WorkerSession&)=delete;
+  using Clock = std::chrono::steady_clock;
+  WorkerSession(BrokerJournal&, int command_write, int cancel_write,
+                int reply_read);
+  ~WorkerSession();  // Unfinished generation is made uncertain; never reset here.
+  WorkerSession(const WorkerSession&) = delete;
+  WorkerSession& operator=(const WorkerSession&) = delete;
   uint64_t Generation() const;
-  uint64_t Start(const std::string& request); // durable Reserve before any bytes
-  void Cancel(uint64_t token); // idempotent while outstanding; independent pipe
-  std::optional<WorkerEvent> Step(Clock::time_point now=Clock::now());
-  void Abort() noexcept; // close admission/channels, persist uncertainty best effort
+  uint64_t Start(
+      const std::string& request);  // durable Reserve before any bytes
+  void Cancel(
+      uint64_t token);  // idempotent while outstanding; independent pipe
+  std::optional<WorkerEvent> Step(Clock::time_point now = Clock::now());
+  void
+  Abort() noexcept;  // close admission/channels, persist uncertainty best effort
   bool Failed() const;
   // Only when all jobs completed and both outbound queues drained. Closes owned
   // write ends; external owner must then observe/reap its direct worker normally.
@@ -56,6 +60,7 @@ class WorkerSession {
   // observed/reaped worker exit0. Clean EOF may itself prepare the stop. Does not
   // infer old-job absence from that exit: every job already required Complete.
   void ConfirmNormalExit();
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;

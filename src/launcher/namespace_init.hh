@@ -26,10 +26,26 @@ struct NamespaceInitConfig {
   int parent_process;
   int parent_mount_namespace;
 };
-enum class InitMessageKind : uint32_t { Ready=1, Started=2, Exited=3, Failed=4 };
+enum class InitMessageKind : uint32_t {
+  Ready = 1,
+  Started = 2,
+  Exited = 3,
+  Failed = 4
+};
 enum class InitStage : uint32_t {
-  Context=1, Signals, Mount, Descriptors, Label, Bounding, Credentials,
-  Capabilities, Parent, Go, Fork, Exec, Wait
+  Context = 1,
+  Signals,
+  Mount,
+  Descriptors,
+  Label,
+  Bounding,
+  Credentials,
+  Capabilities,
+  Parent,
+  Go,
+  Fork,
+  Exec,
+  Wait
 };
 struct InitMessage {
   InitMessageKind kind;
@@ -38,7 +54,8 @@ struct InitMessage {
   int32_t code;
   int32_t signal;
 };
-static_assert(sizeof(InitMessage)==20); // Fixed pipe record on 32/64-bit targets.
+static_assert(sizeof(InitMessage) ==
+              20);  // Fixed pipe record on 32/64-bit targets.
 // Non-exec namespace PID1. Uses no heap allocation, C++ runtime locks, or logging
 // after clone. Returns only on failure or after main workload exit; the kernel
 // then kills ALL remaining namespace members, including setsid descendants.

@@ -5,10 +5,13 @@ namespace capmgr {
 struct WorkerCatalogFilePolicy {
   uid_t writer;
   gid_t group;
-  mode_t directory_mode; // exact0700/0750/2750
-  mode_t file_mode; // exact0600/0640 for DB/WAL/SHM
+  mode_t directory_mode;  // exact0700/0750/2750
+  mode_t file_mode;       // exact0600/0640 for DB/WAL/SHM
 };
-struct WorkerCatalogSnapshot {uint64_t revision;WorkerRegistry registry;};
+struct WorkerCatalogSnapshot {
+  uint64_t revision;
+  WorkerRegistry registry;
+};
 // Startup-only private snapshot loader, NEVER call with a live worker job.
 // Directory FD is supplied by the trusted fixed frontend, not an IPC client.
 // Requires an image-proven procfs /proc/self/fd and prevalidated directory/mount
@@ -24,5 +27,6 @@ struct WorkerCatalogSnapshot {uint64_t revision;WorkerRegistry registry;};
 // SMACK policy denying writer access, ancestor/mount trust, source registration,
 // <=256 subset selection and revision invalidation still gate production reuse.
 // Policy is trusted internal configuration, never supplied by an IPC request.
-WorkerCatalogSnapshot LoadWorkerCatalog(int trusted_directory,const WorkerCatalogFilePolicy&);
+WorkerCatalogSnapshot LoadWorkerCatalog(int trusted_directory,
+                                        const WorkerCatalogFilePolicy&);
 }

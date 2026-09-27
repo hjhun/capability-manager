@@ -18,6 +18,7 @@ class Statement {
   std::string Text(int column) const;
   int64_t Integer(int column) const;
   int Type(int column) const;
+
  private:
   sqlite3_stmt* stmt_ = nullptr;
 };
@@ -31,6 +32,7 @@ class Database {
   sqlite3* handle() const { return db_; }
   void Exec(const char* sql);
   uint64_t Revision();
+
  private:
   sqlite3* db_ = nullptr;
 };
@@ -39,6 +41,7 @@ class Transaction {
   explicit Transaction(Database& db, bool write = true);
   ~Transaction();
   void Commit();
+
  private:
   Database& db_;
   bool committed_ = false;

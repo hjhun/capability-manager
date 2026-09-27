@@ -14,60 +14,69 @@ namespace capmgr {
 // after Dispatcher binds the client token. All Session/Journal work (including
 // their destruction) belongs in Coordinate, not a destructor or snapshot reader.
 struct ManagedPublicationOperations {
-  virtual ~ManagedPublicationOperations()=default;
-  virtual void BeforeTerminalPublication() {} // trusted fault seam, coordinator only
+  virtual ~ManagedPublicationOperations() = default;
+  virtual void BeforeTerminalPublication() {
+  }  // trusted fault seam, coordinator only
 };
 class ManagedOperation {
  public:
   enum class Cleanup { kPending, kUncertain, kConfirmedComplete };
   struct Publication {
-    Cleanup cleanup=Cleanup::kPending;
+    Cleanup cleanup = Cleanup::kPending;
     std::shared_ptr<const std::string> terminal;
-    uint64_t version=0;
+    uint64_t version = 0;
   };
   struct Snapshot {
     std::shared_ptr<const Publication> publication;
     // Derived only from observed coordinator exit AFTER TLS teardown and join.
-    bool quiescent=false;
+    bool quiescent = false;
   };
-  explicit ManagedOperation(ManagedPublicationOperations* operations=nullptr);
-  virtual ~ManagedOperation(); // fail-stop if caller releases live coordination
-  ManagedOperation(const ManagedOperation&)=delete;
-  ManagedOperation& operator=(const ManagedOperation&)=delete;
-  uint64_t ClientToken() const noexcept {return token_.load();}
-  void Run(); // Starts tracked coordination; return/throw is NEVER cleanup proof.
+  explicit ManagedOperation(ManagedPublicationOperations* operations = nullptr);
+  virtual ~ManagedOperation();  // fail-stop if caller releases live coordination
+  ManagedOperation(const ManagedOperation&) = delete;
+  ManagedOperation& operator=(const ManagedOperation&) = delete;
+  uint64_t ClientToken() const noexcept { return token_.load(); }
+  void
+  Run();  // Starts tracked coordination; return/throw is NEVER cleanup proof.
   // True means this retained request won the atomic end-marker race, not that
   // Coordinate observed/processed it. False means the end marker was visible.
   // Coordinate can return just before Run stores that marker. Neither result
   // proves termination or child absence.
-  bool RequestCancel() noexcept {return !(cancel_state_.fetch_or(1,std::memory_order_acq_rel)&2);}
+  bool RequestCancel() noexcept {
+    return !(cancel_state_.fetch_or(1, std::memory_order_acq_rel) & 2);
+  }
   // Memory-only publication + observed-exit join; never Session/Journal locks.
   Snapshot PollCleanup() noexcept;
+
  protected:
-  virtual void Coordinate()=0;
-  bool CancellationRequested() const noexcept {return cancel_state_.load(std::memory_order_acquire)&1;}
+  virtual void Coordinate() = 0;
+  bool CancellationRequested() const noexcept {
+    return cancel_state_.load(std::memory_order_acquire) & 1;
+  }
   // Single coordinator writer. All three publications are preallocated before
   // admission. Attaching an already materialized immutable terminal allocates
   // nothing. The fault seam may throw; proof survives and caller retries.
   // Confirm ONLY from matching WorkerResult pending/complete after Session fsync.
   // A lost unconfirmed session cannot later be inferred confirmed. Once confirmed,
   // later session loss cannot remove that per-job proof. Terminal is immutable.
-  void Publish(Cleanup,std::shared_ptr<const std::string> terminal={});
+  void Publish(Cleanup, std::shared_ptr<const std::string> terminal = {});
+
  private:
   friend class Dispatcher;
   bool BindClientToken(uint64_t token) noexcept {
-    uint64_t unset=0;return token && token_.compare_exchange_strong(unset,token);
+    uint64_t unset = 0;
+    return token && token_.compare_exchange_strong(unset, token);
   }
   std::atomic<uint64_t> token_{0};
   std::atomic<unsigned> cancel_state_{0};
   ManagedPublicationOperations* operations_;
-  std::shared_ptr<const Publication> confirmed_,uncertain_;
+  std::shared_ptr<const Publication> confirmed_, uncertain_;
   std::shared_ptr<Publication> terminal_publication_;
   std::atomic<std::shared_ptr<const Publication>> publication_;
   std::mutex thread_mutex_;
   std::thread coordinator_;
   std::promise<void> exit_promise_;
-  std::future<void> exited_=exit_promise_.get_future();
-  bool attempted_=false,joined_=false,joining_=false;
+  std::future<void> exited_ = exit_promise_.get_future();
+  bool attempted_ = false, joined_ = false, joining_ = false;
 };
 }

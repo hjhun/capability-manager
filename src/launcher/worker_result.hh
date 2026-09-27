@@ -6,7 +6,7 @@ namespace capmgr {
 enum class WorkerResultBuildStage { Parse, Compare, Failure };
 // Trusted test-only fault seam, never selected by IPC; must outlive collector.
 struct WorkerResultOperations {
-  virtual ~WorkerResultOperations()=default;
+  virtual ~WorkerResultOperations() = default;
   virtual void BeforeBuild(WorkerResultBuildStage) {}
 };
 // Private collector, not an ExecutionBackend or cleanup coordinator. Construct
@@ -20,11 +20,12 @@ struct WorkerResultOperations {
 // Those late records neither reopen a sealed collector nor produce a terminal.
 class WorkerResult {
  public:
-  WorkerResult(uint64_t client_token,const std::string& request,WorkerResultOperations* operations=nullptr);
-  WorkerResult(const WorkerResult&)=delete;
-  WorkerResult& operator=(const WorkerResult&)=delete;
-  const std::string& Original() const noexcept {return request_.original;}
-  uint64_t ClientToken() const noexcept {return client_token_;}
+  WorkerResult(uint64_t client_token, const std::string& request,
+               WorkerResultOperations* operations = nullptr);
+  WorkerResult(const WorkerResult&) = delete;
+  WorkerResult& operator=(const WorkerResult&) = delete;
+  const std::string& Original() const noexcept { return request_.original; }
+  uint64_t ClientToken() const noexcept { return client_token_; }
   bool Bind(uint64_t worker_token) noexcept;
   // Separate provisional streams, <=1MiB combined. Only a matching Complete
   // yields a result, once. Native bytes survive unchanged, including isError and
@@ -35,10 +36,10 @@ class WorkerResult {
   // evidence and may produce exactly one result; only then Complete() is true.
   // Caller retains delivery ownership/backpressure while TerminalPending().
   RunResult RetryTerminal();
-  bool TerminalPending() const noexcept {return terminal_pending_;}
+  bool TerminalPending() const noexcept { return terminal_pending_; }
   bool NeedsCancellation() const noexcept;
-  bool Complete() const noexcept {return complete_;}
-  bool Uncertain() const noexcept {return uncertain_;}
+  bool Complete() const noexcept { return complete_; }
+  bool Uncertain() const noexcept { return uncertain_; }
   // Before confirmed Complete: no terminal, reset or numeric-PID absence
   // inference. A terminal-pending proof already received is preserved instead.
   // Caller keeps durable
@@ -46,15 +47,16 @@ class WorkerResult {
   // current Dispatcher framed work, which would synthesize an early terminal.
   // Production bounded destroy/retry requires a separately reviewed coordinator.
   void LoseSession() noexcept;
+
  private:
   RunResult BuildTerminal();
   Request request_;
   WorkerResultOperations* operations_;
   WorkerEvent terminal_{};
-  uint64_t client_token_,worker_token_=0;
-  std::array<std::string,2> streams_;
-  size_t total_=0;
-  const char* failure_=nullptr;
-  bool complete_=false,uncertain_=false,terminal_pending_=false;
+  uint64_t client_token_, worker_token_ = 0;
+  std::array<std::string, 2> streams_;
+  size_t total_ = 0;
+  const char* failure_ = nullptr;
+  bool complete_ = false, uncertain_ = false, terminal_pending_ = false;
 };
 }

@@ -9,14 +9,15 @@ namespace capmgr {
 // the writer of each stream fragment; remount needs the credential sidechannel.
 class TidlChannels {
  public:
-  explicit TidlChannels(std::shared_ptr<ConnectionPolicy> policy={});
-  bool BindChannels(int main_fd,int callback_fd) noexcept;
-  bool ValidateChannels(int main_fd,int callback_fd) noexcept;
+  explicit TidlChannels(std::shared_ptr<ConnectionPolicy> policy = {});
+  bool BindChannels(int main_fd, int callback_fd) noexcept;
+  bool ValidateChannels(int main_fd, int callback_fd) noexcept;
   std::shared_ptr<Peer> MainPrincipal() const;
+
  private:
   void Authorize(const Peer& peer);
   std::shared_ptr<ConnectionPolicy> policy_;
   mutable std::mutex mutex_;
-  std::shared_ptr<Peer> main_,callback_;
+  std::shared_ptr<Peer> main_, callback_;
 };
 }

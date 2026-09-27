@@ -24,15 +24,16 @@ class WorkerInitialNamespaces {
  public:
   WorkerInitialNamespaces();
   ~WorkerInitialNamespaces();
-  WorkerInitialNamespaces(const WorkerInitialNamespaces&)=delete;
-  WorkerInitialNamespaces& operator=(const WorkerInitialNamespaces&)=delete;
-  std::array<int,2> Descriptors() const noexcept {return fds_;}
+  WorkerInitialNamespaces(const WorkerInitialNamespaces&) = delete;
+  WorkerInitialNamespaces& operator=(const WorkerInitialNamespaces&) = delete;
+  std::array<int, 2> Descriptors() const noexcept { return fds_; }
   void ValidateCurrent() const;
   bool Close() noexcept;
+
  private:
-  std::array<int,2> fds_{-1,-1};
-  std::array<dev_t,2> devices_{};
-  std::array<ino_t,2> inodes_{};
+  std::array<int, 2> fds_{-1, -1};
+  std::array<dev_t, 2> devices_{};
+  std::array<ino_t, 2> inodes_{};
 };
 struct WorkerBootstrapPolicy {
   uint64_t capabilities;
@@ -54,5 +55,6 @@ void ValidateWorkerBootstrap(const WorkerBootstrapPolicy&);
 // Optional exact six aliases come solely from the just-constructed WorkerLoop's
 // StartupDescriptors: command/cancel/reply/parent/self/mount. Their inode/type,
 // access direction and CLOEXEC are checked, and every other post-load FD rejects.
-void FinishWorkerBootstrap(const WorkerBootstrapPolicy&,std::span<const int> loop_fds={});
+void FinishWorkerBootstrap(const WorkerBootstrapPolicy&,
+                           std::span<const int> loop_fds = {});
 }

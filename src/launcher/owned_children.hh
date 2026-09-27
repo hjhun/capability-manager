@@ -8,22 +8,33 @@
 
 namespace capmgr {
 // Private broker state. These are not C API error values.
-enum class ChildState { Running, CleanupPending, ReapPending, Complete, Uncertain, Reserved };
-struct ChildStatus {
-  ChildState state=ChildState::Running;
-  int exit_code=-1;
-  int signal=0;
-  int system_error=0;
+enum class ChildState {
+  Running,
+  CleanupPending,
+  ReapPending,
+  Complete,
+  Uncertain,
+  Reserved
 };
-struct ChildExit { bool exited=false; int code=-1; int signal=0; };
+struct ChildStatus {
+  ChildState state = ChildState::Running;
+  int exit_code = -1;
+  int signal = 0;
+  int system_error = 0;
+};
+struct ChildExit {
+  bool exited = false;
+  int code = -1;
+  int signal = 0;
+};
 // Return zero or a positive errno. Observe MUST use WNOWAIT; Reap MUST be
 // nonblocking. Injection is for failure-path tests, not an IPC/plugin surface.
 class ChildOperations {
  public:
-  virtual ~ChildOperations()=default;
-  virtual int Observe(pid_t pid, ChildExit& result) noexcept=0;
-  virtual int Kill(pid_t pid) noexcept=0;
-  virtual int Reap(pid_t pid) noexcept=0;
+  virtual ~ChildOperations() = default;
+  virtual int Observe(pid_t pid, ChildExit& result) noexcept = 0;
+  virtual int Kill(pid_t pid) noexcept = 0;
+  virtual int Reap(pid_t pid) noexcept = 0;
 };
 ChildOperations& LinuxChildOperations();
 
@@ -37,11 +48,12 @@ ChildOperations& LinuxChildOperations();
 // must keep this table alive and retry cleanup for its entire process lifetime.
 class OwnedChildren {
  public:
-  explicit OwnedChildren(size_t capacity=4, ChildOperations& operations=LinuxChildOperations(),
-                         uint64_t first_id=1);
+  explicit OwnedChildren(size_t capacity = 4,
+                         ChildOperations& operations = LinuxChildOperations(),
+                         uint64_t first_id = 1);
   ~OwnedChildren();
-  OwnedChildren(const OwnedChildren&)=delete;
-  OwnedChildren& operator=(const OwnedChildren&)=delete;
+  OwnedChildren(const OwnedChildren&) = delete;
+  OwnedChildren& operator=(const OwnedChildren&) = delete;
   // Preferred clone path: reserve capacity/token BEFORE creating a child, then
   // attach the exact successful clone return immediately. Attach cannot allocate,
   // inspect/reap or return a failure which loses the child. Invalid call ordering
@@ -50,20 +62,28 @@ class OwnedChildren {
   void AttachReserved(uint64_t id, pid_t direct_child) noexcept;
   // Only before clone or after clone returned failure: never abandon a live child.
   void AbandonUnspawned(uint64_t id);
-  uint64_t Adopt(pid_t direct_child); // Failure leaves ownership with the caller.
+  uint64_t Adopt(
+      pid_t direct_child);  // Failure leaves ownership with the caller.
   ChildStatus Inspect(uint64_t id);
   ChildStatus Stop(uint64_t id);
   ChildStatus StopAndWait(uint64_t id, std::chrono::milliseconds budget);
-  void Release(uint64_t id); // Complete only; never discard uncertain/pending work.
+  void Release(
+      uint64_t id);  // Complete only; never discard uncertain/pending work.
   size_t Size() const;
+
  private:
-  struct Job { uint64_t id=0; pid_t pid=-1; ChildStatus status; bool no_signal=false; };
+  struct Job {
+    uint64_t id = 0;
+    pid_t pid = -1;
+    ChildStatus status;
+    bool no_signal = false;
+  };
   Job& Find(uint64_t id);
-  bool Refresh(Job& job); // True only for a live child observed in this call.
+  bool Refresh(Job& job);  // True only for a live child observed in this call.
   const size_t capacity_;
   ChildOperations& operations_;
   uint64_t next_id_;
   mutable std::mutex mutex_;
-  std::array<Job,64> jobs_{};
+  std::array<Job, 64> jobs_{};
 };
 }
