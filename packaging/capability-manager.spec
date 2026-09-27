@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Name: capability-manager
 Version: 0.1.0
-Release: 1
+Release: 2
 Summary: Capability catalog and client library
 License: Apache-2.0 AND MIT
 URL: https://github.com/hjhun/capability-manager
@@ -48,11 +48,13 @@ cmake -S . -B _build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS_RELEASE="-O1 -
 cmake --build _build --parallel 1
 
 %check
-ctest --test-dir _build --output-on-failure
+ctest --test-dir _build --output-on-failure --no-tests=error
 
 %install
 DESTDIR=%{buildroot} cmake --install _build
 install -D -m 755 _build/capmgr-unit-tests %{buildroot}%{_libexecdir}/capmgr/capmgr-unit-tests
+install -D -m 755 _build/capmgr-adapter-tests %{buildroot}%{_libexecdir}/capmgr/capmgr-adapter-tests
+install -D -m 755 _build/capmgr-cli-fixture %{buildroot}%{_libexecdir}/capmgr/capmgr-cli-fixture
 install -D -m 755 _build/capmgr-c-consumer %{buildroot}%{_libexecdir}/capmgr/capmgr-c-consumer
 install -D -m 644 json-3.11.3/LICENSE.MIT %{buildroot}%{_datadir}/licenses/%{name}/nlohmann-json-LICENSE.MIT
 
@@ -69,3 +71,6 @@ install -D -m 644 json-3.11.3/LICENSE.MIT %{buildroot}%{_datadir}/licenses/%{nam
 %files tests
 %{_libexecdir}/capmgr/capmgr-unit-tests
 %{_libexecdir}/capmgr/capmgr-c-consumer
+
+%{_libexecdir}/capmgr/capmgr-adapter-tests
+%{_libexecdir}/capmgr/capmgr-cli-fixture

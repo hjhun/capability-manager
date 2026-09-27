@@ -156,6 +156,23 @@ void Catalog::Replace(const std::string& owner, const std::vector<Entry>& entrie
   if (sqlite3_changes(db_.handle()) != 1)
     throw Error(ErrorCode::kLimit, "Catalog revision exhausted");
 }
+bool Catalog::PublishActions(const std::vector<Entry>& entries) {
+  Transaction tx(db_);
+  for(const auto& entry:entries)
+    if(entry.kind!=Kind::kAction || entry.owner!="@action-source")
+      throw Error(ErrorCode::kPermission,"Only trusted Action snapshots may publish directly");
+  Validate("@action-source",entries);
+  Json expected=Json::object(),current=Json::object();
+  for(const auto& entry:entries)expected[entry.id]=Serialize(entry);
+  Foreach(Kind::kAction,[&](const Json& summary) {
+    auto entry=GetPrivate(summary.at("id"));
+    if(entry.owner!="@action-source")throw Error(ErrorCode::kConflict,"Foreign Action owner");
+    current[entry.id]=Serialize(entry);return true;
+  });
+  if(current==expected){tx.Commit();return false;}
+  Replace("@action-source",entries);
+  tx.Commit();return true;
+}
 void Catalog::Stage(const std::string& operation, const std::string& owner,
                     const std::vector<Entry>& entries) {
   if (operation.empty()) throw Error(ErrorCode::kInvalid, "Missing operation ID");

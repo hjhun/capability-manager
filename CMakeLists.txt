@@ -22,6 +22,9 @@ add_library(capmgr-catalog STATIC src/catalog/database.cc src/catalog/catalog.cc
 target_include_directories(capmgr-catalog PUBLIC src)
 target_link_libraries(capmgr-catalog PUBLIC SQLite::SQLite3 nlohmann_json::nlohmann_json)
 set_target_properties(capmgr-catalog PROPERTIES CXX_VISIBILITY_PRESET hidden)
+add_library(capmgr-adapters STATIC src/pkgmgr-plugin/parser.cc src/amd-module/action_import.cc
+  src/launcher/runner.cc)
+target_link_libraries(capmgr-adapters PUBLIC capmgr-catalog Threads::Threads)
 add_library(capmgr SHARED src/api/client.cc)
 target_include_directories(capmgr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/api>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/capmgr> PRIVATE src)
@@ -42,8 +45,15 @@ if(BUILD_TESTING)
   add_executable(capmgr-c-consumer test/c_consumer.c)
   target_link_libraries(capmgr-c-consumer PRIVATE capmgr)
   add_test(NAME capmgr-c-consumer COMMAND capmgr-c-consumer)
+  add_executable(capmgr-cli-fixture test/fixtures/cli_fixture.cc)
+  target_link_libraries(capmgr-cli-fixture PRIVATE nlohmann_json::nlohmann_json)
+  add_executable(capmgr-adapter-tests test/unit/parser_test.cc test/unit/action_import_test.cc
+    test/unit/runner_test.cc)
+  target_link_libraries(capmgr-adapter-tests PRIVATE capmgr-adapters GTest::gtest_main)
+  add_dependencies(capmgr-adapter-tests capmgr-cli-fixture)
+  add_test(NAME capmgr-adapters COMMAND capmgr-adapter-tests)
   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS capmgr-unit-tests capmgr-c-consumer USES_TERMINAL)
+    DEPENDS capmgr-unit-tests capmgr-c-consumer capmgr-adapter-tests USES_TERMINAL)
 endif()
 
 find_program(TIDLC_EXECUTABLE tidlc)

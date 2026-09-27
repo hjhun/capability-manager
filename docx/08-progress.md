@@ -24,14 +24,14 @@ Branch main tracks origin/main; upstream initial commit is
 | Phase | State | Evidence / next action |
 |---|---|---|
 | P00 | IN_PROGRESS | Baseline accepted; concrete ABI r4 accepted; environment inspected |
-| P01 | IN_PROGRESS | C++/SQLite sources and proposed public header; build/tests pending |
-| P02 | IN_PROGRESS | Private catalog staging/publication implementation; tests pending |
-| P03 | IN_PROGRESS | Local search implementation started; Action integration pending |
-| P04 | NOT_RUN | CLI engine pending |
+| P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
+| P02 | IN_PROGRESS | Private catalog/parser core tested; authoritative finalizer/MIC integration BLOCKED |
+| P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
+| P04 | IN_PROGRESS | CLI runner core tested; app_fw/TIDL/cgroup integration pending |
 | P05 | BLOCKED (paths) | PATH-01 user question pending; independent work continues |
-| P06 | NOT_RUN | TIDL/AMD/RPM integration pending |
-| P07 | NOT_RUN | Emulator toolchain preparation pending |
-| P08 | NOT_RUN | Performance/stability and physical-device tests pending |
+| P06 | IN_PROGRESS | Foundation RPM installed; TIDL/AMD runtime integration pending |
+| P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
+| P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
 
 ## Review ledger
@@ -44,7 +44,7 @@ Branch main tracks origin/main; upstream initial commit is
 | P00-ABI-r4 | 07: 613273012d667c0e995e5e46aa77611a576f702a192194676e2236161f16f5bc; header: a37b5b6b1feab61c98c2c6304b5e1aa83d25607e2d84f0536348da9c0cb5deef | ACCEPTED | Contract only; product tests NOT_RUN at acceptance |
 | P00-DOCS-r1 | 01/02/04/05/06 bundle 5618a64d36b56b3e7a8b9d3fc5da789fa101938e01c6a8b764b27ae8f0bf6e75 | ACCEPTED by owner | Source requirements/gates and translation compared; product tests NOT_RUN |
 | P00-PUBLISH-r1 | Publication docs | CHANGES_REQUESTED | Include reviewed header, align accepted decisions, restore native isError treatment, update board/ignore |
-| P00-PUBLISH-r2 | Docs + reviewed contract header only | PENDING | Changes sent for re-review |
+| P00-PUBLISH-r2 | Docs + reviewed contract header only | CHANGES_REQUESTED | Stale status corrected and accepted in P00-PUBLISH-r3 below |
 
 Baseline acceptance preserved the nine core features, Action projection, local RO
 queries, parser/MIC separation, explicit remount, CLI argv/dual-stream behavior and
@@ -220,3 +220,62 @@ create remains fail-closed pending privilege/TIDL integration; asynchronous
 execution, mount, authoritative installer finalization, Action change feed,
 representative search quality and device permission checks remain open.
 Next checkpoint integrates and reviews parser/importer/CLI cores and their tests.
+
+### Foundation publication and installed emulator tests
+
+Foundation commit `008ecbb94ddf010ca5dc87a820ef053335a991c9` on main:
+`git push origin HEAD:main` exit 0; remote refs/heads/main verified identical.
+Only reviewed foundation files were staged; parser/importer/launcher/tools remained
+outside this checkpoint. Existing LICENSE and published history were preserved.
+
+On emulator-26101, installed the three native foundation RPMs with `rpm -U`, then
+ran installed `/usr/libexec/capmgr/capmgr-unit-tests` (24/24) and
+`capmgr-c-consumer`, remote exit 0. Evidence: `native-rpm-install-tests.log`.
+This proves installed x86_64 foundation tests; platform service/privilege/mount
+integration and real-device execution remain NOT_RUN.
+
+
+### P02-P04 adapter-core checkpoint r2
+
+P02-P04-CORES-r2 ACCEPTED by w1:pJ for 14 scoped source/build/test files;
+review manifest SHA256
+`8c21051147c299ff9375da2ea9aa0b6abea2966473f10a5587d88330072a07cc`.
+Action import now accepts omitted outputSchema, rejects malformed present schemas,
+and replays the committed revision during reconciliation even after failed event
+submission. Receivers must deduplicate; replay still needs an actual source or
+reconnect trigger. No autonomous delivery claim. Source archive SHA256
+`d203e3d4dc34c236664a39570af2b96bbb5c2720ac0b7b6dc0e3a34c9e2b14c4`.
+The reviewer permitted a comment-only grammar cleanup in action_import.hh.
+
+Host `cmake --build build --target check -j 3`: CTest 3/3 PASS
+(24 foundation cases, 23 adapter cases, pure C consumer), exit 0, evidence
+`adapters-check-r2.log`. Exact r2 emulator-native `rpmbuild -ba` completed
+TIDL generation, compilation, CTest 3/3, unpackaged-file validation and four RPMs,
+remote exit 0 (`adapters-native-rpm-r2.log`). Prior r1 native CMake run and
+owned-scope cleanup passed (`adapters-native-r1/summary.json`).
+
+Production StagePackage rejects before staging without authoritative finalization;
+only the explicit offline harness supplies outcomes. Action-only atomic import
+cannot publish parser kinds. CLI core validates single literal argv, separate
+streams, native errors, timeout/cancel, child process groups and FD isolation.
+Actual MIC/finalizer, source-writer feed, app_fw service/cgroup/IPC and public async
+are outside this checkpoint. Search corpus, dispatcher and tools remain separate
+working changes, excluded from staging this checkpoint.
+
+### Adapter RPM upgrade correction and installed verification
+
+Same-NEVRA Release 1 reinstall failed with file conflicts (remote exit 3,
+`adapters-native-install-r2.log`) and an msm tsm_post warning. No force or
+replacefiles was used. P02-P04-PACKAGE-r3 ACCEPTED by w1:pJ for Release 1 -> 2
+and the permitted comment tidy; reviewed spec SHA256
+`9f6bcdad58a1d556e8b697b7808073ef22ae59e61050bc133c4e67bdf1876067`.
+Release 2 source archive SHA256
+`c70119960550c499e79e531ac83681ddd9066895d3281aacc05e3482cfa2c289`.
+
+Exact Release 2 native RPM build/check passed CTest 3/3 and package validation,
+remote exit 0 (`adapters-native-rpm-r3.log`). Normal `rpm -U` of the three
+0.1.0-2 packages succeeded; `rpm -q` confirmed runtime/devel/tests at 0.1.0-2.
+Installed adapter tests passed 23/23 and installed C consumer exited 0; remote
+exit 0 (`adapters-native-install-r3.log`). The earlier msm warning was on the
+failed same-NEVRA attempt; the Release 2 successful transaction did not emit it.
+Platform policy correctness is still unverified independently of package outcome.

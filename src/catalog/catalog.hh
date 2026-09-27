@@ -29,6 +29,8 @@ class Catalog {
   Catalog(const std::string& path, Database::Access access);
   void Stage(const std::string& operation, const std::string& owner,
              const std::vector<Entry>& entries);
+  // Atomic trusted Action-source snapshot; rejects every non-Action entry.
+  bool PublishActions(const std::vector<Entry>& entries);
   void Finalize(const std::string& operation, bool success);
   void Foreach(Kind filter, const std::function<bool(const Json&)>& callback);
   std::vector<Json> Search(const std::string& query, Kind filter = Kind::kAll);
