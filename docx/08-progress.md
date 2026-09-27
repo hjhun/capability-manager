@@ -1142,3 +1142,16 @@ enumeration to the cancellation-critical loop. Quiescence alone cannot prove
 queued Complete/output was flushed. Source revision is not an authorization or
 validity lease. Root service/authentication/cgroups and production enablement are
 still OPEN; these fixture tests do not close them.
+
+FD8 checkpoint `77a1391e30543ebb4c63644697172afdcde96bd0` pushed to main with
+exit0 and exact remote-ref match. P04-WORKER-DRAIN-r1 ACCEPTED by w1:pJ for the
+three-file local exit predicate. CanExitCleanly requires closed admission, zero
+owned children/job slots, empty queue/offset and no transport loss. Saturated
+output may be child-quiescent while this predicate remains false; lost reply
+consumer never qualifies. This reports local writes only, not frontend receipt.
+WorkerSession still must durably confirm Complete, drain EOF and combine that
+with owned worker exit0 before releasing the generation.
+Host worker-drain-host-r1.log: `cmake --build build --target check -j2`, exit0,
+CTest8/8 PASS. Native worker-drain-native-r1.sh, manifest3/3 and14/14 loop/registry
+tests PASS, worker-drain-native-r1.log remote0. Native tests use forked protocol
+fixtures; no new root worker image or production route is installed or activated.

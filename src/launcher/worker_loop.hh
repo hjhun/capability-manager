@@ -74,6 +74,10 @@ class WorkerLoop {
   void Shutdown() noexcept;
   bool AdmissionOpen() const noexcept;
   bool Quiescent() const noexcept; // Closed + no owned child; NOT remote delivery.
+  // Local normal-exit gate: closed, no child/job, and all queued bytes flushed
+  // without delivery loss. This is NOT frontend receipt/durable confirmation;
+  // frontend still drains CWR1 EOF and verifies every Complete plus owned exit.
+  bool CanExitCleanly() const noexcept;
   bool DeliveryLost() const noexcept;
   size_t Jobs() const noexcept;
  private:

@@ -116,7 +116,10 @@ TEST(WorkerLoop, SaturatedFrontendCannotBlockCancellationAndReaping) {
   // Queue pressure closes admission; cleanup must proceed even before the frontend
   // starts consuming buffered output. Completion remains explicitly unsuccessful.
   for(int i=0;i<2000 && !f.loop->Quiescent();++i)f.Tick(false);
-  EXPECT_TRUE(f.loop->Quiescent());f.Until(1);
+  EXPECT_TRUE(f.loop->Quiescent());
+  EXPECT_FALSE(f.loop->CanExitCleanly()); // Complete/output still queued behind full pipe
+  f.Until(1);
+  EXPECT_TRUE(f.loop->CanExitCleanly());
   EXPECT_EQ(f.Done(1).failure,WorkerFailure::Backpressure);
 }
 TEST(WorkerLoop, ActiveCancelProgressesWhileAnotherStartIsPartial) {
@@ -143,6 +146,7 @@ TEST(WorkerLoop, LostReplyConsumerClosesAdmissionAndRetainsUncertainty) {
   Fixture f;f.runtime.mode=Runtime::Linger;f.Start(1);for(int i=0;i<10;++i)f.Tick();
   close(f.replies.fd[0]);f.replies.fd[0]=-1;for(int i=0;i<2000 && !f.loop->Quiescent();++i)f.Tick(false);
   EXPECT_FALSE(f.loop->AdmissionOpen());EXPECT_TRUE(f.loop->DeliveryLost());EXPECT_TRUE(f.loop->Quiescent());
+  EXPECT_FALSE(f.loop->CanExitCleanly());
 }
 
 TEST(WorkerLoop, CapacityRejectedStartsConsumePrecancelWithoutHurtingLiveJobs) {
@@ -160,4 +164,11 @@ TEST(WorkerRegistry, FixedBoundImmutableLookupRejectsAmbiguousEntries) {
   EXPECT_THROW((WorkerRegistry({{"action:x","/one"}})),std::runtime_error);
   WorkerRegistry registry({{"cli:x","/one"}});EXPECT_EQ(registry.Resolve("cli:x"),"/one");EXPECT_TRUE(registry.Resolve("cli:unknown").empty());
   static_assert(noexcept(registry.Resolve("cli:x")));
+}
+
+TEST(WorkerLoop, NormalExitRequiresClosedAdmissionEvenWithoutJobs) {
+  Fixture f;
+  EXPECT_FALSE(f.loop->CanExitCleanly());
+  f.loop->Shutdown();
+  EXPECT_TRUE(f.loop->CanExitCleanly());
 }

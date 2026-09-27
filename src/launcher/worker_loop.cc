@@ -266,6 +266,7 @@ void WorkerLoop::Step(Clock::time_point now) noexcept {impl_->Step(now);}
 void WorkerLoop::Shutdown() noexcept {impl_->Close(WorkerFailure::ParentLost);}
 bool WorkerLoop::AdmissionOpen() const noexcept {return impl_->open;}
 bool WorkerLoop::Quiescent() const noexcept {return !impl_->open && impl_->children.Size()==0;}
+bool WorkerLoop::CanExitCleanly() const noexcept {return Quiescent() && Jobs()==0 && !impl_->lost && impl_->count==0 && impl_->offset==0;}
 bool WorkerLoop::DeliveryLost() const noexcept {return impl_->lost;}
 size_t WorkerLoop::Jobs() const noexcept {size_t n=0;for(auto& j:impl_->jobs)if(j.token)++n;return n;}
 }
