@@ -1091,3 +1091,31 @@ hostile rename/ABA proof: stable trusted ancestors, authorized writer and SMACK
 policy remain prerequisites. Source invalidation, bounded production subset,
 execution path trust and bootstrap READY/spawn wiring remain unimplemented gates.
 Installed packages remain Release9; no production worker image is installed.
+
+Worker catalog checkpoint `f86f41ee12c2aa93cc2bf7f0121b0fa3adfd1999` pushed to
+main with exit0 and exact remote-ref match. P04-WORKER-SUPERVISOR-r1 is IN_REVIEW.
+The private coordinator takes sole WorkerSession ownership, requires a complete
+fixed32-byte CWB1 bootstrap record, exact EOF and an owned-live worker before
+admission, and rechecks ownership immediately before START/Reserve. A five-second
+absolute deadline includes no-data and retained-writer cases. Normal exit combines
+observed/reaped owned worker exit0 with Session's already confirmed jobs and clean
+reply EOF; buffered Complete remains readable after worker exit. Failure retains
+journal uncertainty and external child-table cleanup responsibility.
+Host worker-supervisor-host-r2.log CTest8/8 PASS and native exact-source
+worker-supervisor-native-r1.log18/18 PASS, remote0. These use injected child
+operations, not a real FD8 bootstrap emitter. Actual fixed descriptor mapping,
+single-thread root worker bootstrap, trusted snapshot/invalidation, backend and
+production activation remain unimplemented; installed RPMs remain Release9.
+
+The reviewer inspected exact AMD1.80.14 source85fbad35 vs1.80.19f0d272f6 and
+AUL0.83.17 source00ea297 vs0.83.21 source13cb18c without mutations. AMD module C-hook
+header/loader bytes are identical: int AMD_MOD_INIT(void), void AMD_MOD_FINI(void),
+matching de4d7fc Action's exports and module path. No struct/vtable ABI crosses that
+loader boundary. Used AUL appid/pkgid-by-PID-and-UID signatures are unchanged;
+newer same-process/team appid behavior is contextual and not exercised by de4's
+external-peer lookups. No concrete direct hook/signature incompatibility was found.
+This supports source compatibility only, not exact installed binary provenance,
+AMD load/start/stop, team-context semantics or matched Action runtime upgrade.
+P04-WORKER-SUPERVISOR-r1 ACCEPTED by w1:pJ for the exact four-file coordinator
+scope and separate host/native mocked-ownership evidence. No blocking finding;
+actual FD8/bootstrap image behavior remains outside this acceptance.
