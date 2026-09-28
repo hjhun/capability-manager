@@ -2294,3 +2294,42 @@ superseded by this final disposition. Only the two new07 headings are changed to
 accepted r6; reviewed contract clauses and product bytes remain unchanged.
 Publication is limited to reviewed23 source files plus this administrative08.
 No package15/header conversion/new policy or production activation is included.
+
+### STYLE-HEADER-r1 mechanical conversion after OFD publication
+
+P06-OFD accepted23+administrative08 published as
+c8ec762070464e3c0657aefe8654e111c1dcb6ca; commit0/push0, exact remote main matched,
+clean tree before the separate header task. Installed Release14 is unchanged.
+
+User-directed header conversion freezes37 legacy project .h/.hh files in
+/tmp/capmgr-style-header-r1.sha256; source archive SHA256
+8aecfc53579a6008f7ba4c08710c2d0a995864f41518534f2142537067d918b5.
+Adds Watcher-shaped full Apache notice while preserving SPDX/genuine attribution
+and introduces unique Google project/path/file H_/HH_ guards with trailing `_`.
+No invented Samsung ownership. Generated/vendor/build headers excluded; the three
+new OFD headers already comply and are not changed. Reverse-exact proof reconstructs
+every baseline header after removing only the license/guard edits, preserving all
+other tokens/comments/includes. All40 project guards are unique; no old CAPMGR_H_
+reference remains outside the replaced public guard. Public declarations unchanged.
+Global hjhun-coding-style SKILL.md remains its separately accepted exact bytes.
+
+Host style-header-host-check-r1 CTest8/8; actual39-header double inclusion (only
+the native-generated service header excluded), C11 public double inclusion,
+C consumer0 and12 exports PASS (host-double-r1/host-abi-r1 logs). Native r1 builds
+fresh protected root with all platform options ON, checks frozen37/37 and completes
+CTest8/8, then FAILS its harness double-TU generator due nested newline escaping:
+remote1/transport0. Preserve style-header-native-r1.log; not a source failure/PASS.
+Corrected file-based TU and bounded script use unchanged product37/37 in the same
+protected owned scope. style-header-native-r2.log checks CTest8/8, all40 header
+double inclusion syntax0 including generated TIDL, focused24/24 real-metadata tests,
+C_CONSUMER_EXIT0 and12 CAPMGR_0 exports; final37/37, remote0/transport0. No header
+bytes changed to repair the harness. Final independent header/admin verdict pending;
+no RPM, root workload/transport rerun, new policy or production activation.
+
+STYLE-HEADER-r1 FINAL SOURCE/NATIVE/PUBLICATION is ACCEPTED by w1:pA for exact37
+headers plus administrative08. Accepted pre-bookkeeping08 SHA256
+fe30da778acc08c5e78a8c7d349555b7843dfdf68faa04e721302fb04bec01b2
+is preserved. Earlier header-final-pending text is historical and superseded.
+Global skill and OFD implementation are separate accepted checkpoints; publication
+here changes only the reviewed license/guards and accurate administrative evidence.
+Package15 and the causal new-label policy matrix remain separate future gates.
