@@ -2633,3 +2633,78 @@ and earlier source08 hash are preserved above. Native21/21 and exact method,
 pre/post checks, cleanup/exit evidence close only the private guard checkpoint;
 full normal-role/policy/crash/recovery/package and production gates remain open.
 Only pending heading/Next and this disposition were changed after that review.
+
+### READ-POLICY-ROLES publication and P06-READ-POLICY-REFUSAL-r1 (ACCEPTED)
+
+Accepted role/guard source+08 checkpoint
+`9fe2a07a3cdd310492abfd93c7d3df2ddf19bfea` was committed with signoff and message
+checks, pushed normally (exit0), and exactly matched origin/main; tree was clean.
+This records owner-observed publication, not an independent reviewer remote query.
+InstalledRelease15 is unchanged. Full root role/context/SQLite/policy remains open.
+
+The next helper slice adds explicit root `--assert-contended` beside `--recover`.
+It shares actual trusted journal validation and independent flock EX|NB acquisition.
+On contention, it validates the immutable plan and current pinned scope and returns
+EX_CONTENDED/mutations0; this does not distinguish SH versus EX, identify the owner,
+prove any process/task alive, or authorize signaling a reported PID. The later
+causal crash fixture must separately establish the expected exclusive child and
+sole surviving SH reference. An available EX returns a failed assertion with zero
+mutation; that branch does not claim to have validated the scope itself.
+
+Both assertion outcomes return before delete/revoke/receipt persistence. Existing
+recovery.json and recovery.json.next bytes are untouched. Provenance/plan/scope
+errors are exceptions, not a successful contention observation. Normal --recover
+still requires EX before deletion/all nine best-effort revocations and receipt
+retry; its contention error text is now neutral rather than inferring a SH holder.
+No source-loader, rule matrix, JournalOwner/SH ownership, package or production
+permission changes accompany this flag. No operation runs by default/on import.
+
+Host `read-policy-refusal-host-r2.log`25/25 FakeOperations tests PASS and
+`read-policy-refusal-host-check-r2.log` CTest8/8 PASS. Cases cover actual independent
+SH and EX descriptions, inherited child SH after parent close, specific CLI result/
+exit mapping, unlocked assertion failure with no delete/revoke/persist, unchanged
+existing receipts, malformed plan/scope refusal and normal cleanup/retry. The
+earlier outside-project three-test prototype and host-r1 used a proposed
+LIVE_SH_EX_CONTENDED label; engineering review corrected this inference before
+freezing source. They are not evidence for the final neutral marker.
+
+Exact native fake-operation tests, source acceptance and any actual assertion CLI
+on a real journal are NOT_RUN/pending. New native tests may use owned temp files,
+flock and bounded fork only; they cannot write load2 or execute actual root roles.
+The normal matrix/crash fixture (including future hold-reference/adoption proof)
+requires separate frozen source/interpreter/image/watchdog safety review before
+any policy mutation. No production admission, worker/broker, direct-open matrix,
+installer/Action integration, PATH/remount or physical/P09 ARM gate is closed.
+
+Independent REFUSAL-r1 source disposition: ACCEPTED for the narrow local helper/
+test contract only. Original reviewed08
+`3e876611b6de8cd462169920eb3599b2f04885f04ce0d6d0d575f2a24b677a6e`
+and frozen three-file manifest
+`29da394e2f3584a14b83570600c354d84150d4134399e3e1e6fccdedfe9ca9ec`
+are preserved. EX_CONTENDED is an acquisition-time observation, not a guarantee
+that a holder survives until CLI return. No SH/EX identity or liveness inference
+is added by this disposition.
+
+Native `read-policy-refusal-native-r1.log` checks exact helper/test/unchanged
+db_access_probe dependency3/3 from archive
+`f3aae12734eb768508b688167a6646e9023e576513deaf5ef14303169149ff17`
+in the new root0700 protected `read-policy-refusal-r1` scope. Owner driver checks
+root/nonwritable/noACL ancestry and initial PID/mount namespaces before creation,
+validates archive member names/types/sizes/hashes and sets extracted source0600.
+The bounded60s runner invokes Python -B with fixed PATH/LANG, no user site and
+inherited PYTHONDONTWRITEBYTECODE=1. All25 FakeOperations tests PASS with remote0/
+transport0. Tests use owned temporary files, independent flock descriptions and
+bounded fork only; no DefaultOperations load2, SQLite, root role/context drop or
+operational DB execution occurs. This supersedes only the earlier native fake-
+operation NOT_RUN statement. Actual assertion/normal recovery against a policy
+journal, full role/crash fixture and production gates remain NOT_RUN/open.
+Final native/publication review is pending; the source verdict alone is not it.
+
+Independent final REFUSAL-r1 disposition: ACCEPTED for the reviewed helper/test
+and FakeOperations checkpoint. Original source08 and accepted final-evidence08
+`73a84700166369d679988ac26f0ff94cc279eef9bfa4f3b36deda3a172815575`
+are preserved. This supersedes the historical final-review-pending statement.
+Only the heading and this disposition changed after that review. InstalledRelease15
+is unchanged; real policy-journal CLI, root role/context/SQLite matrix and crash
+supervisor remain separately gated. Next: freeze the fixed recovery-reference hold
+increment and full causal fixture safety scope; no policy execution before review.

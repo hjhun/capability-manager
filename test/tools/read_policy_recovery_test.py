@@ -80,13 +80,79 @@ class Fixture(unittest.TestCase):
         self.assertEqual(self.ops.writes, plan['rules'])
 
     def test_recovery_refuses_live_owner_without_any_rule_or_delete(self):
-        with self.assertRaisesRegex(RuntimeError, 'live SH'):
+        with self.assertRaisesRegex(RuntimeError, 'lock contended'):
             probe.recover(self.owner.path, self.ops)
         self.assertEqual(self.ops.writes, [])
         self.assertTrue(self.scope.exists())
         self.assertEqual(self.recover()['cleanup'], 'PASS')
         self.assertFalse(self.scope.exists())
         self.assertEqual(probe.recover(self.owner.path, self.ops)['cleanup'], 'PASS')
+
+    def test_live_assertion_is_specific_and_never_mutates(self):
+        before = (self.owner.path/'plan.json').read_bytes()
+        result = probe.recover(self.owner.path, self.ops, assert_contention_only=True)
+        self.assertEqual(result, {'assertion':'EX_CONTENDED', 'mutations':0})
+        self.assertEqual(self.ops.writes, [])
+        self.assertEqual((self.owner.path/'plan.json').read_bytes(), before)
+        self.assertTrue(self.scope.is_dir())
+        self.assertFalse((self.owner.path/'recovery.json').exists())
+
+    def test_unexpected_ex_does_not_delete_revoke_or_write_receipt(self):
+        self.owner.close()
+        result = probe.recover(self.owner.path, self.ops, assert_contention_only=True)
+        self.assertEqual(result, {'assertion':'UNEXPECTED_EX_AVAILABLE', 'mutations':0})
+        self.assertEqual(self.ops.writes, [])
+        self.assertTrue(self.scope.exists())
+        self.assertFalse((self.owner.path/'recovery.json').exists())
+        self.assertEqual(probe.recover(self.owner.path, self.ops)['cleanup'], 'PASS')
+        self.assertEqual(len(self.ops.writes), 9)
+
+    def test_independent_ex_holder_is_contended_without_identity_inference(self):
+        self.owner.close()
+        independent = os.open(self.owner.path/'lock', os.O_RDWR | os.O_CLOEXEC)
+        try:
+            fcntl.flock(independent, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.assertEqual(probe.recover(self.owner.path, self.ops,
+                                           assert_contention_only=True),
+                             {'assertion':'EX_CONTENDED', 'mutations':0})
+            self.assertEqual(self.ops.writes, [])
+            self.assertTrue(self.scope.exists())
+        finally:
+            os.close(independent)
+
+    def test_both_assertion_outcomes_preserve_existing_receipts(self):
+        receipts = {'recovery.json':b'previous-receipt\0bytes',
+                    'recovery.json.next':b'stale-receipt\0bytes'}
+        for name, data in receipts.items():
+            path = self.owner.path/name
+            path.write_bytes(data)
+            path.chmod(0o600)
+        for expected in ('EX_CONTENDED', 'UNEXPECTED_EX_AVAILABLE'):
+            with patch.object(probe, 'persist') as persisted, \
+                 patch.object(self.ops, 'delete_scope') as deleted:
+                result = probe.recover(self.owner.path, self.ops,
+                                       assert_contention_only=True)
+                self.assertEqual(result, {'assertion':expected, 'mutations':0})
+                persisted.assert_not_called()
+                deleted.assert_not_called()
+            self.assertEqual(self.ops.writes, [])
+            for name, data in receipts.items():
+                self.assertEqual((self.owner.path/name).read_bytes(), data)
+            self.owner.close()
+
+    def test_assertion_does_not_mask_corrupt_plan_or_wrong_scope(self):
+        plan = self.owner.path/'plan.json'
+        original = plan.read_bytes()
+        plan.write_bytes(b'{}')
+        with self.assertRaises(RuntimeError):
+            probe.recover(self.owner.path, self.ops, assert_contention_only=True)
+        self.assertEqual(self.ops.writes, [])
+        value = json.loads(original)
+        value['scope_identity'][1] += 1000
+        plan.write_text(json.dumps(value))
+        with self.assertRaisesRegex(RuntimeError, 'scope changed'):
+            probe.recover(self.owner.path, self.ops, assert_contention_only=True)
+        self.assertEqual(self.ops.writes, [])
 
     def test_child_inherited_reference_survives_parent_close(self):
         # No SQLite exists anywhere in this test. Exclusive direct-child cleanup
@@ -112,8 +178,11 @@ class Fixture(unittest.TestCase):
             self.assertTrue(select.select([ready_r], [], [], 3)[0])
             self.assertEqual(os.read(ready_r, 1), b'R')
             self.owner.close()
-            with self.assertRaisesRegex(RuntimeError, 'live SH'):
+            with self.assertRaisesRegex(RuntimeError, 'lock contended'):
                 probe.recover(self.owner.path, self.ops)
+            self.assertEqual(probe.recover(self.owner.path, self.ops,
+                                          assert_contention_only=True),
+                             {'assertion':'EX_CONTENDED', 'mutations':0})
             self.assertEqual(self.ops.writes, [])
             os.write(release_w, b'X')
             # waitpid is only after a bounded child-ready release. Poll to retain
@@ -251,6 +320,25 @@ class CliTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'unsafe source'):
                 probe.main(['--recover', '/opt/usr/capmgr-read-policy-recovery-'+'a'*32])
             recover.assert_not_called()
+
+    def test_live_assertion_cli_guard_and_specific_result(self):
+        path = '/opt/usr/capmgr-read-policy-recovery-'+'a'*32
+        with patch.object(probe.os, 'geteuid', return_value=0), \
+             patch.object(probe, 'trusted_source', side_effect=RuntimeError('unsafe source')), \
+             patch.object(probe, 'recover') as recover:
+            with self.assertRaisesRegex(RuntimeError, 'unsafe source'):
+                probe.main(['--assert-contended', path])
+            recover.assert_not_called()
+        for result, expected in [({'assertion':'EX_CONTENDED', 'mutations':0}, 0),
+                                 ({'assertion':'UNEXPECTED_EX_AVAILABLE', 'mutations':0}, 1)]:
+            with patch.object(probe.os, 'geteuid', return_value=0), \
+                 patch.object(probe, 'trusted_source'), \
+                 patch.object(probe, 'recover', return_value=result) as recover, \
+                 contextlib.redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(probe.main(['--assert-contended', path]), expected)
+                recover.assert_called_once_with(Path(path), assert_contention_only=True)
+                self.assertEqual(output.getvalue(),
+                    'READ_POLICY_LOCK_ASSERTION='+json.dumps(result, sort_keys=True)+'\n')
 
     def test_dependency_source_checked_before_import(self):
         with patch.object(probe.os, 'geteuid', return_value=0), \

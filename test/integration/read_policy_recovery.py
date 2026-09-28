@@ -187,8 +187,15 @@ def validate_plan(plan, journal, ops, directory, lock):
     return Path(plan['scope'])
 
 
-def recover(journal, ops=None):
-    """Only explicit independent EX; all deletion/revocation failures retained."""
+def recover(journal, ops=None, *, assert_contention_only=False):
+    """Independent EX cleanup, or a strictly non-mutating contention assertion.
+
+    The assertion shares actual trusted validation/EX acquisition. It returns
+    success only for a valid plan/scope and actual lock contention. Unexpected
+    EX availability never deletes/revokes or writes a receipt in assertion mode.
+    It cannot distinguish SH from EX holders or prove a process/task alive;
+    it identifies no owner and does not permit signaling a reported PID.
+    """
     ops = ops or Operations()
     ops.trusted_parent()
     journal = Path(journal)
@@ -214,10 +221,27 @@ def recover(journal, ops=None):
         try:
             fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as error:
-            raise RuntimeError('recovery BLOCKED: live SH reference') from error
+            if not assert_contention_only:
+                raise RuntimeError('recovery BLOCKED: lock contended') from error
+            # Refusal-only experiment uses the same real validation/acquisition
+            # path. Immutable root plan remains authoritative; no delete/revoke
+            # or receipt write can run while this assertion is active.
+            require(held.st_gid == ops.group, 'journal group changed')
+            plan = load_plan(directory_fd, ops.owner)
+            scope = validate_plan(plan, journal, ops, held, lock)
+            current = scope.lstat()
+            exact(current, ops.owner, 0o755, directory=True)
+            no_acl(scope)
+            require(identity(current) == plan['scope_identity'] and
+                    current.st_gid == ops.group, 'assertion scope changed')
+            return {'assertion': 'EX_CONTENDED', 'mutations': 0}
         require(held.st_gid == ops.group, 'journal group changed')
         plan = load_plan(directory_fd, ops.owner)
         scope = validate_plan(plan, journal, ops, held, lock)
+        if assert_contention_only:
+            # The expected writer may have exited before the CLI began. Do not
+            # turn that timing failure into mutation or a false negative PASS.
+            return {'assertion': 'UNEXPECTED_EX_AVAILABLE', 'mutations': 0}
         errors, remaining = [], []
         try:
             if scope.exists() or scope.is_symlink():
@@ -397,11 +421,17 @@ def source_module(source):
 def main(argv=None):
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--recover', type=Path, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--recover', type=Path)
+    mode.add_argument('--assert-contended', type=Path)
     args = parser.parse_args(argv)
     require(os.geteuid() == 0, 'root recovery required')
     # No deployment, creation, role spawn or rule-install CLI exists here.
     trusted_source(Path(__file__).absolute())
+    if args.assert_contended is not None:
+        result = recover(args.assert_contended, assert_contention_only=True)
+        print('READ_POLICY_LOCK_ASSERTION='+json.dumps(result, sort_keys=True), flush=True)
+        return 0 if result == {'assertion':'EX_CONTENDED','mutations':0} else 1
     result = recover(args.recover)
     print('READ_POLICY_RECOVERY='+json.dumps(result, sort_keys=True), flush=True)
     return 0 if result['cleanup'] == 'PASS' else 1
