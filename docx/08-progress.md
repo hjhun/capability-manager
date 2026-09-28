@@ -88,7 +88,7 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-Reviewed development checkpoints through `77d52616433e5021bcc934fb3ca2824d6a46bbbc`
+Reviewed development checkpoints through `4b549f0270d4d8e787ee3ae34b116edb463fe071`
 are committed and pushed on main, with exact remote refs verified. The chronological
 records below retain earlier failures and pending states as historical evidence;
 later entries supersede their status. Raw evidence/builds/dependencies are excluded
@@ -100,11 +100,11 @@ device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gate
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: separately review/run the fixed delayed-load real TIDL/Cynara RPC
-availability diagnostic after accepted minimal-context/dummy-loader verification.
-The causal real-file policy matrix and production admission remain gated. Prior
-full-r2 failure is preserved; installedRelease15 is unchanged. PATH-01 remains a
-product question; unrelated development can continue.
+Next: review the concrete same-authorized-System-subject/different-fixture-object
+real catalog admission slice. The original different-subject direct-read subset
+remains BLOCKED after the diagnostic measured only one allowed UID301 context.
+Worker generation-lifetime integration is a separate development design. Prior
+failures are preserved; installedRelease15 and PATH-01/product gates are unchanged.
 
 ### P00 publication checkpoint review
 
@@ -3494,3 +3494,64 @@ close the minimal context and ordinary loader gates; actual native module/RPC
 remains NOT_RUN, with a separate fixed method submitted for review. No code,
 image, policy or runtime method was changed by this administrative disposition.
 InstalledRelease15 and all full-product/external prerequisites remain separate.
+
+
+Accepted split source/context/dummy-loader checkpoint published as
+`4b549f0270d4d8e787ee3ae34b116edb463fe071`: nine reviewed files including accurate
+administrative disposition/Next, signoff/message line checks, commit0/push0 and
+exact origin/main verified, tree clean before this evidence append. Source
+implementation and accepted image bytes remain unchanged; installedRelease15
+remains separate. No real RPC success was claimed by that publication.
+
+Independent split-r2 RPC-method-r1 pre-execution disposition: ACCEPTED only for
+fixed actual-module diagnostic, installed120s/owner150s. Actual owner invocation
+is frozen `execute-rpc-r1.py rpc`, FIRST env-i/absolute Python-I-B transferred2/2
+and method metadata before fixed runner exec; all source171/images5/dependency53/
+interpreter/watchdog/protected ancestry/initialns/ext4/no-cache checks pass before
+and after. `read-real-policy-split-native-rpc-rpc-r1.log` records actual result:
+REAL_RPC_DIAGNOSTIC_RETURN0/remote0/transport0, no timeout. This completes the
+bounded diagnostic, not product authorization or the required two-positive gate.
+
+Three lower-context module/client cases execute. System UID301 (empty groups,
+zero capabilities/bounding/ambient, NNP1) has one actual server Cancel body with
+raw UID/GID301, socket labelSystem, PID3038149, fixed matching token, cancel_calls1
+and other_calls0; actual client reply-6/exit10 correlates to the parent's owned
+client PID. Its server reports cancel1/rejected_bind0. This is default real MAIN
+Cynara/generated-channel permission evidence for that exact connected context,
+not trusted unit identity, task/delegation authority or production activation.
+
+User::Shell UID301 and UID1 contexts report validated final tuples and each a
+native InvalidProtocolException at client-method-reply with
+specific_Cynara_decision=NOT_OBSERVED. Their servers report cancel0/rejected_bind1,
+no body/reply-positive record. These are availability NOT_PROVED, not separately
+identified Cynara ACCESS_DENIED and not assumed UID1 policy behavior. The source
+requires normal owned child completion, service drain and endpoint absence for
+all three cases. Three REAL_GATE_SERVER_DRAINED observations precede checked
+REMOVED_SCOPE=`/opt/usr/capmgr-real-policy-mWoOEQ`, then diagnostic completion.
+Actual candidate_positives1 and NEXT_MATRIX_BLOCKED image/availability are printed;
+no scope/endpoint/child uncertainty marker is present. Existing policy was untouched.
+
+The diagnostic establishes actual delayed platform loading/RPC for these measured
+cases under final client credentials without carrying root library endpoints
+through Drop. It does not provide a second authorized UID301 label or platform-
+group authorization, causal real-file/direct-open proof, app_fw-owned writer
+protection or policy provisioning. The original two-subject real matrix remains
+BLOCKED pending a reviewed alternate context/object design or image prerequisite.
+No rule broadening/role repair or silent replacement of that contract is performed.
+Final RPC-runtime/admin review is requested; all product/package/ARM gates remain.
+
+
+Independent actual RPC diagnostic/administrative08 final verdict: ACCEPTED for
+this exact narrow measured scope; accepted08 SHA
+`da7008f2d13d8336cc7bbdc905b7b896d9ea8e0751c0f856e9c69c940c0697c4`
+is preserved before disposition/Next bookkeeping. Diagnostic completion with one
+real System UID301 positive does not close the original two-subject filesystem/
+direct-read subset: it remains BLOCKED. The recommended same authorized subject
+versus different fresh object-label slice is a separate development direction,
+not source/policy/runtime acceptance. Actual catalog Authorize/Confirm plus local
+access veto must be measured anew; Cancel's permission evidence alone is not that
+protocol. Different subject and app_fw-writer policy remain later prerequisites.
+Earlier loader-test summary phrase "entry-before-close" was a wording error:
+reviewed source/tests require owned code-FD close BEFORE native entry. No code or
+method changes are made by this correction. Publish this accurate administrative
+result separately; existing source4b549f0 and installedRelease15 remain unchanged.
