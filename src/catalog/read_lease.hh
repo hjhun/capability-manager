@@ -8,7 +8,8 @@ namespace capmgr {
 // must protect normalized path ancestors/mounts from rename and place lock_path
 // OUTSIDE the writer-controlled catalog directory. A shared generation lease
 // excludes only COOPERATING inode/name/policy changes; ordinary WAL commits and
-// checkpoints continue using SQLite locks. Existing writers are not wired here.
+// checkpoints continue using SQLite locks. CoordinatedCatalogWriter adopts this lock; raw legacy/external
+// writers remain outside the cooperative contract.
 struct ReadLeasePolicy {
   std::string directory, lock_path;
   uid_t writer, maintainer;
@@ -26,6 +27,8 @@ class CatalogReadLease final : public ReadAccess {
  public:
   // Independently opens O_RDONLY lease description, whole-file OFD RDLCK.
   // Never duplicate/pass a service's lock FD. Busy/unsupported locking denies.
+  // DB/WAL/SHM are O_PATH metadata pins, not permission/SQLite IO proof.
+  // Owned self-FD metadata assumes trusted procfs; peer credentials do not use it.
   // All DB/WAL/SHM files must already exist and match the exact supplied policy.
   explicit CatalogReadLease(ReadLeasePolicy,
                             ReadLeaseOperations* operations = nullptr);

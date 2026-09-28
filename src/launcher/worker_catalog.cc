@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "launcher/worker_catalog.hh"
 #include "catalog/catalog.hh"
+#include "catalog/file_metadata.hh"
 #include <array>
 #include <cerrno>
 #include <fcntl.h>
@@ -19,7 +20,7 @@ struct Fd {
   }
 };
 bool NoAcl(int fd, const char* key) {
-  if (fgetxattr(fd, key, nullptr, 0) >= 0) return false;
+  if (MetadataAttribute(fd, key, nullptr, 0) >= 0) return false;
   return errno == ENODATA || errno == ENOTSUP;
 }
 bool Same(const struct stat& a, const struct stat& b) {
@@ -38,11 +39,19 @@ WorkerCatalogSnapshot LoadWorkerCatalog(int source,
        policy.directory_mode != 02750) ||
       (policy.file_mode != 0600 && policy.file_mode != 0640))
     Deny();
+  // Reject a non-directory BEFORE duplicating it: closing a duplicate of a
+  // SQLite data FD could drop all same-process POSIX locks on that inode.
+  struct stat supplied{};
+  const int supplied_flags = fcntl(source, F_GETFL);
+  if (fstat(source, &supplied) || !S_ISDIR(supplied.st_mode) ||
+      supplied_flags < 0 || (supplied_flags & O_ACCMODE) != O_RDONLY ||
+      (supplied_flags & O_PATH))
+    Deny();
   Fd directory{fcntl(source, F_DUPFD_CLOEXEC, 3)};
   struct stat dir{};
   if (directory.value < 0 || fstat(directory.value, &dir) ||
-      !S_ISDIR(dir.st_mode) || dir.st_uid != policy.writer ||
-      dir.st_gid != policy.group)
+      !S_ISDIR(dir.st_mode) || !Same(supplied, dir) ||
+      dir.st_uid != policy.writer || dir.st_gid != policy.group)
     Deny();
   mode_t mode = dir.st_mode & 07777;
   if ((mode != policy.directory_mode) ||
@@ -52,14 +61,18 @@ WorkerCatalogSnapshot LoadWorkerCatalog(int source,
   // Require a readable directory anchor, never an application-provided O_PATH or
   // writable-open description. Its parent/namespace provenance is caller-owned.
   int flags = fcntl(directory.value, F_GETFL);
-  if (flags < 0 || (flags & O_ACCMODE) != O_RDONLY || (flags & O_PATH)) Deny();
+  if (flags < 0 || flags != supplied_flags || (flags & O_ACCMODE) != O_RDONLY ||
+      (flags & O_PATH))
+    Deny();
   constexpr std::array<const char*, 3> names{"catalog.db", "catalog.db-wal",
                                              "catalog.db-shm"};
   std::array<Fd, 3> files;
   std::array<struct stat, 3> before{};
+  RequireDataPinSupport(directory.value);
   for (size_t i = 0; i < names.size(); ++i) {
-    files[i].value = openat(directory.value, names[i],
-                            O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK);
+    files[i].value =
+        openat(directory.value, names[i], O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    ValidateDataPin(files[i].value);
     if (files[i].value < 0 || fstat(files[i].value, &before[i])) Deny();
     CheckFile(before[i], policy);
     if (!NoAcl(files[i].value, "system.posix_acl_access")) Deny();
@@ -109,6 +122,7 @@ WorkerCatalogSnapshot LoadWorkerCatalog(int source,
         !Same(before[i], after))
       Deny();
     CheckFile(after, policy);
+    ValidateDataPin(files[i].value);
     if (!NoAcl(files[i].value, "system.posix_acl_access")) Deny();
   }
   check_resolved();

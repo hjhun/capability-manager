@@ -4,6 +4,9 @@ SET(CAPMGR_CATALOG_SOURCES
   catalog.cc
   read_lease.cc
   read_grant.cc
+  file_metadata.cc
+  generation_lease.cc
+  coordinated_writer.cc
 )
 ADD_LIBRARY(capmgr-catalog STATIC ${CAPMGR_CATALOG_SOURCES})
 TARGET_INCLUDE_DIRECTORIES(capmgr-catalog PUBLIC "${PROJECT_SOURCE_DIR}/src")

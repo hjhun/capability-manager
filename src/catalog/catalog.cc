@@ -3,6 +3,7 @@
 #include <cctype>
 #include <set>
 #include <sstream>
+#include "catalog/generation_lease.hh"
 namespace capmgr {
 namespace {
 constexpr int kSchemaVersion = 2;
@@ -105,6 +106,13 @@ Catalog::Catalog(const std::string& path, Database::Access access)
     : db_(path, access), writer_(access == Database::Access::kWriter) {
   if (writer_) Migrate();
   ValidateVersion();
+}
+Catalog::Catalog(std::unique_ptr<CatalogGenerationLease> generation)
+    : db_(std::move(generation)), writer_(true) {
+  if (db_.Maintenance()) Migrate();
+  ValidateVersion();
+  // Schema validation and complete file policy precede releasing EX ownership.
+  db_.SealGeneration();
 }
 void Catalog::ValidateVersion() {
   Statement q(db_.handle(), "PRAGMA user_version");

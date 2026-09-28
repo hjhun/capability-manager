@@ -13,10 +13,14 @@ struct WorkerCatalogSnapshot {
   WorkerRegistry registry;
 };
 // Startup-only private snapshot loader, NEVER call with a live worker job.
-// Directory FD is supplied by the trusted fixed frontend, not an IPC client.
+// Directory FD is borrowed from the trusted fixed frontend, not an IPC client.
+// Caller keeps that FD exclusively stable/open through validation and dup;
+// matching the duplicate is not protection against malicious FD-table reuse.
 // Requires an image-proven procfs /proc/self/fd and prevalidated directory/mount
 // provenance AND stable trusted pathname ancestors during startup. Pins the
-// directory and three existing files; checks DAC/ACL, identity and schema. SQLite
+// directory and three existing files (O_PATH metadata pins); checks DAC/ACL,
+// identity and schema. Metadata pins do not prove read permission; the actual
+// SQLite RO open/queries are required. SQLite
 // may canonicalize procfd input into a normal path: this is NOT an FD-only VFS or
 // proof against hostile rename/ABA. Its reported DB/WAL/SHM paths are checked
 // against the pinned files; protection from concurrent hostile path substitution

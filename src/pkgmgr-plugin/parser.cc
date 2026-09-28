@@ -173,7 +173,7 @@ std::vector<Entry> ParsePackage(const std::string& root,
   }
   return entries;
 }
-void StagePackage(Catalog& catalog, const std::string& operation,
+void StagePackage(CatalogWriter& catalog, const std::string& operation,
                   const std::string& root, const std::string& owner,
                   const std::vector<Metadata>& metadata,
                   FinalizationAuthority authority) {

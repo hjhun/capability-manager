@@ -13,6 +13,6 @@ namespace capmgr {
 // Replays the committed revision on every reconciliation, including no-op imports.
 // Receivers must deduplicate monotonically. The Action-writer feed remains an
 // integration prerequisite, not a polling promise.
-bool SynchronizeActions(Catalog& catalog, const std::string& source_path,
+bool SynchronizeActions(CatalogWriter& catalog, const std::string& source_path,
                         const std::function<void(uint64_t)>& changed);
 }

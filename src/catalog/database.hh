@@ -2,6 +2,7 @@
 #pragma once
 #include <sqlite3.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <string_view>
 #include "common/error.hh"
@@ -22,6 +23,7 @@ class Statement {
  private:
   sqlite3_stmt* stmt_ = nullptr;
 };
+class CatalogGenerationLease;
 class Database {
  public:
   enum class Access { kReadOnly, kWriter };
@@ -34,6 +36,17 @@ class Database {
   uint64_t Revision();
 
  private:
+  friend class Catalog;
+  friend class CoordinatedCatalogWriter;
+  explicit Database(std::unique_ptr<CatalogGenerationLease>);
+  void Open(const std::string& path, Access access, bool existing = false);
+  void CheckGeneration();
+  void SealGeneration();
+  bool Maintenance() const;
+  void Close();
+  void CloseOrTerminate() noexcept;
+  // Released only after physical SQLite close, including constructor failure.
+  std::unique_ptr<CatalogGenerationLease> generation_;
   sqlite3* db_ = nullptr;
 };
 class Transaction {

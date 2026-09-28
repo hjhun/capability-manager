@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "catalog/database.hh"
+#include <exception>
 #include <limits>
+#include "catalog/generation_lease.hh"
 namespace capmgr {
 namespace {
 [[noreturn]] void Fail(sqlite3* db, int code) {
@@ -46,15 +48,33 @@ int64_t Statement::Integer(int column) const {
   return sqlite3_column_int64(stmt_, column);
 }
 Database::Database(const std::string& path, Access access) {
+  Open(path, access);
+}
+Database::Database(std::unique_ptr<CatalogGenerationLease> generation)
+    : generation_(std::move(generation)) {
+  try {
+    generation_->Prepare();
+    Open(generation_->Path(), Access::kWriter, !generation_->Maintenance());
+    generation_->Opened(*this);
+  } catch (...) {
+    CloseOrTerminate();
+    throw;
+  }
+}
+void Database::Open(const std::string& path, Access access, bool existing) {
   int flags = access == Access::kWriter
-                  ? SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
+                  ? SQLITE_OPEN_READWRITE | (existing ? 0 : SQLITE_OPEN_CREATE)
                   : SQLITE_OPEN_READONLY;
   int rc =
       sqlite3_open_v2(path.c_str(), &db_, flags | SQLITE_OPEN_NOMUTEX, nullptr);
   if (rc != SQLITE_OK) {
     std::string message = db_ ? sqlite3_errmsg(db_) : sqlite3_errstr(rc);
-    sqlite3_close(db_);
-    db_ = nullptr;
+    if (generation_)
+      CloseOrTerminate();
+    else {
+      sqlite3_close(db_);
+      db_ = nullptr;
+    }
     throw Error(ErrorCode::kDatabase, message);
   }
   try {
@@ -62,9 +82,12 @@ Database::Database(const std::string& path, Access access) {
     sqlite3_busy_timeout(db_, 1000);
     Exec("PRAGMA cache_size=-1024; PRAGMA foreign_keys=ON;");
     if (access == Access::kWriter) {
-      Statement mode(db_, "PRAGMA journal_mode=WAL");
-      if (!mode.Step() || mode.Text(0) != "wal")
-        throw Error(ErrorCode::kDatabase, "WAL mode required");
+      {
+        Statement mode(
+            db_, existing ? "PRAGMA journal_mode" : "PRAGMA journal_mode=WAL");
+        if (!mode.Step() || mode.Text(0) != "wal")
+          throw Error(ErrorCode::kDatabase, "WAL mode required");
+      }
       int persistent = 1;
       rc = sqlite3_file_control(db_, "main", SQLITE_FCNTL_PERSIST_WAL,
                                 &persistent);
@@ -77,17 +100,53 @@ Database::Database(const std::string& path, Access access) {
       Exec("PRAGMA query_only=ON;");
     }
   } catch (...) {
-    sqlite3_close(db_);
-    db_ = nullptr;
+    if (generation_)
+      CloseOrTerminate();
+    else {
+      sqlite3_close(db_);
+      db_ = nullptr;
+    }
     throw;
   }
 }
-Database::~Database() { sqlite3_close(db_); }
+Database::~Database() {
+  if (generation_)
+    CloseOrTerminate();
+  else
+    sqlite3_close(db_);  // Unchanged isolated legacy lifetime.
+}
+void Database::CloseOrTerminate() noexcept {
+  if (generation_ && !generation_->InCreator()) std::terminate();
+  if (db_ && sqlite3_close(db_) != SQLITE_OK) std::terminate();
+  db_ = nullptr;
+  generation_.reset();
+}
+void Database::Close() {
+  if (generation_ && !generation_->InCreator())
+    throw Error(ErrorCode::kPermission, "Inherited catalog writer");
+  if (db_) {
+    const int rc = sqlite3_close(db_);
+    if (rc != SQLITE_OK) Fail(db_, rc);  // Both resources remain owned.
+    db_ = nullptr;
+  }
+  generation_.reset();
+}
+void Database::CheckGeneration() {
+  if (!db_) throw Error(ErrorCode::kInvalid, "Closed catalog writer");
+  if (generation_) generation_->Check();
+}
+void Database::SealGeneration() {
+  CheckGeneration();
+  generation_->Seal();
+}
+bool Database::Maintenance() const { return generation_->Maintenance(); }
 void Database::Exec(const char* sql) {
+  if (generation_) CheckGeneration();
   int rc = sqlite3_exec(db_, sql, nullptr, nullptr, nullptr);
   if (rc != SQLITE_OK) Fail(db_, rc);
 }
 uint64_t Database::Revision() {
+  if (generation_) CheckGeneration();
   Statement q(
       db_,
       "SELECT revision FROM catalog_state WHERE singleton=1 AND typeof(revision)='integer'");

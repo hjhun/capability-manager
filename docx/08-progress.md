@@ -5,11 +5,16 @@ packaging and publication. Product completion has not been reached.
 
 ## Ownership and checkout
 
-Implementation/integration: Herdr `w1:pA`. Independent reviewer: `w1:pJ`.
+Current implementation/integration: Herdr `w1:pJ`. Independent reviewer and
+coordinator: `w1:pA`. The user explicitly transferred these roles after the
+accepted Release14 publication `cbf921ef9ccfe91699267a4f990ecefc0db3ddd2`.
+Historical entries before this handoff retain their original owner/reviewer names.
 Both were discovered through live `herdr agent list` with the same project cwd;
 HERDR_ENV=1. Requests are asynchronous, without --wait. The owner alone performs
 Git writes and device operations. Reviewer has a completed disjoint translation
-assignment for docx/01,02,04,05,06; all file ownership is now back with the owner.
+assignment for docx/01,02,04,05,06. The current owner alone now manages all files,
+integration, device operations, tests, reviewed commits and pushes. The other
+panel remains read-only; neither panel starts extra panes or agents.
 
 Initial cwd was not a Git repository. Existing documents were backed up outside
 the checkout (an ephemeral local backup, not a published artifact). Cloned the authorized remote into
@@ -2124,3 +2129,168 @@ b080082d7806bb39c89b46e7ee19766f00ed7f6ea95a1ff8229fc8ccf9108cd4.
 This disposition supersedes the preceding request/pending state only; the failed
 first build, recovery and scoped product limits remain unchanged. Reviewed
 spec+progress publication follows; no other product source changes in this commit.
+
+## User-directed implementation ownership and OFD maintenance (2026-09-28)
+
+After cbf921ef9ccfe91699267a4f990ecefc0db3ddd2, the user assigned implementation,
+all source/device/Git operations and integration to w1:pJ; w1:pA is read-only
+reviewer/coordinator. Historical role attribution is preserved. Per later user
+steering, neither panel polls Herdr status/read/wait; incoming messages provide
+review replies. Concrete requests are sent asynchronously without --wait.
+No extra panes/agents. Full product completion has not been reached.
+
+P06-OFD-MAINTENANCE-DESIGN-r1 accepted for development contract only by w1:pA,
+SHA256 26d5cf80da76dd5d9ae882250cf59f1de56c3821c8f02b2d1cf2b5144c41f10f.
+Existing generation opens RW without CREATE/Migrate under independent shared OFD;
+EX is separate bootstrap/migration/sidecar lifecycle. Private owning-value writer
+facade, physical-close lease retention and inherited SQLite rejection are required.
+No source or production acceptance follows from the design disposition.
+
+Host configure-r1 failed for missing SQLite without dependency prefix; an initial
+build attempt had no generated makefile. Both logs were preserved. Corrected fresh
+build-ofd configure-r2 uses /tmp/capmgr-host-deps/root/usr and Release -O1/-DNDEBUG;
+no host system package installed. Host check-r4 CTest8/8 and focused-r3 19/19 PASS.
+The first source request mistakenly stated19 while r1 focused evidence showed15;
+corrected explicitly before acceptance. Four additional fixtures were added in r2
+(post-open mismatch, retained fork reference, final EX policy and ACL-only deny).
+
+Frozen r2 source16-file manifest, source archive SHA256
+05260dae82e027ba74d93899f6071b4672650ce7735833b29ec58de90d01a549.
+Native r1 safely rejected the legitimate JSON archive root directory before
+extraction/build; remote1/transport0, preserved. Corrected validator accepts only
+that exact root directory plus safe bounded regular/directory members. A new
+protected root0700 ofd-maintenance-r2 build checks input hashes and16/16 manifest,
+uses all three native platform flags ON and runs check. ofd-native-r2.log records
+CTest8/8, focused19/19, C_CONSUMER_EXIT0 and unchanged12 exports, remote0/transport0.
+Installed Release14 is unchanged; no RPM build/install or privileged workload.
+
+P06-OFD-MAINTENANCE-r2 remains CHANGES_REQUESTED. Independent review found ordinary
+DB/SHM identity-pin FD close cancels same-process SQLite POSIX locks while another
+connection's transaction is live. The separate generation OFD does not fix this.
+Owned independent-exec reproduction confirms the bug on host SQLite3.45.1
+(ofd-posix-close-repro-host-r3.log) and target3.50.2
+(ofd-posix-close-repro-native-r1.log): B BEGIN_IMMEDIATE returns BUSY5 before a
+second CatalogReadLease closes, then OK0 with A's transaction still active.
+Both processes hold independent cooperative shared leases. Native remote0 means
+the diagnostic ran, not a safe implementation PASS. Fixture DB is removed after
+rollback/physical closes. Expanded safe-metadata-pin design/source review follows;
+no accepted primitive is silently assumed safe or production enabled.
+
+STYLE-HEADER-SKILL-r1 accepted by w1:pA for the global SKILL.md only, SHA256
+bb8b1e55eff049ef5e4858acba9682c24adf2a667650c0b6edeef2533d6d80d6.
+Skill-creator quick_validate passes; UI/reference bytes unchanged. New OFD headers
+use full Apache notice, retained SPDX and unique Google-style HH_ guards. Legacy37
+header conversion is prepared outside the worktree only and needs separate review.
+No invented Samsung attribution. No guard/style change weakens ABI/security.
+
+P06-READ-POLICY-DESIGN-r1 received engineering feedback only, SHA256
+2f6b2dc9cfa959a16706fcbd80ec5799c8b809aea91ff7888e29b0642311e95a.
+The future causal real DAC/SMACK and injected C-create fixture must first resolve
+OFD's SQLite-lock interaction, then freeze exact role traversal/group/capability,
+root-writer scope, recovery-lock lifetime and teardown/counter proof. No global
+policy writes or new runtime authorized/executed. Real Cynara matrix remains a
+separate increment; generated MAIN/callback real checks are not weakened.
+PATH-01 user answer remains pending. Installer/MIC, Action runtime/sync, catalog
+worker invalidation, authenticated broker/resources, remount, product/physical
+and final ARM/P09 verification gates remain open. No completion message sent.
+
+### P06-OFD expanded POSIX-close correction, source r6
+
+P06-OFD-POSIX-FIX-DESIGN-r1 was ACCEPTED FOR DEVELOPMENT CONTRACT ONLY, SHA256
+1c99150fe3b2fb61983e4560645991a9679b60fd0759569373e4e1af3a0296d7.
+Source scope explicitly expands to read_lease, shared file_metadata, worker_catalog
+and the fixed independently execd sqlite_lock_probe. All DB/WAL/SHM metadata pins
+are O_PATH/NOFOLLOW/CLOEXEC; borrowed loader source is validated as a readable
+non-O_PATH directory before duplication. Source/duplicate identity/flags are
+rechecked under an explicit stable-borrow premise. Loader remains startup-only
+DAC/ACL with no worker generation lease, SMACK or runtime-validity grant.
+
+Preserved native failures: ofd-native-r3.log has CTest7/8, unit120/121, only the
+new user-xattr fixture failed (target /tmp does not support user.* writes, errno95).
+ofd-metadata-diagnostic-native-r1.log observes real SMACK User::Shell and ACL
+ENODATA61, and removes its owned scratch. r4 incorrectly expected ACL-read denial
+from file mode alone; actual ACL lookup can return ENODATA. Host check-r6 and
+native-r4 preserve that test failure. r5 restored user-namespace denial but the
+root child zero-cap guard failed: target setresuid clears permitted/effective,
+not inherited inheritable0x2000e2. ofd-native-r5.log is unit122/123, CTest7/8,
+remote2/transport0. ofd-metadata-drop-diagnostic-native-r1.log confirms exact301
+IDs/groups[], user metadata EACCES13, ACL ENODATA61 and real SMACK; scratch removed.
+These are fixture failures, not corrected native PASS or relaxed product guards.
+
+Frozen r6 differs from source-reviewed r5 ONLY by explicit SYS_capset zeroing in
+that test child before its existing exact capget check. Manifest23-file SHA256
+f998283c50b40f0d480fa67865554b0f3e8ae8331aeac48de28c0d6e1c06ef1a;
+source archive SHA256
+7b50f32af849bbd5828cf8793ce11ee2a10e58ed64950aa5b24c3e1c2ffa1802.
+Original accepted r6 doc07 SHA256
+18e3825797ed9efa336e072aefd138b2a1fed27f3a038c7619b879d93151f0d8
+is preserved before any later heading-only acceptance bookkeeping. w1:pA accepted r6 at SOURCE REVIEW level,
+with final checkpoint disposition deferred until exact host/native outcomes.
+
+Owner-run host build-ofd check-r9: CTest8/8, focused-r5:24/24 new tests,
+host-abi-r2 exact23/23+C0+12 exports PASS. Host SQLite3.45.1 actual WAL-write/main
+and retained-read TRUNCATE exclusion survives temporary lease destruction,
+second writer Close, failed constructor, loader success/early invalid DB or SHM
+source rejection/post-open schema exception and O_PATH closes. Independently execd
+B holds its own shared lease, stays BUSY5 before/after each perturbation and succeeds
+only after A releases the write transaction or retained read snapshot. Invalid
+caller-owned ordinary FDs remain open until all relevant SQLite owners close.
+
+Owner-run ofd-native-r6.log builds a fresh protected root0700 scope with all three
+native platform options ON and input/frozen23/23 checks before/after. CTest8/8,
+focused24/24 with CAPMGR_REQUIRE_METADATA_TESTS=1, actual SMACK User::Shell,
+USER_METADATA_XATTR=UNSUPPORTED explicitly recorded, C_CONSUMER_EXIT0 and unchanged
+12 C exports, remote0/transport0. This is exact target SQLite3.50.2 correction
+coverage; old unsafe diagnostic exit0 and r2/r3/r4/r5 results are not substituted.
+w1:pA returned P06-OFD-MAINTENANCE-r6 ACCEPTED for the exact private source/ordinary
+native checkpoint. A separate ofd-native-unit-counts-r6.log records all123/123
+unit cases explicitly plus C0, remote0/transport0. Changed-source root transport
+pre-execution safety is separately ACCEPTED for r6's protected path/digest; runtime
+verdict remains pending until its actual new log. Installed Release14 remains unchanged; no RPM, operational DB, new SMACK
+rule, production factory or root CLI workload has been enabled.
+
+P06-READ-POLICY-DESIGN-r3 is ACCEPTED FOR DEVELOPMENT CONTRACT ONLY, SHA256
+0b84c996d18e647931081aad6689944c621dbeff9e6b38f490d1292ede342828.
+Exact rule matrix includes root catalog rwxlt and both reader lock rl. Same-label
+transmutation intentionally measures denied O_RDONLY directory admission plus
+independent file-open denial; unobserved SQLite phases are NOT_RUN. Existing
+ancestor/control-pipe traversal is setup preflight, not normal DB denial, and any
+additional rule needs frozen fixture review. Root-writer model, separate durable
+recovery journal/retained SH, no inherited SQLite and modeled C-confirmation remain
+explicit limits. No new policy fixture source/native policy execution accepted.
+
+Legacy header license/Google guard conversion is still proposal-only outside the
+worktree:37 unique guards, reverse-exact license/guard-only proof,36 host double
+includes (native-generated service header excluded) and proposal C consumer0.
+The accepted global skill and new OFD header conventions are unchanged. Release15
+spec/README temporary proposal is source-only ACCEPTED; actual paths are not yet
+applied. The new tests-only sibling sqlite_lock_probe must accompany installed
+unit tests in that later independently reviewed packaging gate.
+
+P06-OFD-READ-TRANSPORT-r6 owner-run runtime: ofd-transport-native-r6.log rechecks
+source23/23, protected initial namespaces/ancestor and root:root0755 singlelink
+noACL/no-filecap leaf. Exact binary SHA256
+b21a5033a6fd2aa07daf4376e425e8230fd19c04541e42f5951909058f128ad9.
+Owner method: push an owned short shell script into the protected r6 build scope;
+SDB executes sh, which invokes hash-checked source tools/run_bounded.py --seconds180
+with no-argument ../build/capmgr-read-transport-probe. The log records the exact
+SDB command, source hashes before/after, and separate remote0/transport0.
+All8 modes PASS: normal24; negative deny/malformed/oversize4 each stable9 FDs,
+stalled/lost-reply4 each stable10 FDs in distinct processes; raw wrong-instance,
+replay/expiry and split4sockets/read2/write2 behavior preserved. Eight service/grant
+drains and checked owned child exits/endpoint absence precede case PASS. Exact
+scope /opt/usr/capmgr-read-fixture-Kght1p is REMOVED_SCOPE before FIXTURE_PASS;
+no retained scope/endpoint marker. Final independent runtime/publication verdict
+pending. This is unchanged fixture transport coverage against corrected O_PATH
+metadata, not new-label causal policy or production direct-open proof. No policy
+rule, root namespace workload, mount, operational DB or package was changed.
+
+P06-OFD-READ-TRANSPORT-r6 FINAL RUNTIME/PUBLICATION is ACCEPTED by w1:pA for
+reviewed23-file source plus administrative08. Accepted pre-bookkeeping08 SHA256
+8d8c2aaafdba1e4512da08c0ae15ba6ba2302774846c7d15d619a46a551c10db
+and original07 SHA18e3825797ed9efa336e072aefd138b2a1fed27f3a038c7619b879d93151f0d8
+are preserved. Earlier pending/deferred statuses above are historical and explicitly
+superseded by this final disposition. Only the two new07 headings are changed to
+accepted r6; reviewed contract clauses and product bytes remain unchanged.
+Publication is limited to reviewed23 source files plus this administrative08.
+No package15/header conversion/new policy or production activation is included.

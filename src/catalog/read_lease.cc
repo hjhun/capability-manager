@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "catalog/read_lease.hh"
+#include "catalog/file_metadata.hh"
 #include <array>
 #include <cerrno>
 #include <filesystem>
@@ -30,7 +31,7 @@ void NoAcl(int fd, bool directory = false) {
     if (!directory && std::string_view(name) == "system.posix_acl_default")
       continue;
     errno = 0;
-    Require(fgetxattr(fd, name, nullptr, 0) < 0 &&
+    Require(MetadataAttribute(fd, name, nullptr, 0) < 0 &&
             (errno == ENODATA || errno == ENOTSUP));
   }
 }
@@ -44,7 +45,8 @@ ReadLeaseOperations real_operations;
 }
 std::string ReadLeaseOperations::Label(int fd) {
   std::array<char, 256> bytes{};
-  auto size = fgetxattr(fd, "security.SMACK64", bytes.data(), bytes.size());
+  auto size =
+      MetadataAttribute(fd, "security.SMACK64", bytes.data(), bytes.size());
   Require(size > 0 && static_cast<size_t>(size) < bytes.size());
   std::string result(bytes.data(), static_cast<size_t>(size));
   if (result.back() == '\0') result.pop_back();
@@ -96,9 +98,11 @@ struct CatalogReadLease::Impl {
             !fstat(directory.value, &directory_identity));
     Verify(directory.value, directory_identity, policy.writer, policy.group,
            policy.directory_mode, policy.directory_label, true);
+    RequireDataPinSupport(directory.value);
     for (size_t i = 0; i < names.size(); ++i) {
-      files[i].value = openat(directory.value, names[i],
-                              O_RDONLY | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK);
+      files[i].value =
+          openat(directory.value, names[i], O_PATH | O_CLOEXEC | O_NOFOLLOW);
+      ValidateDataPin(files[i].value);
       Require(files[i].value >= 0 && !fstat(files[i].value, &identities[i]));
       Verify(files[i].value, identities[i], policy.writer, policy.group,
              policy.file_mode, policy.file_label, false);
@@ -132,10 +136,12 @@ struct CatalogReadLease::Impl {
       CheckOne(directory.value, directory_identity, policy.directory,
                policy.writer, policy.group, policy.directory_mode,
                policy.directory_label, true);
-      for (size_t i = 0; i < names.size(); ++i)
+      for (size_t i = 0; i < names.size(); ++i) {
+        ValidateDataPin(files[i].value);
         CheckOne(files[i].value, identities[i],
                  policy.directory + "/" + names[i], policy.writer, policy.group,
                  policy.file_mode, policy.file_label);
+      }
     } catch (...) {
       poisoned = true;
       throw;

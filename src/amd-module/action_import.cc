@@ -160,7 +160,7 @@ std::vector<Entry> ReadActionSnapshot(const std::string& path) {
 }
 }
 namespace capmgr {
-bool SynchronizeActions(Catalog& catalog, const std::string& source_path,
+bool SynchronizeActions(CatalogWriter& catalog, const std::string& source_path,
                         const std::function<void(uint64_t)>& changed) {
   // One importer per process serializes source snapshots through catalog commit.
   // Deployment must enforce a single AMD importer across processes.

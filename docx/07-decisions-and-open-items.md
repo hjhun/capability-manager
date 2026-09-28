@@ -795,3 +795,99 @@ review of these exact changed bytes first. The direct-read DAC/SMACK subset,
 delegation, exact image/API provenance and production enablement remain gates.
 Trusted worker parent anchors and namespace setup are separate child-ownership
 mechanisms and are not peer credential extraction; this scope does not alter them.
+
+### Cooperative catalog-generation maintenance (source r6 accepted on 2026-09-28)
+
+P06-OFD-MAINTENANCE implements the accepted development boundary: normal in-place
+writers hold independently opened whole-file O_RDONLY OFD read locks on the
+externally provisioned generation-lock file. Their fixed DB/WAL/SHM and directory
+must already satisfy ReadLeasePolicy before SQLite open. Existing mode opens
+READWRITE without CREATE, requires WAL and schema2, and never invokes Migrate.
+PERSIST_WAL remains return-checked on every writer. SQLite transaction locking
+continues to serialize publication; read leases do not freeze catalog contents.
+
+A separate trusted maintenance mode opens that same preprovisioned external lock
+O_RDWR and requests OFD write lock before bootstrap/migration or sidecar recreation.
+It never creates/replaces the lock, upgrades an existing reader, forces unlock,
+or attempts to revoke another description. Nonblocking SETLK retries only
+EINTR/EACCES/EAGAIN within a steady-clock budget (default100ms, maximum1s);
+exhaustion is BUSY and unsupported locking denies. This bounds retries, not
+arbitrary filesystem/label IO. Named/held lock identity is revalidated after
+acquisition. EX remains held through schema work, completed DB/WAL/SHM policy
+validation, all lexical statement destruction and actual sqlite3_close.
+
+CoordinatedCatalogWriter is a caller-serialized private owning-value facade. Its
+Stage/Finalize/PublishActions/Revision operations cannot expose Catalog, Database,
+sqlite3, statement, blob or backup handles. StagePackage and SynchronizeActions
+borrow the CatalogWriter subset; tests exercise both through the facade. Legacy
+path-only Catalog/Database and --offline remain explicitly isolated harnesses,
+not implicit production admission. Installer finalization/Action feed activation
+and raw/external writer cooperation are not provided by the interface change.
+
+The coordinated Database owns its lease until physical close succeeds. Explicit
+Close/BUSY retains both resources for retry; close_v2 zombie success is never used.
+Construction failures close before lease release. A failed private destructor or
+constructor-error close fail-stops rather than losing live SQLite ownership. This
+is a trusted invariant-failure rule and does not change public destroy IO/retained
+handle behavior. Forked coordinator operations and ordinary destruction reject or
+fail-stop before touching inherited SQLite; children must exec/_exit. Standalone
+lease destruction closes only that process's FD references, never F_UNLCK, since
+fork/dup share the parent's OFD. Fork-retained leases can deny maintenance.
+
+Failure of post-open policy/identity checks denies publication and poisons access;
+a poisoned owner may still close physically. Maintenance precreates only the
+fixed main filename and validates generated sidecars; it does not repair arbitrary
+ownership/modes/labels or deploy a production replacement/recovery tool. Trusted
+path ancestry/mount and provisioned writer/maintainer policy remain image gates;
+no hostile root/rename ABA protection is inferred from pathname checks.
+
+This source checkpoint adds no service, platform factory, operational catalog,
+SMACK rule, RPM upgrade or production permission. Native tests use owned scratch
+and injected labels; they do not prove a real-label causal/direct-open policy
+matrix. That fixture requires separate exact-source safety review. PATH-01 remains
+pending; installer/MIC, Action compatibility/sync, broker/resources, product
+integration, physical validation and final P09 ARM remain separate open gates.
+
+### SQLite-safe metadata pins (source r6 accepted on 2026-09-28)
+
+This amendment replaces ordinary DB/WAL/SHM identity descriptors in read leases,
+generation maintenance and the private worker startup loader with O_PATH,
+O_NOFOLLOW and CLOEXEC pins. Closing an ordinary FD on these inodes can cancel
+another same-process SQLite connection's POSIX locks, including SHM WAL locks;
+the separate generation OFD cannot repair that loss. O_PATH support is probed
+on a directory before opening any data inode; unsupported flags fail closed.
+Regular single-link type and FD flags are checked on each metadata pin, including
+existing-file EX preflight and failure unwinding. O_PATH symlink objects reject.
+Only fresh EX O_CREAT|O_EXCL main-file creation uses an ordinary FD, closed before
+SQLite opens. Dedicated generation-lock and directory FDs are not SQLite data
+inodes; their existing ownership/OFD contracts remain unchanged.
+
+ACL/SMACK metadata on an owned O_PATH FD uses getxattr through our trusted
+/proc/self/fd/<FD> magic link, with no ordinary data-file reopen or fallback. This
+is our own metadata-object access, not peer/task credential extraction or a caller
+PID/path. The FD is retained through the call; named/pinned policy rechecks and
+poisoning remain. Inaccessible metadata/procfs cannot be classified as absent ACL.
+Trusted image procfs/self-FD resolution is a prerequisite. Linux4.4 release-string
+matched source39b6687 excludes FMODE_PATH from locks_remove_posix and resolves
+getxattr with path/dentry references; exact-image and native regression evidence
+remain necessary. Metadata pins do NOT establish data-read/write permission:
+actual SQLite RO/RW open/query and real DAC/SMACK still decide access.
+
+LoadWorkerCatalog also checks supplied directory type/flags before dup so a wrong
+SQLite data FD is never duplicated/closed on that rejection path. The caller must
+keep the borrowed directory FD exclusively stable/open through validation and dup;
+the duplicate's flags/type/dev/ino are rechecked, without claiming protection from
+hostile concurrent descriptor reuse. The loader remains DAC/ACL-only: metadata pins
+do not add SMACK/provisioning validation or a generation lease. Its startup-only
+snapshot, actual RO transaction, stable ancestry, registration/subset and revision
+invalidation gates remain unchanged; no new worker generation lease is inferred.
+
+Separately execd test probes open fresh SQLite state and cooperative generation
+leases. Active WAL write transactions must retain write/main lock exclusion through
+lease destruction, another writer Close, failed constructor, loader snapshot and
+O_PATH-only closes; B succeeds only after A releases. Real retained read snapshots
+must keep TRUNCATE checkpoint BUSY through the same paths, then permit checkpoint
+when released. WAL readers normally allow BEGIN_IMMEDIATE; they are not tested as
+writer-exclusion locks. Unsafe ordinary-close diagnostics remain preserved failures
+of the old invariant, distinct from corrected host/native regression results.
+No new policy, root workload, operational DB, installed factory or RPM is enabled.
