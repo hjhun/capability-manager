@@ -34,6 +34,8 @@
 #include <span>
 #include <stdexcept>
 
+#include "read_policy_recovery_reference.hh"
+
 namespace capmgr::fixture::realpolicy {
 using Json = nlohmann::json;
 inline void Check(bool okay, const char* why) {
@@ -156,7 +158,13 @@ inline void Drop(const std::string& label, uid_t uid,
   Check(prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == 0, "no new privileges");
   VerifyContext(label, uid, platform_group);
 }
-inline void OwnInitialTable(const char*& stage, int code_fd = -1) {
+inline void OwnInitialTable(const char*& stage, int code_fd = -1,
+                            const RecoveryReference* reference = nullptr) {
+  if (reference) {
+    Check(code_fd < 0 || code_fd == 3,
+          "fixed code slot with recovery reference");
+    reference->Validate();
+  }
   // Own fixture introspection only; no peer/task authority is derived here.
   for (const char* path : {"/proc/self/task", "/proc/self/fd"}) {
     const bool fd_scan = std::string_view(path) == "/proc/self/fd";
@@ -190,14 +198,17 @@ inline void OwnInitialTable(const char*& stage, int code_fd = -1) {
       long fd = strtol(item->d_name, &end, 10);
       if (fd_scan) {
         if (fd == scan_fd) continue;
-        okay &= end && !*end && fd >= 0 && (fd <= 2 || fd == code_fd);
+        okay &= end && !*end && fd >= 0 &&
+                (fd <= 2 || fd == code_fd ||
+                 (reference && fd == RecoveryReference::kDescriptor));
       }
       ++count;
     }
     errno = 0;
     int closed = closedir(scan);
     int close_errno = closed ? errno : 0;
-    const size_t expected = fd_scan ? (code_fd >= 0 ? 4u : 3u) : 1u;
+    const size_t expected =
+        fd_scan ? 3u + (code_fd >= 0 ? 1u : 0u) + (reference ? 1u : 0u) : 1u;
     const bool valid = !failure && !closed && okay && count == expected;
     if (!valid) {
       Json names = Json::array(), details = Json::array();

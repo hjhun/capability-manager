@@ -33,6 +33,14 @@ TARGET_LINK_LIBRARIES(capmgr-read-policy-context-tests PRIVATE
 )
 ADD_TEST(NAME capmgr-read-policy-context COMMAND capmgr-read-policy-context-tests)
 
+# Explicit fixed-reference own-context image: never installed or run by CTest.
+ADD_EXECUTABLE(capmgr-reference-context-probe
+  integration/read_policy_reference_context_probe.cc
+)
+TARGET_LINK_LIBRARIES(capmgr-reference-context-probe PRIVATE
+  nlohmann_json::nlohmann_json Threads::Threads
+)
+
 # Metadata-only default tests; root reference experiments are separately opt-in.
 ADD_EXECUTABLE(capmgr-recovery-reference-tests
   unit/read_policy_recovery_reference_test.cc

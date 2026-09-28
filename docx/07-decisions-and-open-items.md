@@ -1005,3 +1005,54 @@ liveness or SQLite/catalog permission. In particular fd4 O_RDWR is retained only
 inside a trusted fixed fixture, never exposed to an application/native tool.
 Existing Stage A modes and code-image entry ABI remain unchanged. No global policy,
 group database, installed package, production factory or task authority is added.
+
+### Fixed recovery-reference context mapping (accepted local/non-policy)
+
+P06-READ-REFERENCE-CONTEXT adds a separate uninstalled, module-free diagnostic
+image and private spawn helper. The trusted coordinator supplies an exclusively
+stable journal description, explicit stdio sources, a preallocated exclusive
+child record and a previously validated fixed image. It must establish the durable
+journal/SH ownership and exact existing priv_platform mapping before this route;
+the helper does not create a journal, resolve NSS, authorize an image or prove SH
+from metadata. No journal directory/plan/catalog/SQLite descriptor is supplied.
+
+All four source copies are allocated at FD5 or above before the final snapshot.
+Ordered mappings populate stdio0..2 and journal4, explicitly close3, and close
+every remaining snapshotted descriptor at5 or above. Signals are blocked across
+snapshot/spawn/positive direct-child attachment. Structurally single-threaded
+coordination, default SIGCHLD without SA_NOCLDWAIT/auto-reap, no competing waiter
+and no asynchronous native FD mutation remain premises. getsignal alone does not
+query native signal flags. Unknown spawn/attachment never means no child; it
+retains ownership uncertainty and prohibits cleanup/PASS. Original caller FDs
+stay owned by the caller. Stdio direction and journal aliases reject before spawn.
+
+The diagnostic accepts only root-user-shell or system301-platform and the trusted
+journal dev/ino. It validates inherited non-CLOEXEC4, marks it CLOEXEC, and permits
+it in the exact one-task/stdio table only through a live typed RecoveryReference.
+In this separate mode any code descriptor, if later present, must occupy3;
+existing default table calls retain their original contract. The current image
+never opens code or a platform module. System301 uses the accepted exact Drop
+and final IDs/groups[10212]/label/caps/bounding/ambient/NNP checks; root-server
+mode remains root User::Shell and never changes credentials. Both revalidate4
+and the exact table after that boundary. Inaccessible post-Drop ACL metadata is
+setup failure with no policy/permission repair. Success and exception returns
+retain borrowed4 through destruction/TLS to kernel process exit.
+
+Unprivileged fake-image tests exercise actual ordered spawn/table mapping,
+explicit removal of initially present inheritable3 and a non-CLOEXEC high alias,
+with causal omission-of-each-close rejection cases and exact owned cleanup,
+independently measured
+EX exclusion after parent references close, exact child reap and EX availability
+after exit, closed parent stdio, wrong/missing/aliased endpoints and unknown spawn.
+The isolated closed-stdio driver may itself have a child: its invocation sets a
+separate sticky uncertainty latch before launch. Only its checked success after
+exact child reap clears that latch. Driver timeout/signal/nonzero/unknown return
+retains the linked scope; driver reap alone never proves descendant absence.
+No unowned reported grandchild is signaled. Injected failure tests require zero
+directory-deletion calls; only the tests with a mocked, never-launched driver may
+reset their latch for safe test teardown.
+They do not execute the real root/Drop image or prove its metadata accessibility.
+The image is built explicitly but not installed or registered for CTest execution.
+Real context runs, reader AND server surviving/adopted references, module-entry
+FD4 retention, real recovery refusal and Stage B policy are separate reviewed
+native methods. Kernel-exit release in a fake direct child is not those proofs.

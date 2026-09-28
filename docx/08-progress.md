@@ -4014,3 +4014,167 @@ separate non-policy source/method review. Worker loop lease owner/startup bindin
 has its separate accepted development contract, not source/runtime acceptance.
 InstalledRelease15 and production/PATH/ARM gates are unchanged. Commit/push/exact
 remote equality will be reported separately; no overall completion is implied.
+
+### P06-READ-REFERENCE-CONTEXT-r1 local mapping/source checkpoint
+
+Owner w1:pJ; independent reviewer w1:pA; R02/R13, DB-ACCESS-01. Baseline
+f75e5067bc0e2f2d8271982cfbfe753e9b5ba288 is the published accepted standalone
+recovery-reference checkpoint: commit/push0, exact origin/main verified and clean
+tree before this disjoint next increment. InstalledRelease15 remains unchanged.
+Original07 fa82aeca04cca32443b8b2bc8f4d69f27438f86dbaed130b1674e28c539531e8
+and08 88319f70a32c2d452079a41ed4e2c669b2eb579f69ac1e38d1348e273cb28810
+are preserved before this append.
+
+Scope: test/CMakeLists.txt, shared private read_policy_context.hh, new build-only
+read_policy_reference_context_probe.cc, new private read_policy_reference_spawn.py
+and ordinary read_policy_reference_spawn_test.py,07/08. No product source, module
+entry ABI, installed payload or rule matrix changes. Existing Stage A default
+table calls stay unchanged; the separate typed witness permits only journal4,
+with code3 reserved for a future separately reviewed loading route.
+
+Host-build-r1 failed from an ambiguous duplicate Self helper/unused-function
+warning; preserve FAIL, no image execution. Removing the duplicate uses the
+already accepted helper. Explicit host-build-r2 compiles/links the new diagnostic
+target successfully; it does not run it. Host-tests-r1 had5PASS/1ERROR because
+Python negative-FD validation raises ValueError rather than the test's OSError.
+Current source explicitly rejects missing stdio before the syscall and also
+rejects stdio aliases of journal. Final host-tests-r2 actual7/7 PASS, with real
+unprivileged fake-image spawns and exact owned waits. Host-check-r1 CTest11/11
+PASS, including those tests in ordinary tool discovery and the old context/loader
+tests. No privileged new image is in CTest. Existing root experiments retain
+their opt-in/default-skip boundary.
+
+The spawn helper performs stable5+ copies before final own-FD snapshot, ordered
+stdio/journal4 mapping, explicit close3 and close of all other5+ descriptors.
+Signal-deferred attachment precedes handshake/logging. Unknown spawn is sticky
+uncertainty, not absence. Tests retain the linked scope on unproved child cleanup;
+fake-image EX contention after parent close and success after exact normal reap
+measure inherited-description lifetime only. They do not execute real root IDs,
+post-Drop ACL or SMACK checks, platform loading, policy or actual journal CLI.
+
+Local source review and exact native compile/method/results are pending. No root
+new-image execution has occurred or is approved. Post-Drop metadata failure must
+remain setup FAIL without label/ACL/NSS repair. Reader AND server coordinator-loss
+survival, module/TLS retention, standalone real recovery refusal and Stage B eight
+fixed rules require later frozen source/method gates. Worker owner/bootstrap has
+its separate accepted development contract, not implementation/runtime evidence.
+No production admission, original different-subject subset, PATH, remount, RPM,
+installedRelease15 or ARM gate closes.
+
+P06-READ-REFERENCE-CONTEXT-r1 independent source CHANGES_REQUESTED: intentional
+FD3/high sentinels were CLOEXEC, so those passing cases could not distinguish
+explicit-close actions from exec removal. Preserve the7/7 result as mapping/
+reference evidence but not causal evidence of those closes. R2 changes only the
+test and07/08: both intentional sentinels are explicitly made inheritable and
+checked before spawn. Two test-only posix_spawn action filters omit exactly one
+required close; each fake child now rejects its table and is actually reaped1.
+The complete mapping still requires exact0,1,2,4 and normal reap0. Production
+stable copies remain CLOEXEC; no mapping/guard/context relaxation. Host-tests-r3
+actual9/9 PASS. Full current host check will be recorded below before freeze.
+
+Native-build-r1 is separate compile-only preparation of the frozen r1 source10
+archive b77f6f30e001506018751097d1f49d88510229f0e568e50abb30078f2203a325.
+Protected new read-reference-context-r1 root700; exact source10/acceptedJSON53,
+initial namespaces/ext4/trusted ancestors; direct GCC14 C++20/O1/Werror compilation,
+clean ldd-r/noRPATH/RUNPATH and minimal standard-runtime closure6; remote0/transport0.
+No image or Python test was executed. Its unchanged compiled inputs remain exact
+current C++ code, but archived test/07/08 are historical r1, not revised r2 bytes.
+The new native image has no runtime/Drop/post-Drop metadata acceptance. R2 exact
+archive/method and independently reviewed native execution remain pending.
+
+Frozen r2 final host-check-r2 CTest11/11 PASS after the inheritable-sentinel and
+causal omission tests; focused host-tests-r3 actual9/9. Four implementation/build
+paths are unchanged from r1; only test/07/08 differ. Re-review is required to close
+the explicit-close evidence finding; the owner does not self-close it. Native
+compile r1 remains historical compile-only, and no root context is executed.
+
+Independent r2 re-review closes the original explicit-close evidence finding,
+but requests one negative-fixture race fix: omit3 must not send x to a pipe whose
+child correctly rejects before reading. R3 changes only that test/chronological08:
+normal mode still checks its control write, while omit3 directly waits/reaps1
+without a write or broad suppression of pipe errors. Preserve r2 host9/9 as prior
+passing evidence with that scheduling gap. Final current host-tests-r4 actual9/9
+and host-check-r3 CTest11/11 PASS. No implementation/07 guard change.
+
+Native-build-r2 recompiles the unchanged C++ image in a new protected r2 tree
+from exact r2 source10 archive a0deac1694410ae8531c704c3cb6d68425cf34a83322b56a2cd48a2fc133e1dd,
+accepted JSON53, initial namespaces/ext4 and trusted code paths; direct GCC14
+compile/link, minimal standard-runtime6, clean ldd-r/noRPATH/RUNPATH,0/0. Image
+SHA217c1b008b1dae3d734276c963643d340ba2a2550c1eb28afae539829fa0ec3c.
+No native test or image invocation occurred. R3 test bytes require their own
+exact native safety evidence; root context execution remains unapproved/NOT_RUN.
+
+Independent r3 LOCAL SOURCE disposition ACCEPTED preserved original07
+01aa226c255a13fe3b921233a5ca01f62bf5d89f9708b4449a2e3162878e35e6
+and08 a460c6415de9de8aa7f37a6b9a0e2e05b6f9eecfb40de679fd0be7056c50f304.
+Native-build-r3 freshly directly recompiles unchanged C++ from exact source10
+archive b3c22946546e9395a2d018eb64312cae4c7f04ccb2ff8172b0c1f37520afaae3,
+JSON53/minimal standard6, same image217c1b008b1dae3d734276c963643d340ba2a2550c1eb28afae539829fa0ec3c,
+clean ldd-r/noRPATH/RUNPATH/0/0. This is not native CMake/CTest or image execution.
+
+Nonpolicy method-r1 read-only request failed SDB service-name/command-length
+before remote execution, transport1 with no remote sentinel; transfers are not
+test execution. Protected source-only verifier method-r2 shortened the first
+clean/isolated command; read-only preflight-r2 source10/JSON53/image1/deps6/
+interpreter/watchdog/trusted ancestry/ns/ext4/no-cache PASS0/0, explicitly exits
+before tests. No nine-test or real context run occurred.
+
+Method-r2 independent CHANGES_REQUESTED reopens only a nested-driver test cleanup
+path: subprocess.run timeout kills/reaps the driver but cannot prove its child's
+absence, while ordinary tearDown could delete its linked scope. R4 adds a sticky
+nested invocation latch before launch, clears it only after exact successful
+driver return whose source requires actual child reap/close, and prevents rmtree
+on timeout/nonzero/unknown. No unknown PID signaling or automatic recovery.
+Two injected tests assert deletion is never reached; TEST-only reset is justified
+solely because subprocess.run was mocked and no driver/child actually launched.
+Implementation/build inputs are unchanged; only test/07/chronological08 differ.
+Host-tests-r5 actual11/11 and host-check-r4 CTest11/11 PASS. Historical r3 source/
+host acceptance and unexecuted method remain preserved; revised source/native
+method re-review required, not self-closed. Real context/Drop/ACL/module/recovery/
+policy/installed/production gates remain NOT_RUN/unapproved.
+
+
+P06-READ-REFERENCE-CONTEXT-r4 independent LOCAL SOURCE ACCEPTED preserves
+original07 a1a97998782d814c57c277dbf168af682082b6bcdbc6f27f88dbfdf7c27069c3
+and08 db3ed0a4c6d32b5f7ae9835852b1d7f344457fa6ef263745c98dd24ab9ca10cb.
+Native-build-r4 is direct GCC14 compilation of exact source10 archive
+248dee32209287de40561e8466f5c1ff819b8d1dfa1142fa86d54bcccd7eb3d5,
+JSON53 and standard runtime6 in the protected read-reference-context-r4 tree.
+Image217c1b008b1dae3d734276c963643d340ba2a2550c1eb28afae539829fa0ec3c,
+clean ldd-r/noRPATH/RUNPATH, remote0/transport0; no CMake/fullcheck/RPM claim.
+Nonpolicy-preflight-r3 read-only PASS0/0 exits before tests.
+
+After separate NONPOLICY-METHOD-r3 pre-execution ACCEPTED, owner invoked
+python3 /tmp/capmgr-read-reference-context-execute-nonpolicy-r3.py tests.
+read-reference-context-native-nonpolicy-tests-r3.log prints the FIRST env-i
+absolute Python-I-B/source-only verifier command, transferred method checks,
+installed60s watchdog and owner90s outer bound. Exact source10/JSON53/image1/
+standarddeps6/interpreter/watchdog/protected ancestry/initialns/ext4/no-cache
+checks pass before and after. All11 mapping/fake-image tests PASS without skips
+in0.191s; NATIVE_REFERENCE_MAPPING_RETURN0, remote0/transport0. The C++ image is
+pinned but NOT executed. The source requires exact owned fake-child wait/reap,
+parent-reference close/independent EX exclusion and post-reap release in the
+positive, causal omission-child rejection, and retained scope/zero deletion in
+injected nested timeout/nonzero tests. These are passing assertions, not raw
+flock/wait syscall records; the nested failures are no-launch mocked cases.
+No timeout or unexpected retained result is logged.
+
+Final native/publication review is pending. This supersedes only the historical
+native mapping-test NOT_RUN state. Actual module-free root context image/Drop/
+post-Drop ACL remains NOT_RUN and unapproved; no NSS, real-journal recovery,
+surviving/adopted reader AND server, module/TLS, SQL/policy/StageB or production
+proof follows. InstalledRelease15 remains unchanged. The separate P04 isolated
+worker owner API-boundary-r2 contract is ACCEPTED FOR DEVELOPMENT ONLY, not code
+or bootstrap/runtime acceptance.
+
+
+P06-READ-REFERENCE-CONTEXT-r4 FINAL NONPOLICY/native/publication ACCEPTED by
+independent reviewer; accepted administrative08 SHA
+bd738190604b6fe65555cf14a49bae4a44c311964f64109781bd0baba8ea4bb5 is
+preserved before heading-only07 and this final disposition bookkeeping. All six
+code/07 entries were independently rechecked before administration. The preceding
+final-review-pending statement is superseded by this explicit scoped verdict.
+Next: publish these seven reviewed paths, then implement the separate P04 owner
+boundary and prepare an independently reviewed real reference-context method.
+No real root context/Drop, module/TLS, journal recovery, policy or product gate
+closes. Disjoint P04 source WIP is excluded from this publication.
