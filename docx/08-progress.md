@@ -2427,3 +2427,76 @@ Earlier final-pending text is chronological and superseded. This publication
 changes only the accepted two package files and accurate administrative evidence;
 root recovery/role fixture work remains outside this tree and this archive.
 No new policy or product activation is included.
+
+### P06-READ-POLICY-RECOVERY source/CLI slice (r4 ACCEPTED)
+
+Release15 spec/README+accurate08 published as
+faaad0b24d865bd24ea12c7a0dbcede07b73814c, commit0/push0 and exact origin/main
+verified, tree clean before this source slice. Installed Release15 remains
+separate from the following two newly added recovery/test files.
+
+Temporary helper+12 host-test primitive r1 is independently ACCEPTED, original
+helper34b49a5611b496d9f592c6d69b50409181ed152494cc2bf61820d20f73a3f9e1
+and testc0bd0914c651f845a36efc959e306ffb95b3be1c137a11f88ab018293ef5b7fe.
+Actual project integration adds explicit --recover-only CLI, root-owned protected
+source ancestry/ACL validation and fixed validated sibling db_access_probe import
+for the accepted trusted-parent check. No default --run, role spawn, provisioning
+or policy-install CLI is supplied. Printed recovery argv remains an eventual
+full-fixture obligation. Complete immutable plan/never-unlocked inherited SH and
+independent recovery EX mechanics are unchanged; validated recovery.json.next is
+only a discardable non-authoritative receipt, never a substitute plan.
+
+Host read-policy-recovery-host-r2:16/16 PASS, py_compile0; existing unittest
+discovery automatically includes the new test without CMake/payload changes.
+Native read-policy-recovery-native-r1 checks archive
+753aca9276ea2f6cff30cc70f70d42cf3863b446e6dce39f9ea244348eaa8b28 and
+three exact source hashes (new helper/test plus unchanged trusted dependency),
+then16/16 PASS, remote0/transport0 in protected root0700 scope. Native tests use
+fake Operations under the target root test runner: real local files/flock/fork
+and deletion, but no SMACK/Cynara write, SQLite, context drop, root workload or
+operational data. Host/non-policy tests cover default CLI refusal, provenance
+refusal before mutation/import, inherited SH lifetime, partial fake installation,
+identity/ACL/ancestor/plan/deletion failures and receipt fsync retry. This does not
+prove actual load2 recovery, protected CLI execution on a real rule journal,
+fixed-role setup/FD lifetime, DAC/SMACK causal admission or production policy.
+
+Frozen two-file source manifest is /tmp/capmgr-read-policy-recovery-source-r1.sha256.
+Source/CLI independent verdict pending; future full fixture source/safety review
+remains required before any global policy write or root-role matrix execution.
+No package/install change is included here.
+
+P06-READ-POLICY-RECOVERY-r2 is CHANGES_REQUESTED only for the added dependency
+loader provenance: standard SourceFileLoader may select an unchecked valid pyc
+cache instead of the validated .py. Earlier r1 journal/SH/EX/receipt acceptance
+stands; the16-case host/native outcome does not close this source finding.
+
+Revised source r4 loads the fixed dependency by opening/validating its owned
+NOFOLLOW/CLOEXEC regular source FD, checking exact named/pinned identity, root
+nonwritable/singlelink/noACL metadata, bounded bytes and stable size/time, then
+compiling those source bytes into a fresh namespace with a non-main module name.
+It never consults a bytecode cache and does not claim to prove interpreter/stdlib
+or environment provenance. Three new tests include an actual valid conflicting
+pyc selected by the standard loader but ignored by the source-only path, plus
+actual trusted-source writable/ACL refusal. Cache test files stay inside their
+owned temp directory even with an external pycache prefix.
+
+Host-r3 preserves a test-message regex failure (not a guard bypass); subsequent
+focused runs PASS. Native-r3 checks exact source but FAILS19-case run because the
+conflicting-source fixture inherited target umask0000 and created a writable
+.py, correctly rejected by the unchanged source guard. A read-only native umask
+probe confirms0000. Revised fixture explicitly chmods only its own temporary
+source0600 before validation; no product check is relaxed. Host-r6 focused19/19
+and host-check-r5 CTest8/8 PASS. Native-r4 checks exact3 source/dependency hashes
+then19/19 PASS remote0/transport0, fake Operations/files/flock/fixed child only.
+No global policy, actual real-journal CLI recovery or role-context matrix ran.
+Native r4 archive SHA256
+a28de5595e8c4a0d1932778e69a1073cf27dda1654bcb9d7eaf0e9d6e6a894dd
+is preserved. Final exact source/CLI+administrative08 r4 verdict remains pending;
+full fixture execution still requires its own source/safety review.
+
+P06-READ-POLICY-RECOVERY-r4 FINAL SOURCE/CLI PUBLICATION is ACCEPTED by w1:pA
+for exact new helper/test plus administrative08. Original reviewed08 SHA256
+cd017db0d0e97aa8d017be938a9a58a66164f2de79991158ea306ca78caf7544 is preserved.
+The r2 bytecode-selection finding is CLOSED by source-only loading; previous
+pending states are chronological and superseded. Actual real-rule recovery,
+fixed-role/provisioning and root policy execution remain separate unaccepted gates.
