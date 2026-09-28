@@ -100,10 +100,11 @@ device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gate
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: separately review a real TIDL/Cynara policy preflight/design after the
-accepted private modeled-C/full crash fixture checkpoint. The prior full-r2
-fixture remains overall FAIL; its normal phase passed separately. Release15 remains
-accepted. PATH-01 stays a product question; unrelated development can continue.
+Next: separately review/run the fixed delayed-load real TIDL/Cynara RPC
+availability diagnostic after accepted minimal-context/dummy-loader verification.
+The causal real-file policy matrix and production admission remain gated. Prior
+full-r2 failure is preserved; installedRelease15 is unchanged. PATH-01 remains a
+product question; unrelated development can continue.
 
 ### P00 publication checkpoint review
 
@@ -3171,3 +3172,325 @@ is preserved. This supersedes final runtime review-pending wording, not the prio
 full-r2 FAIL or open product gates. Publish only this accurate administrative08;
 source77d5261 and installedRelease15 remain unchanged. Next is separately reviewed
 real TIDL/Cynara policy preflight, not automatic production selection or grant.
+
+
+### P06-READ-REAL-POLICY-PREFLIGHT-r1 (source/native build pending)
+
+Full fixture evidence-only administrative checkpoint
+`81659c28291dafdf93e7589d3567e51711aef3ff` was committed/pushed0, exact remote
+main verified and worktree clean before this next development scope. Installed15
+and source77d5261 are separate from this build-only diagnostic.
+
+Independent design6538a1d2c648658a8bc2dc90b9f7e200cf83040f572dc83a07afbbc4bc153da6
+is ACCEPTED FOR DEVELOPMENT CONTRACT ONLY. New native-only TIDL fixture measures
+fixed UID/GID301 System/User::Shell and UID/GID1 User::Shell candidates with empty
+groups, exact own full ID/capability/bounding/ambient/NNP/label checks. It makes no
+policy-allow assumption or inference from generic native exceptions. The normal
+generated BindChannels/ValidateChannels/real MAIN Cynara code and IDs stay unchanged.
+Only a fixed Cancel probe returns unsupported -6; successful gate evidence needs
+one exact server body record matching the known positive-spawn client PID/token/
+context/counters and the child's actual received -6. No fallback maps a failed
+method to a positive result. Other overrides are inert/counted; no job, catalog,
+SQLite, grant, lease, rule, new label or policy database operation is made by the
+fixture. Connection principal is not per-message task identity.
+
+Only retained MAIN is logged; no callback authority getter was added. The unchanged
+generated dispatch validates both sockets and callback extension before the body.
+Each client owns a private uniterated creator context before sync connect, listener
+outlives proxy and context survives proxy destruction. Context/thread mismatch
+fail-stops; teardown errors fail rather than count as authorization denial.
+Root parent owns no SQLite/TIDL endpoint before spawn. Standard descriptors are
+validated, privately duplicated and explicitly mapped before closefrom3 LAST;
+fixed positive child return is immediately attached to a reserved ownership slot.
+The new scope retains uncertainty from server spawn until verified normal service
+drain/owned exit and own endpoint absence. Failed readiness/drain cannot remove a
+scope merely because a destructor later killed the server. Explicit checked scope
+cleanup precedes diagnostic completion. Fewer than two positive UID301 contexts
+reports an image/availability prerequisite; UID1 denial is not assumed. Empty-group
+observations cannot substitute for the later platform-group filesystem matrix.
+
+`read-real-policy-host-check-r1.log` CTest8/8 PASS, with real platform/TIDL disabled
+on this host: the new optional image is NOT compiled or run by that result. CMake
+adds it to check only with actual transport/Cynara dependencies and no install or
+privileged CTest invocation. clang-format and diff --check pass. Compile-only native
+preparation and separate exact source/root pre-execution review are next; all new
+root context/IPC runtime remains NOT_RUN/unapproved. Existing accepted scopes and
+production gates are unchanged.
+
+
+Independent REAL-POLICY-PREFLIGHT-r1 local source/design disposition: ACCEPTED
+for exact three files only, original08 SHA
+`b602157e6621a2c7e3bae01399631ec27b991ce1878d26fe1a533d02be71a72e`.
+Native compile-only `read-real-policy-native-build-r1.log` is FAIL: source4/4,
+accepted core75/generation4, pinned Release15 static archives, actual required
+platform flags/Cynara macro and method IDs pass, but GCC14 -Werror rejects the
+role-selection reference as potentially dangling. Remote1/transport0; no binary
+or context/RPC execution is inferred. Archive
+`2950c71f27f9db2b36fb0e391613b71b10fccbdd2c0454cddc5704a05194be00`
+is preserved with this failure.
+
+Narrow r2 copies the fixed RoleConfig value instead of retaining that reference;
+no guard/policy/protocol change or compiler-warning suppression. New exact archive
+and native direct compile/link follow; root invocations remain NOT_RUN/unapproved.
+The compile method links pinned accepted generated/platform/adapter/catalog
+archives rather than claiming a fresh complete CMake/platform rebuild.
+
+
+Independent REAL-POLICY-PREFLIGHT-r2 narrow source disposition: ACCEPTED for the
+same three files. Accepted r2 evidence08 SHA `bf259445be4f5ba31a462a7f177d973fc96824964979d63af86dde246df2ad45` is preserved.
+The copied type is FixedRole (the preceding RoleConfig wording was a naming error),
+and the GCC14 warning is not evidence that the old function returned its temporary
+argument. Static role table/string lifetime and all guards remain unchanged.
+
+`read-real-policy-native-build-r2.log` compiled/linked the exact r2 source but then
+FAILED an outside-project symbol assertion using an incorrect capmgr::platform
+namespace; remote1/transport0. No runtime or overall build-verification PASS is
+inferred from that attempt. `read-real-policy-native-build-r3.log` checks the same
+source4/4, accepted core75/generation4, four pinned accepted Release15 archives,
+required actual platform options/CAPMGR_HAVE_CYNARA and IDs0..10, recompiles/links
+with GCC14 and verifies actual capmgr::RequirePlatformPrivilege plus Cynara
+check/PID/user/client symbols. ldd -r has no missing provider/undefined symbol;
+remote0/transport0. This is direct compile/link verification, not a fresh complete
+CMake build or native CTest run. Image SHA
+`85a4f1de0af9572d7a8fa22ade2f591fa58033e8ec1528eb520289d4ed2a5b64`
+is root:root0755/singlelink/noACL/no filecaps under protected read-real-policy-r2.
+Native source archive `17f68aa44b1ca9e3a9088662ce1fcf60b683b9e95c7d91d00cb985d68cc805a5`
+contains the frozen three files plus unchanged trusted_fixture header.
+
+Read-only `read-real-policy-native-preflight-r2.log` passes exact source4/4/archive/
+image/interpreter/watchdog metadata and hash checks, trusted ancestry, initial
+namespaces/local ext4/no cache; remote0/transport0. Separate fixed --contexts-only
+60s/90s and real-RPC 120s/150s methods are proposed for pre-execution safety review.
+Both remain NOT_RUN/unapproved; no policy mutation/product/package claim follows.
+
+
+Independent r2 native direct compile/link evidence disposition: ACCEPTED as scoped
+above. Context-only method-r2 was CHANGES_REQUESTED because its first outer root
+interpreter used inherited startup environment before later clean exec. No root
+fixture ran. Outside-project outer-method-r3 now starts absolute /usr/bin/env -i
+and /usr/bin/python3 -I -B before any verifier imports; existing protected method
+hash/metadata checks and clean runner exec remain. Fixed source/image/preflight
+bytes are unchanged. Both contexts-only and RPC still require separate safety
+verdicts and remain NOT_RUN at this point.
+
+
+Independent OUTER-METHOD-r3 context-only safety disposition: ACCEPTED for fixed
+three-role --contexts-only, installed60s/owner90s only. Actual
+`read-real-policy-native-contexts-r2.log` is FAIL: immediate transferred3/3 and
+source4/4/image/provenance pre/post checks pass, but initial own task/FD-table guard
+rejects at startup. Contexts-return1/remote1/transport0; no timeout, OWNED_SCOPE,
+context-drop or RPC marker. Source places rejection before Run/scope creation.
+No source-level inference distinguishes extra task versus descriptor yet. RPC
+remains NOT_RUN/unapproved; no context repair or guard relaxation is performed.
+
+Narrow fixture r3 adds bounded own scan-name/count/errno and own-FD readlink
+failure diagnostics before the unchanged initial proof rejection. It never opens,
+duplicates/closes those observed descriptors and does not derive peer credentials.
+Existing exact table/single-task guard and all drop/connection/cleanup paths remain
+unchanged. New native compile and separate bounded method review are required;
+no runtime is implied by these diagnostics or the r2 compile result.
+`read-real-policy-host-check-r2.log` existing host CTest8/8 PASS remains non-native
+regression evidence, not compilation of the optional image.
+
+
+Before submission/execution, diagnostic r4 refines the initial r3 draft with
+separate own-task/own-FD stages, fixed bounded same-scan name storage, exact expected
+versus observed count, scan FD, entry flag, separately captured readdir/closedir
+errors and truncation reporting. Only after closing the scan directory, failure
+reporting obtains fstat/F_GETFD/F_GETFL and bounded own-FD readlink metadata,
+reporting syscall failures/races honestly. It never opens replacement data FDs,
+reads FD contents, closes unknown endpoints or widens the exact allowlist.
+The first diagnostic r3 draft was compiled only, not submitted/run; r4 is the
+frozen complete diagnostic amendment for review. No dynamic-loader/platform
+origin is inferred before actual rejected-table evidence is observed.
+
+
+Frozen diagnostic-r4 original08 SHA `ce5d5bcc0ea5b13b1c73146c6ffe1329379318a39ca185189ad90c864696d2f9` is preserved.
+`read-real-policy-native-build-r4.log` is compile-only PASS for the superseded r3
+initial diagnostic draft, not runtime or final diagnostic source acceptance.
+`read-real-policy-native-build-r5.log` compiles/links exact complete r4 source4/4
+against the same checked accepted core75/generation4/four archives with actual
+real Cynara flags/IDs; ldd-r clean and policy/socket symbols present, remote0/
+transport0. Source archive
+`ed80384547656d4420362606cf67bf73ca5b00215c366bcccc053f5241af36e9`,
+image `06259d636ba3dce9f691f8e85a0818dd03bbaef8e0efbcd3532e8e31ecde68cc`.
+New protected read-real-policy-r4 read-only preflight passes source4/4/archive/
+image/root0755/noACL/no caps/protected ancestry/initialns/ext4/interpreter/watchdog/
+no-cache, remote0/transport0. Exact method-r4 and outer-method-r4 are frozen for
+separate diagnostic-context-only safety review; no rerun has been made. Prior r2
+context guard failure is unchanged FAIL; RPC is still NOT_RUN/unapproved.
+
+
+Independent r4 diagnostic source/direct-build/context-only safety disposition:
+ACCEPTED. Actual `read-real-policy-native-contexts-r4.log` remains FAIL:
+transferred3/3/source4/4/image/provenance pre/post pass, own task scan succeeds but
+own-FD scan rejects observed5 versus expected3 (scan_fd4, entry flag false, both
+scan/close errors0, no truncation). Std0/1/2 are present; extra FD3 is nonblocking
+CLOEXEC anon_inode:inotify, FD5 writable dlog private deleted FIFO without CLOEXEC.
+Contexts-return1/remote1/transport0; no timeout/scope/drop/RPC. This is actual own
+metadata, not exact library-init attribution or permission to close/admit extras.
+Local dlog initialization source has matching mechanisms, not installed provenance.
+A separate minimal pre-drop launcher/delayed native-module loading contract is
+proposed before any structural source amendment; no source/runner has changed or
+been rerun to bypass the rejected table. RPC and the real filesystem matrix remain
+NOT_RUN/unapproved; diagnostic failures do not close authorization/product gates.
+
+
+### P06-READ-REAL-POLICY delayed-load split-r2 (scoped ACCEPTED)
+
+Independent delayed-load development contract accepted at SHA
+`53d38797c83e59b76be0b8b192ce23b7ed092a0bc8db0863e79fa7d12e155406`.
+The r4 combined-image startup FAIL remains unchanged. The implementation now
+separates a minimal libc/C++ launcher (unchanged OwnedChildren compiled directly)
+from a fixed build-only native TIDL/Cynara shared fixture. Neither image is installed
+or selected for production; no rules, authority hook or platform logging stub is
+added. Initial task/std-FD validation is unchanged. Context-only never opens/loads
+the module. Every client label/ID/group/capability/NNP check completes before load;
+exact table admits only the one validated owned code FD during that private phase.
+Unknown library descriptors are never closed or admitted across credential drop.
+
+Root validates the fixed module ancestry, regular/root:root0755/singlelink and
+ACL/cap metadata before handing its O_RDONLY/NOFOLLOW/CLOEXEC reference to the
+private code-image owner. The owner rechecks pin identity/flags before and after
+the pre-load proof, loads only its own FD magic path with NOW/LOCAL, resolves one
+fixed noexcept C entry, closes its own code FD before entry and never dlcloses the
+mapping, including symbol/entry failures. The entry contains exceptions and checks
+final context as a postcondition; it never changes credentials or forks. Own-FD
+metadata/loading is separate from prohibited untrusted-peer proc credentials.
+This pins only the top ELF; trusted dependency/loader configuration and stable
+root-owned image/no-hostile-root/update premises still require native audit.
+Post-drop read/mmap/proc/SMACK failure is setup failure with no fallback or repair.
+
+The generic private test-fixture code owner does not grant path/owner trust: the
+root launcher performs those checks before transfer. Separate fixed loader test
+images have no native platform dependencies or credentials/policy operations.
+Eleven isolated loader tests cover entry-before-close, rejected pre-load context,
+missing entry/mapping retention, bad ELF, missing/substituted/non-CLOEXEC/writable/
+O_PATH code descriptors, extra alias, missing stdio and post-proof pin recheck.
+These are ordinary tests, not actual root context or native RPC evidence. CTest
+adds `capmgr-code-image` (nine total names); all new targets remain uninstalled.
+
+`read-real-policy-split-host-configure-r1.log`, host-check-r1 and focused-r3 record
+host configuration/full CTest9/9 and final11/11 loader tests. Host-check-r1 predates
+the three added negatives; final exact host-check-r2 follows. Minimal launcher
+host direct compile-r1/r2/r3 is separate from optional native-module compilation;
+no host launcher/drop/RPC invocation was performed. Local WIP extraction scripts
+stopped at mismatched markers before correction; these are edit-tool failures,
+not native test evidence or accepted source. Native build/audit and all new-image
+context/loader/RPC invocations remain pending separate exact review at this point.
+InstalledRelease15, accepted modeled-policy matrix and production gates unchanged.
+
+
+Independent SPLIT-r1 exact nine-file local-source/host disposition: ACCEPTED,
+original08 SHA `226399ded877933a2f8193ad7b14a2fbe0a41043fe2b304b9a91e8a14452ce65`
+preserved. Final host-check-r2 CTest9/9 and focused-r3 11/11 stand. The empty host
+direct-compile logs alone are not a recorded argv/exit proof; no runtime claim is
+based on them. The launcher validates metadata/identity, NOT a code digest; exact
+bytes rely on external execution preflight and stable trusted-root/no-update
+premises. Dependency closure is a separate audited prerequisite, not pinned by
+that top-level file descriptor.
+
+`read-real-policy-split-native-build-r1.log` is FAIL before extraction or compilation:
+outside-project global marker replacement corrupted a Python print string,
+SyntaxError/remote1/transport0. It was not a product compiler finding. Corrected
+build-r2 uses the unchanged archive
+`216c8d69f592c1433c4c9f3156d844e596e606125f913f60e041117383592a0b`,
+source10/10 (nine reviewed files plus unchanged trusted_fixture), core75/generation4
+and only the two pinned accepted PIC platform/generated archives. In a new protected
+read-real-policy-split-r2 scope, GCC14 freshly compiles the minimal launcher,
+native module, two fixed loader images and ordinary loader-test binary. Method IDs
+remain0..10; actual real-Cynara flags/PIC/default policy and socket symbols checked.
+All ELF images are root:root0755/singlelink/noACL/no caps; ldd-r is clean. Direct
+ELFs have no RPATH/RUNPATH. Transitive resolved system dependencies and their
+root-managed symlinks/metadata/hash are recorded. Minimal closure contains only
+loader/libc/libdl/libstdc++/libgcc/libm/libpthread, no platform objects. Module
+closure includes the actual platform dependencies; trusted loader/image/update
+premises remain necessary. This is compile/ELF audit only, not native test or full
+CMake verification: remote0/transport0.
+
+Direct-build launcher SHA
+`899cafdff86e9473e6118abf2b80b239526e51228b88694e66a0856d2e77eac2`,
+module `550a1849e0f9e98e261fde232147f4cbfa82809dd780521de2af742608fcd2fb`,
+ordinary test `d6fca498eb471344d71a474493672a6779d2b0ba0dbe125fd95e853ae2aa48d4`.
+No context, loader test, module entry, RPC or policy execution occurred.
+
+Narrow split-r2 adds the module's nlohmann_json header dependency explicitly to
+its CMake target; direct compile already supplied that include, so direct-build
+success does not independently validate CMake propagation. Other implementation/
+test bytes are unchanged. Actual native CMake target build and separate frozen
+root context-only/ordinary-loader-test methods are being prepared. All new runtime
+remains NOT_RUN/unapproved; native direct audit does not authorize it. Historical
+r2/r4 combined-image startup failures, installedRelease15 and product gates remain.
+
+
+Independent split-r2 narrow source/direct native audit disposition: ACCEPTED.
+Reviewed08 SHA `3d4ba858bbb7d7241d3dbf6182144f321d0daadc8bfe42685034b4fc91b156eb`
+is preserved. `read-real-policy-split-native-cmake-build-r1.log` now configures a
+fresh exact current171-file source snapshot, full platform optionsON, JSON source
+from the trusted accepted Release15 build tree, and freshly builds only the new
+minimal/native-module/ordinary-loader targets plus their generated/platform
+prerequisites. It is NOT full native CTest/RPM or runtime evidence. Module's actual
+compile command proves the explicit JSON header dependency propagated. Native
+method IDs0..10, policy/socket/fixed-entry symbols, root0755/singlelink/noACL/no caps,
+clean ldd-r, no RPATH/RUNPATH and transitive resolved dependency/hash audit pass;
+final source171 unchanged, remote0/transport0. New archive
+`1b3f42b83637075393ed87df61c65ebef281d6bff953e576203997497bd9125f`
+contains historical accepted r2 administrative08, not this later append.
+
+These CMake artifacts differ from the earlier direct-build artifacts:
+launcher `0f7abcb9d41f7df3803ae1773ff753883e13a1c2f4214ae8584c403721dd9e66`,
+native module `26f315dab592431cc0a44c9b6f2c9fbec0e718ce287b524c45c2fae107d53c2e`,
+ordinary loader tests `56c7bba740d89fb9cfc8ca7c2444da456d6af0230f7fe6bd0dbbcd724ae70b84`.
+They reside in protected read-real-policy-split-cmake-r2. No context, loader-test
+entry or RPC image has run. Separate frozen methods bind these exact artifacts,
+not the prior direct-build digests. Read-only native-preflight-r1 checks current
+source171/images5/53 resolved dependencies, archive/manifest/interpreter/watchdog,
+protected ancestry/initial namespaces/ext4/no cache and transferred3 methods.
+Fixed context-only60s/90s and ordinary11-loader-test60s/90s invocation plans remain
+NOT_RUN pending separate pre-execution safety review. Real module loading/RPC and
+later filesystem matrix remain separately NOT_RUN/unapproved. No operational
+policy/SQLite, package or production behavior changed.
+
+
+Independent split-r2 native CMake/method-r1 disposition: ACCEPTED for the targeted
+build evidence and separate context-only/ordinary-loader runs, not actual native
+module/RPC loading. Reviewed08 SHA
+`41acee0673fade6600b976f40713f62944f2c8ae06b65f3aac18c15fcda0e794`
+is preserved. Actual owner executes the frozen outer `execute-r1.py contexts`
+then `execute-r1.py loader`, each FIRST clean/isolated root startup and exact
+transferred3 hashes/metadata, installed60s and owner90s; no added workload or
+fallback cleanup. All source171/images5/dependency53/interpreter/watchdog/initial
+namespace/ext4/no-cache checks pass before and after each independent run.
+
+`read-real-policy-split-native-contexts-r1.log` PASS: all three fixed contexts
+(system301/System, shell301/User::Shell, shell1/User::Shell) report validated exact
+IDs/empty groups/all-zero caps/bounding/ambient/NNP and labels. Source requires
+actual normal exclusive owned child completion. REMOVED_SCOPE=
+`/opt/usr/capmgr-real-policy-Aqk9yD` precedes REAL_GATE_CONTEXT_ONLY_PASS;
+CONTEXTS_ONLY_RETURN0/remote0/transport0. This minimal module-free route succeeds
+without allowing or closing the previously observed platform-library FDs. It does
+not load the module or measure post-drop magic-link/mapping permissions.
+
+`read-real-policy-split-native-loader-r1.log` PASS: eleven ordinary isolated loader
+experiments, no skips, each owned child outcome required by the test source;
+LOADER_ONLY_RETURN0/remote0/transport0. Only tiny dummy modules/bad ELF are selected,
+not actual TIDL/Cynara dependencies. Extra-alias/missing-stdio diagnostics are
+expected rejected test inputs, not an authentication pass. No own context drop,
+SQLite, registration or policy operation is performed by these tests.
+
+Both runs have no timeout/retained-scope marker. Historical r2/r4 combined-image
+startup FAIL remains preserved; this does not retroactively turn those runs PASS.
+Final scoped runtime/publication review follows these logs. Actual delayed native
+module/RPC invocation and later causal filesystem matrix remain NOT_RUN/unapproved;
+installedRelease15 and all production/package/task-proof gates remain unchanged.
+
+
+Independent split-r2 final scoped source/context/dummy-loader runtime/publication
+verdict: ACCEPTED. Reviewed08 SHA
+`17156c1ee97b9f8a84f716ab975f3ad0a6645b9d2ea16822e272b7f1debe7b32`
+is preserved before this disposition/heading bookkeeping. Publish only the eight
+reviewed source/build/test entries plus administrative08. These runtime outcomes
+close the minimal context and ordinary loader gates; actual native module/RPC
+remains NOT_RUN, with a separate fixed method submitted for review. No code,
+image, policy or runtime method was changed by this administrative disposition.
+InstalledRelease15 and all full-product/external prerequisites remain separate.

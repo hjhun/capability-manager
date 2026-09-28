@@ -78,5 +78,45 @@ IF(CAPMGR_BUILD_TIDL_TRANSPORT)
       VERBATIM
     )
     ADD_DEPENDENCIES(check capmgr-tidl-probe capmgr-read-transport-probe)
+    IF(CYNARA_FOUND)
+      # The minimal launcher must not link platform startup dependencies.
+      ADD_LIBRARY(capmgr-read-policy-native-fixture SHARED
+        "${PROJECT_SOURCE_DIR}/test/integration/read_policy_tidl_native.cc"
+      )
+      TARGET_LINK_LIBRARIES(capmgr-read-policy-native-fixture PRIVATE
+        capmgr-tidl-transport
+        nlohmann_json::nlohmann_json
+        PkgConfig::GLIB
+      )
+      TARGET_COMPILE_OPTIONS(capmgr-read-policy-native-fixture PRIVATE
+        -Wno-unused-parameter
+      )
+      ADD_EXECUTABLE(capmgr-read-policy-tidl-probe
+        "${PROJECT_SOURCE_DIR}/test/integration/read_policy_tidl_probe.cc"
+        "${PROJECT_SOURCE_DIR}/src/launcher/owned_children.cc"
+      )
+      TARGET_INCLUDE_DIRECTORIES(capmgr-read-policy-tidl-probe PRIVATE
+        "${PROJECT_SOURCE_DIR}/src"
+      )
+      TARGET_LINK_LIBRARIES(capmgr-read-policy-tidl-probe PRIVATE
+        nlohmann_json::nlohmann_json
+        Threads::Threads
+        ${CMAKE_DL_LIBS}
+      )
+      TARGET_COMPILE_DEFINITIONS(capmgr-read-policy-tidl-probe PRIVATE
+        CAPMGR_REAL_POLICY_NATIVE_IMAGE="$<TARGET_FILE:capmgr-read-policy-native-fixture>"
+      )
+      ADD_DEPENDENCIES(capmgr-read-policy-tidl-probe
+        capmgr-read-policy-native-fixture
+      )
+      FOREACH(POLICY_FIXTURE_TARGET
+          capmgr-read-policy-native-fixture capmgr-read-policy-tidl-probe)
+        ADD_CUSTOM_COMMAND(TARGET ${POLICY_FIXTURE_TARGET} POST_BUILD
+          COMMAND chmod 0755 $<TARGET_FILE:${POLICY_FIXTURE_TARGET}>
+          VERBATIM
+        )
+      ENDFOREACH()
+      ADD_DEPENDENCIES(check capmgr-read-policy-tidl-probe)
+    ENDIF()
   ENDIF()
 ENDIF()

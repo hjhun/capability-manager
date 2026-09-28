@@ -1,4 +1,30 @@
 # SPDX-License-Identifier: Apache-2.0
+# Fixed loader-only fixtures have no platform constructors or authority.
+FOREACH(LOADER_VARIANT valid missing)
+  SET(LOADER_TARGET "capmgr-code-image-${LOADER_VARIANT}-fixture")
+  ADD_LIBRARY(${LOADER_TARGET} SHARED fixtures/read_policy_loader_image.cc)
+  IF(LOADER_VARIANT STREQUAL "missing")
+    TARGET_COMPILE_DEFINITIONS(${LOADER_TARGET} PRIVATE CAPMGR_LOADER_MISSING_ENTRY)
+  ENDIF()
+ENDFOREACH()
+FILE(WRITE "${PROJECT_BINARY_DIR}/invalid-code-image" "not an ELF image\n")
+ADD_EXECUTABLE(capmgr-code-image-tests unit/read_policy_code_image_test.cc)
+TARGET_LINK_LIBRARIES(capmgr-code-image-tests PRIVATE
+  GTest::gtest_main
+  nlohmann_json::nlohmann_json
+  Threads::Threads
+  ${CMAKE_DL_LIBS}
+)
+TARGET_COMPILE_DEFINITIONS(capmgr-code-image-tests PRIVATE
+  CAPMGR_LOADER_TEST_IMAGE="$<TARGET_FILE:capmgr-code-image-valid-fixture>"
+  CAPMGR_LOADER_NO_ENTRY_IMAGE="$<TARGET_FILE:capmgr-code-image-missing-fixture>"
+  CAPMGR_LOADER_INVALID_IMAGE="${PROJECT_BINARY_DIR}/invalid-code-image"
+)
+ADD_DEPENDENCIES(capmgr-code-image-tests
+  capmgr-code-image-valid-fixture capmgr-code-image-missing-fixture
+)
+ADD_TEST(NAME capmgr-code-image COMMAND capmgr-code-image-tests)
+
 SET(CAPMGR_UNIT_TEST_SOURCES
   unit/database_test.cc
   unit/coordinated_writer_test.cc
@@ -229,6 +255,7 @@ ADD_CUSTOM_TARGET(check
   COMMAND "${CMAKE_CTEST_COMMAND}" --output-on-failure --no-tests=error
   WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
   DEPENDS
+    capmgr-code-image-tests
     capmgr-unit-tests
     capmgr-c-consumer
     capmgr-adapter-tests
