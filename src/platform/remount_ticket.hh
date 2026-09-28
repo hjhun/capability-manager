@@ -10,6 +10,7 @@ struct RemountRequest {
   std::string destination;
   std::shared_ptr<Peer> principal;
 };
+// Issue/Consume are disabled with NOT_SUPPORTED without a verified live-task API.
 // Internal correlation only: Issue requires already-authorized TIDL MAIN peer.
 // Consume receives/verifies a whole credential packet, matches the same live
 // process/namespace and removes a ticket atomically. Caller must recheck Cynara

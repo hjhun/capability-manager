@@ -34,7 +34,13 @@ def bind(header, source):
   const int callback_status = rpc_port_get_read_fd(port, &callback_fd);
   const int main_status = rpc_port_stub_get_port(stub->stub_, RPC_PORT_PORT_MAIN, instance, &main_port);
   const int main_fd_status = main_port ? rpc_port_get_read_fd(main_port, &main_fd) : -1;
-  if (main_status != 0 || main_fd_status != 0 || callback_status != 0 ||
+  pid_t callback_pid = -1;
+  uid_t callback_owner_uid = 0;
+  const int peer_status = rpc_port_get_peer_info(port, &callback_pid, &callback_owner_uid);
+  s->SetPort(port);
+  if (main_status != 0 || main_fd_status != 0 || callback_status != 0 || peer_status != 0 ||
+      !s->CheckCallbackExtension(callback_fd, callback_pid, callback_owner_uid,
+                                 s->GetReadFd(), s->GetPid(), s->GetUid()) ||
       !s->BindChannels(main_fd, callback_fd)) {
     // Do not disconnect/close borrowed Port handles here: that removes their
     // watchers before Stub can remove its retained instance entries. Shutdown
@@ -44,13 +50,18 @@ def bind(header, source):
     stub->service_factory_->OnRejectedConnection(stub->stub_, instance);
     return;
   }
-  s->SetPort(port);""")
+""")
     source = once(source, "  rpc_port_h callback_port;", "  rpc_port_h callback_port = nullptr;")
     source = once(source, '    _E("Failed to get callback port");',
                   '    _E("Failed to get callback port");\n    rpc_port_disconnect(port);\n    return -1;')
     source = once(source, "  ret = rpc_port_parcel_create_from_port(&p, port);", """  int main_fd = -1, callback_fd = -1;
-  if (rpc_port_get_read_fd(port, &main_fd) != 0 ||
+  pid_t callback_pid = -1;
+  uid_t callback_owner_uid = 0;
+  if (rpc_port_get_peer_info(callback_port, &callback_pid, &callback_owner_uid) != 0 ||
+      rpc_port_get_read_fd(port, &main_fd) != 0 ||
       rpc_port_get_read_fd(callback_port, &callback_fd) != 0 ||
+      !b->CheckCallbackExtension(callback_fd, callback_pid, callback_owner_uid,
+                                 b->GetReadFd(), b->GetPid(), b->GetUid()) ||
       !b->ValidateChannels(main_fd, callback_fd)) {
     rpc_port_disconnect(port);
     return -1;

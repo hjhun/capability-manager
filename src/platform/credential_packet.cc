@@ -23,7 +23,8 @@ void RequireOption(int fd, int name, int expected) {
 }
 }
 std::string ReceiveCredentialPacket(const Peer& peer) {
-  if (!peer.Alive()) Reject();
+  if (!peer.HasVerifiedLiveTask())
+    throw Error(ErrorCode::kUnsupported, "Live-task proof API unavailable");
   int fd = peer.socket_fd();
   RequireOption(fd, SO_DOMAIN, AF_UNIX);
   RequireOption(fd, SO_TYPE, SOCK_SEQPACKET);
@@ -88,7 +89,7 @@ std::string ReceiveCredentialPacket(const Peer& peer) {
       credentials.pid != peer.pid() || credentials.uid != peer.uid() ||
       credentials.gid != peer.gid() || label.empty() ||
       label.find('\0') != std::string::npos || label != peer.security_label() ||
-      !peer.Alive())
+      !peer.HasVerifiedLiveTask())
     Reject();
   return std::string(payload.data(), static_cast<size_t>(received));
 }

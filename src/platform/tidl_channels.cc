@@ -11,6 +11,12 @@ bool SameSocket(int left, int right) {
 }
 TidlChannels::TidlChannels(std::shared_ptr<ConnectionPolicy> policy)
     : policy_(std::move(policy)) {}
+bool TidlChannels::CheckCallbackExtension(int fd, pid_t pid, uid_t owner_uid,
+                                          int cached_fd, pid_t cached_pid,
+                                          uid_t cached_owner_uid) noexcept {
+  return fd >= 0 && pid > 0 && cached_fd == fd && cached_pid == pid &&
+         cached_owner_uid == owner_uid;
+}
 void TidlChannels::Authorize(const Peer& peer) {
   if (policy_)
     RequirePlatformPrivilege(peer, *policy_);
@@ -23,7 +29,7 @@ bool TidlChannels::BindChannels(int main_fd, int callback_fd) noexcept {
     if (main_ || callback_ || SameSocket(main_fd, callback_fd)) return false;
     auto main = Peer::FromSocket(main_fd),
          callback = Peer::FromSocket(callback_fd);
-    if (!main->SameConnector(*callback)) return false;
+    if (!main->SameCredentials(*callback)) return false;
     Authorize(*main);
     main_ = std::move(main);
     callback_ = std::move(callback);
@@ -37,7 +43,12 @@ bool TidlChannels::ValidateChannels(int main_fd, int callback_fd) noexcept {
     std::lock_guard lock(mutex_);
     if (!main_ || !callback_ || !SameSocket(main_fd, main_->socket_fd()) ||
         !SameSocket(callback_fd, callback_->socket_fd()) ||
-        !main_->SameConnector(*callback_))
+        !main_->SameCredentials(*callback_))
+      return false;
+    auto fresh_main = Peer::FromSocket(main_fd);
+    auto fresh_callback = Peer::FromSocket(callback_fd);
+    if (!main_->SameCredentials(*fresh_main) ||
+        !callback_->SameCredentials(*fresh_callback))
       return false;
     Authorize(*main_);
     return true;

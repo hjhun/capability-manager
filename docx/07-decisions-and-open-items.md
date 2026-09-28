@@ -148,12 +148,18 @@ remaining restrictions. Unexecuted work is NOT_RUN or BLOCKED, never PASS.
 
 ## Platform identity investigation (P06-PEER-r2, accepted private scope)
 
-Socket SO_PEERCRED/SO_PEERSEC identify the connector, not the process sending each
-request after fork or FD transfer. The private Peer helper pins that connection
-principal and rejects disconnected, zombie or reaped connectors. Its proc/starttime
-checks do not prove absence of an initial PID-reuse race. Its namespace FD pins an
-object, not an authorized current-sender mount target. Do not use it alone for
-RemountResources; production create/remount remain fail-closed.
+Socket credentials identify the connector, not each sender after fork or FD
+transfer. The historical P06-PEER-r2 helper used proc/starttime and namespace pins;
+that historical evidence is superseded by the API-only development scope below.
+Peer now owns only a socket and connection-time PID/raw UID/raw GID/socket label.
+Connected checks socket HUP/errors, not task liveness; SameCredentials compares
+connected tuples, not process/namespace objects or PID-reuse safety. A recipient
+may keep the connection after the original task becomes zombie or is reaped.
+HasVerifiedLiveTask explicitly returns false because no reviewed API provides
+that proof. The experimental packet and ticket entrypoints fail with NOT_SUPPORTED
+before receiving or issuing anything. Their previous positive tests are historical,
+not tests rerun under a weakened guard. No namespace FD is acquired as credentials.
+Production create, trusted-unit/task admission and remount remain fail-closed.
 
 The generated TIDL `-e` getters describe the callback channel. Request authorization
 must obtain the MAIN channel, check all internal API results, verify both channels'
@@ -757,3 +763,35 @@ generation, external OFD cooperation for replacement/migration/sidecar recreatio
 and actual DAC/SMACK direct-read subset plus real-label authorization remain open.
 Normal in-place WAL commits/checkpoints do not require an exclusive generation
 lease; persistence neither freezes file contents nor prohibits checkpointing.
+
+
+### API-only peer credentials (development revision 2, accepted private scope)
+
+Per user direction, Peer does not open or parse procfs. Native extraction uses
+Cynara socket get_pid, explicit USER_METHOD_UID/GID and CLIENT_METHOD_SMACK,
+checked against the kernel socket API tuple/label. Helper failure never falls
+back to kernel-only acceptance. Non-Cynara host builds use kernel socket APIs for
+connection test data only; real policy remains unavailable/denied. A shared private
+mutex serializes socket helpers across all peer and policy instances. DEFAULT
+user/client are obtained separately for MAIN Cynara policy and are not assumed to
+be raw IDs or labels. Returned strings are freed through RAII.
+
+The local Cynara session implementation returns only a PID string despite stale
+header creation-time prose. No session string, kill(pid,0), sender/instance text or
+extension default is treated as a process identity/liveness proof. This patch does
+not add a session dependency or substitute a session for any missing task proof.
+
+Generated -e callback metadata is cross-checked after SetPort against successful
+rpc_port_get_peer_info/get_read_fd calls, including normalized OWNER UID (not raw
+UID). MAIN and callback socket identities and fresh credential captures remain
+separate; real all-UID policy runs on MAIN before parcel decoding. Rejected ports
+are shut down with watchers retained for normal instance cleanup. Same-proxy
+ConfirmCatalog and grant/lease lifetime are unchanged; read-FD liveness alone does
+not prove both halves of the target's split-socket connection are usable.
+
+This explicitly removes the former zombie rejection from read-only connection
+binding; it is not equivalent task authority. A new root transport rerun requires
+review of these exact changed bytes first. The direct-read DAC/SMACK subset,
+delegation, exact image/API provenance and production enablement remain gates.
+Trusted worker parent anchors and namespace setup are separate child-ownership
+mechanisms and are not peer credential extraction; this scope does not alter them.

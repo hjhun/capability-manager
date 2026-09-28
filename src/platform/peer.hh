@@ -4,10 +4,9 @@
 #include <string>
 #include <sys/types.h>
 namespace capmgr {
-// Pins the CONNECTING process and its socket credentials. An inherited/passed
-// socket can be used by another sender: this is NOT per-message identity and
-// must not authorize a remount into the current sender's namespace.
-// Proc/starttime guards do not prove absence of an initial PID-reuse race.
+// Owns connection-time socket credentials, obtained through platform APIs.
+// An inherited/passed endpoint can outlive its connector. This is not a task
+// liveness, PID-reuse, per-message identity or namespace-authority proof.
 class Peer {
  public:
   static std::shared_ptr<Peer> FromSocket(int accepted_fd);
@@ -18,19 +17,19 @@ class Peer {
   uid_t uid() const { return uid_; }
   gid_t gid() const { return gid_; }
   int socket_fd() const { return socket_; }
-  // Object pin only; not a verified remount target.
-  int namespace_fd() const { return namespace_; }
   const std::string& security_label() const { return label_; }
-  bool Alive() const;
-  // Compare two pinned connections to one live process and namespace object.
-  bool SameConnector(const Peer& other) const;
+  bool Connected() const;
+  bool SameCredentials(const Peer& other) const;
+  // No reviewed platform API currently proves the original live process object.
+  // Task-dependent experiments must deny instead of substituting socket liveness.
+  bool HasVerifiedLiveTask() const noexcept { return false; }
 
  private:
   Peer() = default;
-  int socket_ = -1, proc_ = -1, namespace_ = -1;
+  int socket_ = -1;
   pid_t pid_ = -1;
   uid_t uid_ = 0;
   gid_t gid_ = 0;
-  std::string label_, start_time_;
+  std::string label_;
 };
 }

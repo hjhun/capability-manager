@@ -109,7 +109,7 @@ TEST_F(CatalogTest, BindingRejectsCallbackFromAnotherLiveProcess) {
   ASSERT_GE(accepted, 0);
   auto callback = Peer::FromSocket(accepted);
   ASSERT_EQ(callback->pid(), child);
-  EXPECT_TRUE(callback->Alive());
+  EXPECT_TRUE(callback->Connected());
   auto policy = std::make_shared<testing::StrictMock<Policy>>();
   TidlChannels binding(policy);
   EXPECT_FALSE(binding.BindChannels(main.accepted, accepted));
@@ -121,4 +121,15 @@ TEST_F(CatalogTest, BindingRejectsCallbackFromAnotherLiveProcess) {
   int status;
   ASSERT_EQ(waitpid(child, &status, 0), child);
   EXPECT_EQ(status, 0);
+}
+
+TEST(TidlExtension, CheckedCallbackMetadataRejectsDefaultsAndMismatch) {
+  EXPECT_TRUE(TidlChannels::CheckCallbackExtension(8, 42, 5001, 8, 42, 5001));
+  EXPECT_FALSE(TidlChannels::CheckCallbackExtension(8, 42, 5001, -1, -1, 0));
+  EXPECT_FALSE(
+      TidlChannels::CheckCallbackExtension(-1, 42, 5001, -1, 42, 5001));
+  EXPECT_FALSE(TidlChannels::CheckCallbackExtension(8, 0, 5001, 8, 0, 5001));
+  EXPECT_FALSE(TidlChannels::CheckCallbackExtension(8, 42, 5001, 9, 42, 5001));
+  EXPECT_FALSE(TidlChannels::CheckCallbackExtension(8, 42, 5001, 8, 43, 5001));
+  EXPECT_FALSE(TidlChannels::CheckCallbackExtension(8, 42, 5001, 8, 42, 5002));
 }

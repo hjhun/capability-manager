@@ -29,7 +29,7 @@ Branch main tracks origin/main; upstream initial commit is
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
 | P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release13 installed style checkpoint verified; authenticated app_fw/TIDL broker and resource gates open |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
-| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff and stress accepted; Release13 style package accepted; Release12 transport fixture accepted; production admission/policy gates open |
+| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff, API-only peers and stress accepted; Release13 style package accepted; Release12 transport fixture accepted; production admission/policy gates open |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -1948,3 +1948,96 @@ OFD maintenance cooperation, trusted image/path/generation, real DAC/SMACK and
 direct-read authorization subset remain open. No empty/lazy-sidecar provisioning,
 raw external writer, crash recovery, production create/CLI/remount guarantee.
 User's later peer-API request is a separate pending design/source checkpoint.
+
+
+WRITER-WAL publication: cf8e446dec98797d8aee40aa41bbaedaf4de44d5,
+commit/push0 and exact origin/main verified before the peer API work.
+
+## P06-PEER-API-r2 (2026-09-28, private source/runtime accepted)
+
+The user requested platform APIs instead of direct procfs peer-credential reads.
+Development contract accepted by w1:pJ at temporary contract SHA256
+f251af269e3c2696e62b050f1f2d969388df61a0bef354faa3dff5912e8a155e.
+Exact18-file source manifest /tmp/capmgr-peer-api-r2.sha256 is a separate review.
+Peer uses native Cynara PID/explicit raw UID/GID/SMACK helpers plus kernel socket
+cross-checks, a shared helper mutex, and separate DEFAULT policy identities on
+MAIN. Checked rpc-port metadata validates callback extension defaults and owner
+UID without confusing it with raw UID. No proc/namespace acquisition in Peer.
+
+Connected/SameCredentials are connection-only. The earlier proc-backed zombie
+rejection is removed from read binding and is not inferred from Cynara session.
+HasVerifiedLiveTask is explicitly unavailable; experimental packet/ticket entry
+points now return NOT_SUPPORTED. Their old positive tests are historical. New
+negative tests prove rejection before receive/issue/consume. Trusted internal
+worker-parent anchors and namespace setup are outside peer credential extraction.
+Production create, broker/task authorization and remount remain disabled.
+
+Ephemeral evidence:
+- peer-api-provider-session-r1.log: installed Cynara commons/creds/session0.26.0,
+  rpc-port1.21.17 and TIDL3.1.1; nonexistent PID -1/2147483647 produce the decimal
+  session strings, remote0/transport0. No live-task meaning is inferred. Local
+  source/header disagreement is not substituted for actual target behavior.
+- peer-api-host-check-r2.log: host CTest8/8 PASS. Kernel socket data in non-Cynara
+  host builds does not provide real policy authorization.
+- peer-api-native-r1.log: preserved FAIL, remote2/transport0; three new tests used
+  socketpair, which has an empty target security label and is rejected before
+  entering helpers. Existing12 peer/channel/unsupported-proof tests passed.
+- peer-api-socketpair-probe-r1.log: Python buffer-limit error, not kernel evidence.
+  Corrected r2 uses1024 bytes and records SO_PEERSEC as a lone NUL; other socket
+  options are valid. Probe remote0/transport0, no policy writes.
+- peer-api-native-r2.log: exact18/18, affected platform/TIDL/test rebuild,
+  CTest8/8 plus peer15/15 no skips, C_CONSUMER_EXIT0,12 unchanged exports,
+  remote0/transport0. The three new Cynara tests use real accepted abstract Unix
+  connections; every helper-error path rejects without fallback, cross-instance
+  peak concurrent helper entry is1, raw UID/GID0 and User::Shell match while
+  DEFAULT policy user/client are separately observed as0/User::Shell.
+
+New root transport integration remains NOT_RUN pending exact-source fixture
+safety review. Existing root0755 protected-build probe SHA256:
+1f09327b51df8cc03ab6b1c13b98eae2406a76231890d63570f4689b9ac4bf95.
+No package rebuild/install, production activation or new policy mutation occurred.
+InstalledRelease13 remains the earlier accepted style checkpoint.
+
+
+PEER-API-r2 independent local/source and pre-execution safety ACCEPTED by w1:pJ.
+Manifest digest c2b30977bae4b34af55e1a3fc1cf5ea1542d98bfa62294c5fe7217c718ddb3b4;
+all18 entries independently checked. Unchanged root fixture source SHA256
+ e27a36f5c4103e384ce37433c3e3b46cd90a10f2efa78c28631c0c41e3104a85
+was separately checked for bounded owned-child/endpoint/scope cleanup. No runtime
+acceptance was implied by source acceptance.
+
+peer-api-transport-native-r2.log preserves a host SDB command-length rejection
+('service name too long', transport1), before any fixture launch/remote sentinel.
+The retry uses a short command invoking an owner script in the protected scope;
+source/binary preflight and watchdog remain enforced. No source changes for retry.
+
+
+peer-api-transport-native-r2-retry.log: exact18/18 recheck; explicit optional
+transport/probe rebuild with generated method IDs unchanged; root0755 binary
+hash above and protected non-writable/no-ACL ancestry checked before180s watchdog
+fixture. All8 modes PASS: normal24; raw wrong-instance/replay/expiry; split four
+sockets/write-half loss denied; deny/malformed/oversize/stalled/lost-reply each4
+iterations. Negative FD baselines9/9/9/9 or10/10/10/10 stay stable within each
+process; cross-mode baseline differences do not establish leak freedom.
+Eight service/grant drains and normal owned-child/endpoint-absence checks;
+REMOVED_SCOPE=/opt/usr/capmgr-read-fixture-OKqWxd precedes FIXTURE_PASS; no retained
+scope/endpoint markers, remote0/transport0. Final independent runtime disposition
+requested; no production task/namespace identity or image policy inference.
+
+
+PEER-API-r2 final private runtime/publication gate ACCEPTED by w1:pJ. The earlier
+"New root transport integration remains NOT_RUN pending ..." paragraph records
+only the historical pre-execution state; the exact subsequent retry and final
+review above supersede it. Original accepted08 SHA256:
+99fadb6f1da0ce9553c075b7df691bb0e212e91b2ab9bab3d8050cafa75d6033.
+Original accepted07 SHA256: 69b847b72add44a2eb5d3c5c2350ac6812ddec779442963d8238214b93547488.
+Only07 heading and administrative08 status/publication wording follow acceptance.
+
+Owner-run retry method (outer command not echoed by the result log):
+`python3 /opt/usr/capmgr-bootstrap-build-p4h4og7o/source/tools/run_bounded.py
+--seconds 180 -- sh /opt/usr/capmgr-bootstrap-build-p4h4og7o/peer-api-transport-r2.sh`.
+The uploaded script uses set -eu, verifies18 hashes, explicitly builds the probe,
+checks protected ancestry/binary hash, then runs the unchanged fixture. The owner
+captures the unique remote exit sentinel and SDB transport exit separately.
+InstalledRelease13 is unchanged; no RPM, production authority or global policy
+acceptance is inferred. Reviewed source publication follows this disposition.

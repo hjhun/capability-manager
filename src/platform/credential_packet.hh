@@ -3,6 +3,8 @@
 #include "platform/peer.hh"
 #include <string>
 namespace capmgr {
+// Disabled with NOT_SUPPORTED while Peer has no verified live-task API.
+// The retained decoder is not reachable through connection credentials alone.
 // Listener must enable SO_PASSCRED and SO_PASSSEC before accepting connections.
 // Receive one bounded packet without waiting. Reject delegation: per-packet
 // PID/UID/GID and packet-carried SOCKET label must match the connection.

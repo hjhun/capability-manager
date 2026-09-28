@@ -48,7 +48,8 @@ RemountTickets::RemountTickets(Clock clock) : clock_(std::move(clock)) {
 }
 void RemountTickets::Prune(Time now) {
   for (auto it = tickets_.begin(); it != tickets_.end();) {
-    if (now >= it->second.expires || !it->second.request.principal->Alive())
+    if (now >= it->second.expires ||
+        !it->second.request.principal->HasVerifiedLiveTask())
       it = tickets_.erase(it);
     else
       ++it;
@@ -57,8 +58,9 @@ void RemountTickets::Prune(Time now) {
 std::string RemountTickets::Issue(std::shared_ptr<Peer> peer,
                                   const std::string& destination) {
   ValidateDestination(destination);
-  if (!peer || !peer->Alive())
-    throw Error(ErrorCode::kPermission, "Missing live MAIN principal");
+  if (!peer) throw Error(ErrorCode::kPermission, "Missing MAIN principal");
+  if (!peer->HasVerifiedLiveTask())
+    throw Error(ErrorCode::kUnsupported, "Live-task proof API unavailable");
   auto token = RandomTicket();
   std::lock_guard lock(mutex_);
   auto now = clock_();
@@ -80,7 +82,7 @@ RemountRequest RemountTickets::Consume(const Peer& packet_peer) {
   Prune(clock_());
   auto found = tickets_.find(token);
   if (found == tickets_.end() ||
-      !found->second.request.principal->SameConnector(packet_peer))
+      !found->second.request.principal->SameCredentials(packet_peer))
     throw Error(ErrorCode::kPermission,
                 "Remount ticket does not match live MAIN principal");
   auto request = std::move(found->second.request);

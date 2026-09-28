@@ -71,7 +71,7 @@ TEST(Peer, RejectsInvalidRegularAndNonUnixDescriptors) {
   ASSERT_GE(network.value, 0);
   EXPECT_THROW(Peer::FromSocket(network.value), Error);
 }
-TEST_F(CatalogTest, UnixConnectorPinsNamespaceAndDetectsDisconnect) {
+TEST_F(CatalogTest, UnixConnectionCredentialsAndDisconnect) {
   LocalConnection connection(root_ + "/peer.sock");
   REQUIRE_SOCKET_LABEL(connection.accepted.value);
   auto peer = Peer::FromSocket(connection.accepted.value);
@@ -79,16 +79,11 @@ TEST_F(CatalogTest, UnixConnectorPinsNamespaceAndDetectsDisconnect) {
   EXPECT_EQ(peer->uid(), getuid());
   EXPECT_EQ(peer->gid(), getgid());
   EXPECT_FALSE(peer->security_label().empty());
-  EXPECT_TRUE(peer->Alive());
-  struct stat pinned{}, actual{};
-  ASSERT_EQ(fstat(peer->namespace_fd(), &pinned), 0);
-  ASSERT_EQ(stat("/proc/self/ns/mnt", &actual), 0);
-  EXPECT_EQ(pinned.st_ino, actual.st_ino);
-  EXPECT_EQ(pinned.st_dev, actual.st_dev);
+  EXPECT_TRUE(peer->Connected());
+  EXPECT_FALSE(peer->HasVerifiedLiveTask());
   close(connection.client.value);
   connection.client.value = -1;
-  EXPECT_FALSE(peer->Alive());
-  EXPECT_EQ(fstat(peer->namespace_fd(), &pinned), 0);
+  EXPECT_FALSE(peer->Connected());
 }
 TEST_F(CatalogTest, InheritedEndpointRetainsConnectorIdentityNotCurrentSender) {
   LocalConnection connection(root_ + "/peer.sock");
@@ -109,9 +104,9 @@ TEST_F(CatalogTest, InheritedEndpointRetainsConnectorIdentityNotCurrentSender) {
   char byte;
   ASSERT_EQ(read(connection.accepted.value, &byte, 1), 1);
   EXPECT_EQ(peer->pid(), getpid());
-  EXPECT_TRUE(peer->Alive());
+  EXPECT_TRUE(peer->Connected());
 }
-TEST_F(CatalogTest, RightsRecipientDoesNotKeepZombieConnectorAlive) {
+TEST_F(CatalogTest, RightsRecipientKeepsConnectionButCannotProveLiveTask) {
   Fd listener(socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0));
   ASSERT_GE(listener.value, 0);
   sockaddr_un address{};
@@ -176,7 +171,7 @@ TEST_F(CatalogTest, RightsRecipientDoesNotKeepZombieConnectorAlive) {
     peer = Peer::FromSocket(accepted.value);
   if (peer) {
     EXPECT_EQ(peer->pid(), child);
-    EXPECT_TRUE(peer->Alive());
+    EXPECT_TRUE(peer->Connected());
   }
   ASSERT_EQ(write(recipient.value, "r", 1), 1);
   ASSERT_EQ(read(accepted.value, &byte, 1), 1);
@@ -185,13 +180,17 @@ TEST_F(CatalogTest, RightsRecipientDoesNotKeepZombieConnectorAlive) {
   ASSERT_EQ(waitid(P_PID, child, &info, WEXITED | WNOWAIT), 0);
   EXPECT_EQ(info.si_status, 0);
   if (peer) {
-    EXPECT_FALSE(peer->Alive());
-  }  // endpoint remains open but connector is Z
+    EXPECT_TRUE(peer->Connected());
+    EXPECT_EQ(peer->pid(), child);
+    EXPECT_FALSE(peer->HasVerifiedLiveTask());
+  }  // Socket credentials cannot report that the known connector is a zombie.
   int status;
   ASSERT_EQ(waitpid(child, &status, 0), child);
   if (peer) {
-    EXPECT_FALSE(peer->Alive());
-  }  // the retained procdir now refers to a reaped task
+    EXPECT_TRUE(peer->Connected());
+    EXPECT_EQ(peer->pid(), child);
+    EXPECT_FALSE(peer->HasVerifiedLiveTask());
+  }  // Reaping does not revoke the transferred endpoint or its credentials.
   REQUIRE_SOCKET_LABEL(accepted.value);
 }
 TEST_F(CatalogTest, PolicyNeverBypassesSystemUidAndOnlyAllowsConfirmedGrant) {

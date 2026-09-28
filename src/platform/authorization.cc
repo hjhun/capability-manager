@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "platform/authorization.hh"
 #include "common/error.hh"
+#include "platform/cynara_socket.hh"
 #include <cstdlib>
 #include <memory>
 #ifdef CAPMGR_HAVE_CYNARA
@@ -13,6 +14,7 @@ class CynaraPolicy final : public ConnectionPolicy {
  public:
   PolicyDecision CheckSocket(int socket) override {
 #ifdef CAPMGR_HAVE_CYNARA
+    std::lock_guard lock(internal::CynaraSocketMutex());
     char* user = nullptr;
     int status =
         cynara_creds_socket_get_user(socket, USER_METHOD_DEFAULT, &user);
@@ -50,10 +52,10 @@ class CynaraPolicy final : public ConnectionPolicy {
 };
 }
 void RequirePlatformPrivilege(const Peer& peer, ConnectionPolicy& policy) {
-  if (!peer.Alive())
-    throw Error(ErrorCode::kPermission, "Connector is no longer alive");
+  if (!peer.Connected())
+    throw Error(ErrorCode::kPermission, "Connection is no longer available");
   if (policy.CheckSocket(peer.socket_fd()) != PolicyDecision::kAllowed ||
-      !peer.Alive())
+      !peer.Connected())
     throw Error(ErrorCode::kPermission,
                 "Platform privilege denied or unresolved");
 }

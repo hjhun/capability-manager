@@ -70,6 +70,15 @@ TARGET_LINK_LIBRARIES(capmgr-peer-tests PRIVATE
   GTest::gtest_main
   GTest::gmock
 )
+IF(CYNARA_FOUND)
+  TARGET_SOURCES(capmgr-peer-tests PRIVATE unit/cynara_socket_test.cc)
+  TARGET_LINK_LIBRARIES(capmgr-peer-tests PRIVATE PkgConfig::CYNARA)
+  TARGET_LINK_OPTIONS(capmgr-peer-tests PRIVATE
+    "LINKER:--wrap=cynara_creds_socket_get_pid"
+    "LINKER:--wrap=cynara_creds_socket_get_user"
+    "LINKER:--wrap=cynara_creds_socket_get_client"
+  )
+ENDIF()
 ADD_TEST(NAME capmgr-peer COMMAND capmgr-peer-tests)
 IF(CAPMGR_REQUIRE_CYNARA)
   SET_TESTS_PROPERTIES(capmgr-peer PROPERTIES

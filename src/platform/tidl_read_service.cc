@@ -57,7 +57,7 @@ void TidlReadService::OnTerminate() noexcept {
 void TidlReadService::Principal() {
   Owner();
   auto peer = MainPrincipal();
-  if (terminated_ || !expiry_ || !peer || !peer->Alive() ||
+  if (terminated_ || !expiry_ || !peer || !peer->Connected() ||
       peer->uid() != principal_.uid || peer->gid() != principal_.gid ||
       peer->security_label() != principal_.socket_label)
     throw Error(ErrorCode::kPermission, "Catalog principal denied");
