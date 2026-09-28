@@ -2809,3 +2809,143 @@ causal context/pipe/ancestor checks and actual policy-journal CLI safety. No loa
 or real root-writer/UID301 matrix execution before that separate review. Installed
 Release15, product admission, broker/resource, Action/installer/PATH/remount and
 physical/P09 ARM gates remain unchanged/open.
+
+### HOLD publication and P06-READ-POLICY-FIXTURE-r1 (source review pending)
+
+Accepted HOLD-r2 two-file+08 checkpoint
+`9d98c40e778d073e810fc23e0b51964969749f80` was signed off, committed/pushed0 and
+exactly matched remote main with a clean tree. InstalledRelease15 remains separate.
+
+The next six-file source scope adds the explicit --run normal modeled-C matrix
+and coordinator-loss fixture, a private exact-child helper/two tests, and a
+fixture-only observation in the fixed role image. No product library/header,
+TIDL, package, rule matrix or service/backend activation changes are included.
+No operation runs on import/default entry. Fixed source layout supplies image,
+protected dependencies and absolute recovery script; no runtime path/UID/label/
+rule/executable selector is accepted. Full source boundary is recorded outside
+project in `capmgr-read-policy-fixture-boundary-r1.md` for peer review.
+
+AdmissionObservation delegates the existing LeasedCatalogGate and records whether
+it actually returned owning admission. Denied roles require no return before
+client SQLite construction; they report SQLite NOT_RUN without inferring the
+precise failed directory/metadata syscall from NULL/Confirm0. Positive create0/
+Confirm1 and real metadata observations are required. SAME-label directory/direct
+file veto, actual IDs/groups/caps/NNP/own-label, platform ancestors/control pipes
+and OFD lock permissions remain measured setup prerequisites. The root-writer
+scope and explicitly modeled handoff do not establish real TIDL/Cynara, app_fw-
+owned production directory protection or relabel revocation.
+
+The crash supervisor owns no SQLite or inherited journal reference and creates
+the durable full plan only in its coordinator child after fork. Signal blocking
+keeps spawn uncertainty marked until positive PID attachment; own child inventory
+is bookkeeping, while exact waitid(P_PID, WNOWAIT) after actual coordinator reap
+alone establishes adopted-child ownership before signaling. A reported PID,
+flock contention, SIGKILL/ESRCH or watchdog exit never proves task identity/absence.
+Coordinator retains its writer unreaped through hold ACK/first checked actual
+write-close, then a barrier forbids a second rule. A specific neutral assertion
+and unchanged scope/plan/receipts plus independently observed live owned child
+are required before exact final reap and real normal recovery/idempotent retry.
+Any unknown child/adoption/extra descendant blocks automatic recovery and PASS.
+Global rule plan remains exactly the accepted nine new-subject-or-new-object rows.
+
+Host `read-policy-children-host-r3.log`5/5 PASS exercises injected ECHILD/ESRCH/
+reap failures and actual isolated unprivileged subreaper adoption/kill/reap, with
+bounded child alarms and exact-record cleanup. `read-policy-probe-host-tests-r2.log`
+10/10 PASS uses only FakeOperations/CLI responses/owned temporary files, including
+first-write failure versus post-write ACK ordering, no second row, exact CLI
+result/duplicate/size/timeout validation, receipt preservation and default-entry
+refusal. `read-policy-probe-host-check-r2.log` full CTest8/8 PASS. New source-only
+host tests do not execute root roles, labels/groups/capability drop, SQLite,
+load2 or an actual policy-journal CLI. Existing hold tests stay opt-in skips in
+ordinary CTest. Native updated compile/safety-test method, protected full binary/
+source/preflight and any actual policy execution are NOT_RUN/pending separate
+review. No product/private primitive acceptance is inferred from this request.
+
+Independent FIXTURE-r1 source disposition: CHANGES_REQUESTED. The crash path
+recorded an unexpected descendant only as an error, then could run destructive
+automatic recovery after a later empty inventory and the two known child reaps.
+Final FAIL did not undo those mutations. The six-file r1 manifest and original08
+`43e99f5ec098df79a8970fe30395ce1c7d021c89c6e8b7bac4c2d4e1d7f17858`
+are preserved; no native root role or policy fixture was executed.
+
+Compile-only `read-policy-fixture-native-build-r1.log` checks archive
+`07b92d67538340f4bff9236a9cfa3611c37a8b317ba376b699a1c36ec7aa1477`,
+exact nine source/dependency entries, 75 accepted core source entries and both
+pinned Release15 static archives. A new protected root0700 scope builds the role
+and affected four API objects. Build-only image
+`46849eeaad62c0c336622f50656bf0f51712c4d4c1304845cf333d3475ab7872`
+is root0755/singlelink/noACL/no caps; remote0/transport0. This is r1 compilation,
+not a test of normal roles, context drop, SQLite, load2 or real-journal recovery.
+The discovered Python orchestration defect prevents full fixture execution.
+
+### P06-READ-POLICY-FIXTURE-r2 (accepted local source/non-policy checkpoint)
+
+Only the probe, its test and administrative08 change from frozen r1. A sticky
+recovery-eligibility record now rejects automatic recovery permanently after any
+unexpected child inventory or inventory-read failure. Observed uncertain known
+child ownership/adoption also permanently rejects recovery even if later known
+record cleanup finishes. Later empty rosters and reaped known records cannot
+restore proof about a previously untracked child. Known children can still be
+cleaned up; uncertain scope/journal/rules stay retained for independent recovery.
+Ordinary functional failures with uninterrupted ownership/absence proof remain
+eligible for safe cleanup; an error string alone is not the recovery criterion.
+
+`read-policy-probe-host-tests-r3.log`15/15 PASS adds tests of the actual run_crash
+control flow with fork/FD/filesystem/transport/recovery all replaced by in-memory
+fakes. Every inventory boundary tests an unexpected extra then empty roster and
+a read error then empty roster. Adoption and observation proof loss remain
+ineligible after simulated eventual known-child cleanup; assertions require zero
+real-recovery calls and no REMOVED_SCOPE/PASS marker. Intact normal flow and a
+functional CLI failure separately prove the intended safe recovery branch.
+`read-policy-probe-old-ownership-diagnostic-r1.log` runs those five orchestrator
+tests against the hash-checked frozen r1 probe: eight subcase assertion failures
+reproduce the old unsafe invariant. Its diagnostic exit0 means the expected old
+failures were observed, not product PASS. No actual fork/policy/role IO occurs in
+these orchestrator cases. Full `read-policy-probe-host-check-r3.log` CTest8/8 PASS.
+Exact r2 native preparation, non-policy safety tests and full context/policy/
+real-journal execution remain NOT_RUN and require separate method/safety review.
+InstalledRelease15 and all production/external prerequisite gates remain open.
+
+Independent FIXTURE-r2 local source disposition: ACCEPTED; the r1 lifecycle finding
+is closed at source level only. Original reviewed08
+`10e5c70385f10253115692ad5f5102e425db72348e8e1182ead7b67989d949ca`
+and frozen six-file manifest are preserved. No full policy runtime follows from
+this source acceptance.
+
+`read-policy-fixture-native-prepare-r2.log` checks the new nine-member archive
+`12af1e009cdb9bdd0f03ed953a5c8ac79439ac696f709e4b655290083abb1940`,
+exact source9/9, unchanged role plus core75 and both pinned static archives. The
+identical compiled r1 image is copied to the new protected root0700 r2 scope,
+explicitly not recompiled. Read-only `read-policy-fixture-native-preflight-r2.log`
+checks method2/2, protected source/build ancestry, source9/9/image, interpreter/
+watchdog hashes, initial namespaces/ext4 and no cache; remote0/transport0.
+
+Independent NON-POLICY-METHOD-r2 pre-execution disposition: ACCEPTED for selected
+children5/probe15 tests only. Method hashes are preflight
+`e3bdb087f24fcbf09eb3824e6cfa17a004fde5dfddd03c0d241c0cccd6c93298`
+and runner
+`eb156d735d1ad7cc21448bb60d2ad88e0405b58cfa0246c02ce39bc55824dee3`.
+Owner `capmgr-read-policy-fixture-execute-safety-r2.py` validates those transferred
+method hashes/root0600/singlelink/noACL/no-cap protected metadata immediately
+before invoking the clean environment with -B/inherited no-bytecode. Log
+`read-policy-fixture-native-safety-r2.log` records installed60s watchdog/outer90s,
+exact before/after preflight source9/9/image/interpreter/watchdog/provenance checks,
+all20 tests PASS without skips (0.092s), NON_POLICY_SAFETY_RETURN0,
+remote0/transport0. Actual isolated owned-child subreaper/adoption/kill/reap and
+injected/fake failure cases run; no role image, context drop, SQLite, load2 or
+actual policy-journal CLI runs. CLI/receipt strings in these unit logs come from
+fake responses, not policy execution. No timeout/retained-child marker occurs.
+This supersedes only r2 non-policy native-test NOT_RUN; full --run remains NOT_RUN
+and UNAPPROVED pending separately frozen exact-method safety review. Final local
+native/publication disposition is pending; installedRelease15/product gates stay
+unchanged.
+
+Independent final FIXTURE-r2 non-policy native/publication disposition: ACCEPTED
+for the reviewed five code/test files plus administrative08 only. Accepted
+final-evidence08
+`1c8925fbe6c8af412f1c1e68efbcf4ef9aacf885c85137eff901546261daec1e`
+is preserved alongside original source08. This supersedes only final local
+native/publication pending status. Next: separately review the frozen full-runtime
+plan and protected invocation before any root-writer/UID301 drop, SQLite, load2,
+real-journal CLI or adopted-child policy-crash execution. No full --run acceptance,
+package/install or production activation is implied by this private checkpoint.

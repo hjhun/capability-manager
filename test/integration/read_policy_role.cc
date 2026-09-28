@@ -345,6 +345,22 @@ class MetadataObservation final : public ReadLeaseOperations {
  private:
   ReadLeasePolicy policy_;
 };
+class AdmissionObservation final : public AccessGate {
+ public:
+  explicit AdmissionObservation(LeasedCatalogGate& gate) : gate_(gate) {}
+  std::string AuthorizeAndGetDatabase() override {
+    return gate_.AuthorizeAndGetDatabase();  // forbidden path-only fallback
+  }
+  std::unique_ptr<ReadAccess> AuthorizeReadAccess() override {
+    auto access = gate_.AuthorizeReadAccess();
+    returned = true;
+    return access;
+  }
+  bool returned = false;
+
+ private:
+  LeasedCatalogGate& gate_;
+};
 void Reader(const Json& config) {
   Check(config.is_object() && config.size() == 2 && config.contains("key") &&
             config.contains("role"),
@@ -382,13 +398,20 @@ void Reader(const Json& config) {
               "single create only");
         channel.descriptor = command.at("descriptor").get<std::string>();
         LeasedCatalogGate gate(policy, channel, &observation);
-        int code = CreateClient(gate, &client);
+        AdmissionObservation admission(gate);
+        int code = CreateClient(admission, &client);
         Check(role == "allowed"
                   ? code == CAPMGR_OK && client
                   : code == CAPMGR_ERROR_PERMISSION_DENIED && !client,
               "C admission mismatch");
         Check(role != "denied-mac" || observation.lock_seen,
               "MAC role failed lock metadata setup before catalog veto");
+        Check(admission.returned == (role == "allowed"),
+              "unexpected lease admission phase");
+        if (client)
+          Check(observation.lock_seen && observation.directory_seen &&
+                    observation.data_calls >= 3,
+                "real admitted metadata was not observed");
         Check(channel.authorize == 1 && channel.confirm == (client ? 1 : 0) &&
                   channel.finish == (client ? 1 : 0),
               "C modeled counters");
@@ -398,6 +421,9 @@ void Reader(const Json& config) {
               {"Authorize", channel.authorize},
               {"Confirm", channel.confirm},
               {"Finish", channel.finish},
+              {"lease_admission_returned", admission.returned},
+              {"SQLite",
+               admission.returned ? "opened-and-validated" : "NOT_RUN"},
               {"transport", "explicitly modeled"}});
       } else if (name == "query") {
         Check(client && command.size() == 1, "live reader required");
