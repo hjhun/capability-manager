@@ -2708,3 +2708,104 @@ Only the heading and this disposition changed after that review. InstalledReleas
 is unchanged; real policy-journal CLI, root role/context/SQLite matrix and crash
 supervisor remain separately gated. Next: freeze the fixed recovery-reference hold
 increment and full causal fixture safety scope; no policy execution before review.
+
+### REFUSAL publication and P06-READ-POLICY-HOLD-r2 (ACCEPTED)
+
+Accepted helper/test+08 checkpoint
+`37dd5a3462b466a5d93b2eddd20d14e7a191d6f5` was committed with signoff and message
+checks, pushed normally (exit0), and exactly matched remote main. The independent
+fixed-role hold WIP was excluded from staging. InstalledRelease15 is unchanged.
+
+The next build-only writer fixture adds no-argument `hold-reference`, permitted
+only without a coordinated writer or issuer leases. It acknowledges a fixed20s
+monotonic interval started before the ACK, stops reading commands and retains
+inherited FD5 until process exit despite command HUP. Positive timeout calculation
+uses one sampled now and rejects nonpositive/unbounded values; EINTR recomputes
+against the same absolute end. The engineering-review negative-poll-timeout
+finding was corrected before freezing. This retry deadline is not a hard bound
+on scheduling or arbitrary status-pipe/system-call latency; ACK backpressure uses
+up the interval. It never unlocks/converts FD5, opens SQLite, writes policy,
+executes jobs, forks descendants or changes task credentials/label.
+
+The separate hold test module is opt-in only via an explicitly reviewed fixed
+image environment; ordinary CTest never selects it, even under root. Positive
+proof closes only parent command/SH references after ACK, separately observes the
+exclusive unreaped child with WNOHANG and independent EX contention, then requires
+bounded actual normal wait/reap0 and EX success. Contention alone is not child
+identity/liveness or SH-vs-EX proof. Malformed arguments must fail before ACK/hold.
+A fresh nonexistent catalog path must remain absent; cleanup/unknown ownership
+failure retains the owned test scope rather than inferring absence or PASS.
+
+Host `read-policy-hold-host-check-r1.log` CTest8/8 PASS with both new root tests
+explicitly skipped because the opt-in image is unselected. Separate
+`read-policy-hold-host-tests-r1.log` likewise2/2 SKIP; this is discovery/build
+coverage, not hold runtime proof. Exact native compile, source/safety review and
+opt-in reference-only execution are pending. Real root writer/UID301 context,
+SQLite, load2, causal adopted-child crash barrier, actual policy-journal CLI and
+all production gates remain separately NOT_RUN/open.
+
+Native compile-only `read-policy-hold-native-build-r1.log` FAILED before source
+extraction/compilation: the driver expected four inputs but the archive/manifest
+contained three (unchanged role-transport dependency was omitted). Remote1/
+transport0 is retained; no hold/role ran. Corrected preparation uses a new protected
+root0700 `read-policy-hold-r2` scope and four exact inputs including the unchanged
+transport dependency. `read-policy-hold-native-build-r2.log` matches all75 accepted
+core source files and explicitly verifies both accepted native static-library
+hashes, recompiles the role and four API files, links the normal fixed image,
+chmod0755 and checks root ownership/singlelink/noACL/no filecaps. Archive
+`254b2dba724a13229548bc242f7ff1c7c33dcb9b85c9fdbf411eb5e10b54b8de`
+checks4/4; remote0/transport0. Binary
+`42324e7c5df8679a879041d7121134bdb5ff1973a7b25353d658ae21162fedca`
+is build-only; no reference-hold/root role or policy execution occurred.
+
+Read-only `read-policy-hold-native-preflight-r1.log` FAILED before execution:
+Python mkdir(parents=True) created the intermediate own source/test directory0777
+under target umask0000. The outside owner wrapper reported transport0 without a
+remote sentinel, so that is not remote success. Path diagnostic confirms the
+single offending directory inside the new exclusively owned root0700/source0700
+scope; historic shared0777 tree is unrelated and untouched. The pinned correction
+checks root ancestry/type/owner/noACL, exact initial0777 and dev/inode, opens
+NOFOLLOW and fchmods only this newly created directory0700 with named/pinned
+identity rechecks. No source or image bytes change.
+
+`read-policy-hold-native-preflight-r2.log` records that correction, method/source
+and protected ancestry/modes/ACLs, exact image digest, initial namespaces/ext4
+and no-cache checks PASS, remote0/transport0. Preflight success is not hold runtime
+proof. The separate selected run
+method is frozen for source/safety review; opt-in two tests under installed60s
+watchdog and owner90s outer bound remain NOT_RUN. Valid root writer context reads
+only its own label; no credential drop/SQLite/load2/catalog creation is included.
+
+Independent HOLD-r2 source/pre-execution safety disposition: ACCEPTED for the
+fixed build-only image and two opt-in reference-lifetime tests only. Original08
+`56baa1266e94ac8fae08d211f81228a57b520d0d6ed5d3ff8e2313eace1018a9`
+is preserved. The accepted method SHA pair is
+`7b6d61e5adc660164216bfbb3dd61e35faa4ffb45292406e6238fc0ded494b93` /
+`80c20458136d1902c44b97cc2da9949859e659848a5633203307d32fc92f15c8`.
+
+Owner `capmgr-read-policy-hold-execute-r1.py` checks exact method digests and
+root0600/singlelink/noACL/caps metadata and protected ancestry immediately before
+executing the frozen method with a clean environment. Log
+`read-policy-hold-native-tests-r1.log` records outer90s and installed60s watchdog,
+pre/post source4/4/image/interpreter/watchdog/initial namespace/ext4/no-cache
+checks, selected image and actual argv. Both tests PASS, no skips, 20.052s total;
+REFERENCE_HOLD_ONLY_RETURN0, remote0/transport0. Positive test separately observes
+owned nonexit and lock contention after parent references close, then actual
+normal reap0, EX success and absent fresh catalog; malformed command has actual
+owned exit1 before ACK/hold. The elapsed check is an upper bound, not independent
+precise20s lower-bound measurement. Test teardown requires actual child cleanup
+before owned temporary-scope removal; no retained-scope marker/timeout occurred.
+This supersedes only the opt-in reference-test NOT_RUN, not the full policy/crash
+fixture. Final source/runtime/publication review is pending; no SQLite, UID301
+drop, load2, actual journal CLI, adopted child, product or package gate closes.
+
+Independent final HOLD-r2 disposition: ACCEPTED for the reviewed private image
+amendment/test and reference-only runtime checkpoint. Accepted final-evidence08
+`7b95b3caa8ead644e8330f5ffe8ae8f0301c9874a56fd6f458694461d34bc694`
+is preserved alongside original source08. This supersedes historical final-review
+pending; only this disposition and heading changed after acceptance. Next: finish
+and freeze the full modeled normal-role and adopted-child crash fixture, including
+causal context/pipe/ancestor checks and actual policy-journal CLI safety. No load2
+or real root-writer/UID301 matrix execution before that separate review. Installed
+Release15, product admission, broker/resource, Action/installer/PATH/remount and
+physical/P09 ARM gates remain unchanged/open.

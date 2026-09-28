@@ -516,6 +516,29 @@ void Writer(const Json& config) {
       Check(result == CAPMGR_OK || result == CAPMGR_ERROR_BUSY,
             "exclusive setup error");
       Send({{"stage", "exclusive"}, {"code", result}});
+    } else if (name == "hold-reference") {
+      Check(command.size() == 1 && !writer, "hold without writer only");
+      for (const auto& grant : grants)
+        Check(!grant, "hold without issuer lease");
+      // Only a private recovery-lifetime experiment. No command is read again:
+      // coordinator loss/HUP cannot close FD5 before this fixed interval ends.
+      // The interval begins before acknowledgement, so backpressure consumes it.
+      auto end = Clock::now() + std::chrono::seconds(20);
+      Send({{"stage", "hold-reference"},
+            {"seconds", 20},
+            {"authority", "reference lifetime only"}});
+      for (;;) {
+        auto now = Clock::now();
+        if (now >= end) break;
+        // One sample proves a positive bounded timeout. A second sample could
+        // cross end and produce negative poll timeout (an infinite wait).
+        auto remaining =
+            std::chrono::ceil<std::chrono::milliseconds>(end - now).count();
+        Check(remaining > 0 && remaining <= 20000, "hold positive timeout");
+        int result = poll(nullptr, 0, static_cast<int>(remaining));
+        Check(result == 0 || (result < 0 && errno == EINTR), "hold timed wait");
+      }
+      return;  // FD5 is retained until main/kernel process exit, never LOCK_UN.
     } else if (name == "exit") {
       Check(command.size() == 1 && !writer, "no writer on exit");
       for (const auto& grant : grants) Check(!grant, "no issuer lease on exit");
