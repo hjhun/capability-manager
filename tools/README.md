@@ -369,3 +369,24 @@ script. The optional adapter is not wired into production create. Root-positive
 Cynara/file-label results do not prove same-UID/different-label/direct-open policy,
 endpoint provisioning, fork/relabel revocation or ordinary writer lease/PERSIST_WAL
 cooperation. Production read admission, CLI and remount remain gated.
+
+## Cooperative generation regression fixture
+
+The tests package includes `capmgr-sqlite-lock-probe` beside `capmgr-unit-tests`.
+The unit suite launches that fixed sibling image in an independently execd process
+against only its own temporary catalog and external generation lock. It checks
+WAL write/exclusive and retained-read-snapshot checkpoint exclusion while another
+same-process metadata lease or worker loader is destroyed. Both test processes
+hold independent shared generation leases. No policy, service, executable workload
+or operational database is configured by this helper. Its labels are explicitly
+injected; it is not a production reader or maintenance command. Existing root
+read-transport and bootstrap probes retain their separate explicit workflows.
+
+Coordinated writers use shared leases for existing-generation in-place writes;
+exclusive maintenance is separate, bounded on acquisition retries, and required
+for bootstrap/migration/sidecar recreation. Metadata pins use O_PATH and trusted
+own `/proc/self/fd` xattr access, which does not prove data readability or grant
+peer credentials. Production writer provisioning, full reader DAC/SMACK policy,
+real admission, external writer cooperation and worker snapshot invalidation
+remain integration gates. Package creation/upgrade evidence is recorded separately
+from source tests; a release bump alone is not an install result.

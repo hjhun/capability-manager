@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Name:           capability-manager
 Version:        0.1.0
-Release:        14
+Release:        15
 Summary:        Capability catalog and client library
 License:        Apache-2.0 AND MIT
 URL:            https://github.com/hjhun/capability-manager
@@ -80,6 +80,7 @@ DESTDIR=%{buildroot} cmake --install %{capmgr_builddir}
 # Explicit fixture list; privileged probes are never run by package scripts.
 for capmgr_test in \
     capmgr-unit-tests \
+    capmgr-sqlite-lock-probe \
     capmgr-peer-tests \
     capmgr-adapter-tests \
     capmgr-cli-fixture \
@@ -127,6 +128,7 @@ install -D -m 644 json-3.11.3/LICENSE.MIT %{buildroot}%{_datadir}/licenses/%{nam
 
 %files tests
 %{capmgr_libexecdir}/capmgr-unit-tests
+%{capmgr_libexecdir}/capmgr-sqlite-lock-probe
 %{capmgr_libexecdir}/capmgr-peer-tests
 %if 0%{?capmgr_tizen}
 %{capmgr_libexecdir}/capmgr-tidl-probe

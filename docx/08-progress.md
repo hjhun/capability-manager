@@ -32,9 +32,9 @@ Branch main tracks origin/main; upstream initial commit is
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
 | P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
-| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release14 installed package checks verified; authenticated app_fw/TIDL broker and resource gates open |
+| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release15 ordinary installed package checks verified; authenticated app_fw/TIDL broker and resource gates open |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
-| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff, API-only peers and stress accepted; Release14 package/installed transport accepted; production admission/policy gates open |
+| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff, API-only peers and stress accepted; Release15 installed tests/transport ACCEPTED; production admission/policy gates open |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -88,7 +88,7 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-Reviewed development checkpoints through `a4c19f7dafd3f5ebd2b8a128582fa86506ef1b49`
+Reviewed development checkpoints through `154a9b4e216e02e881dc9759cde36a16fe70880c`
 are committed and pushed on main, with exact remote refs verified. The chronological
 records below retain earlier failures and pending states as historical evidence;
 later entries supersede their status. Raw evidence/builds/dependencies are excluded
@@ -100,8 +100,8 @@ device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gate
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: review the causal read-admission policy/direct-open fixture before native
-policy changes; Release12 package/installed fixture acceptance is complete. PATH-01 remains a
+Next: implement and review the causal read-admission policy/direct-open fixture
+before native policy changes; Release15 runtime/publication review is ACCEPTED. PATH-01 remains a
 product question, not a reason to block unrelated catalog/CLI work.
 
 ### P00 publication checkpoint review
@@ -2333,3 +2333,97 @@ is preserved. Earlier header-final-pending text is historical and superseded.
 Global skill and OFD implementation are separate accepted checkpoints; publication
 here changes only the reviewed license/guards and accurate administrative evidence.
 Package15 and the causal new-label policy matrix remain separate future gates.
+
+### P06-OFD-PACKAGE-r1 Release15 evidence and pending final gate
+
+STYLE-HEADER exact37+administrative08 published as
+154a9b4e216e02e881dc9759cde36a16fe70880c, commit0/push0 and exact origin/main
+matched. Release15 is a separate actual two-file spec/README slice. Reviewed
+spec SHA5b2f3833643a83609affa9e8066788a86d8cdd0875c661be1677bbbc82186b31
+and README SHAa038a077faf95fff53ee7eeedef06c5495238f1db5f1697aa95e155c68659b91
+are byte-identical to the accepted temporary proposals. Independent actual source
+and archive review is ACCEPTED; final runtime/publication review remains pending.
+Only Release14->15 and one tests-only sqlite-lock-probe install/payload entry are
+added. No declared dependency, scriptlet/service/setid/cap or policy change.
+
+Archive113e6334c94b77b54af344877c85c5d52cacb9ed874565edc98b0294a693b182 has
+154 regular tracked files, exact154a9b4 bytes except the two accepted overrides.
+Inputs pin source archive, JSON3.11.3 and spec. Host spec parse PASS. Owner-run
+ofd-package-native-r1.log FAILS adapter linking with ENOSPC, remote1/transport0;
+no source/compiler failure or final package PASS is inferred. Prior owned OFD
+r2/r3/r4/r5 build caches were safely removed before that attempt; all source
+archives/directories and evidence remain. Later cleanup removes ONLY accepted
+Release14/BUILD after protected ancestor/ACL/namespace, pinned identity and no
+active cwd/exe checks, preserving SOURCES, four binary RPMs, SRPM and evidence.
+ofd-package-space-r1.log is a command-length rejection before remote execution;
+space-r1-retry.log confirms actual cleanup0/0 and345096KiB available.
+
+Exact unchanged full rpmbuild retry ofd-package-native-r2.log passes input3/3,
+all native platform flags ON, RPM %check CTest8/8, clean unpackaged-file check,
+four binary RPMs plus SRPM, remote0/transport0. Native brp warnings that the
+`file` helper is missing are preserved; successful RPM creation does not prove
+stripping ran. Payload-r1 fails its overly strict
+auto-dependency equality assertion. Discovery and payload-r2 explicitly validate
+offline-tools additions GLIBC_2.3 and GLIBCXX_3.4.19 against installed providers;
+package-symbols-r1 shows fgetxattr/getxattr and steady_clock::now. These arise from
+accepted private metadata/generation code, not a declared dependency edit. Other
+normalized requirements/provides are unchanged. Exactly one new tests-only path
+/usr/libexec/capmgr/capmgr-sqlite-lock-probe is root:root0755; existing paths/modes/
+owners/groups unchanged, no filecaps/setid/scripts.
+
+Owner-run ofd-package-install-r1.log prints normal four-package rpm -U --test then
+rpm -U, all installed0.1.0-15. Observed123 unit +162 adapter +15 peer =300 GoogleTests
+PASS, pure C consumer0, offline7, pkg-config C consumer0, rpm-V clean, unchanged
+12 C exports/SONAME. The tests-only sibling lock probe is present and actually
+used by installed lock regressions; real metadata checks are required and report
+User::Shell plus honest unsupported user xattrs. Known msm plugin warning is
+preserved; transaction/tests exit0, remote0/transport0. No root namespace/bootstrap
+fixture is rerun. Installed transport's read-only protected-path/hash preflight
+passes separately; actual runtime is NOT_RUN pending source/safety review.
+
+New-label read-policy recovery helper/tests remain a separate two-file temporary
+primitive accepted for source/unprivileged12-case evidence only. They are absent
+from this package archive/tree and have not written any native SMACK/Cynara policy.
+OFD covers cooperating writers only; production policy/direct-open, raw external
+writer cooperation, catalog-worker invalidation, installer/MIC, Action stack/sync,
+authenticated broker/resources, PATH/remount, full product/physical and P09 ARM
+remain open. No production factory/authentication/CLI/remount activation follows.
+
+Release15 RPM SHA256 audit records:
+
+- capability-manager-0.1.0-15.x86_64.rpm: 31eab3602aac4eb6e932b2bd5f901571104a553808b457c8fd2c99cf7a92facb
+- capability-manager-devel-0.1.0-15.x86_64.rpm: 3d2305890f9e02cb57f46abfe51b118271c76bd79c90eb65f92c17f269f3b81e
+- capability-manager-offline-tools-0.1.0-15.x86_64.rpm: bc81df60282857e38f697ff19a0a990d9489e3ceb890afe8f2f6b238f166452a
+- capability-manager-tests-0.1.0-15.x86_64.rpm: beb24706d0f81fe7ce37486c35e41d339c815bfb057f8773effd864030bf855f
+- capability-manager-0.1.0-15.src.rpm: 1504226ff9bb9bbf3f514b82993adf60bf6c0392eee1998ebd369bff571a35c1
+
+P06-OFD-PACKAGE-INSTALLED-TRANSPORT-r1 pre-execution safety is ACCEPTED for the
+fixed installed binary/watchdog with actual hash-equality checks immediately before
+and after execution. Owner method: push exact short shell/preflight scripts into
+the protected Release15 scope; SDB invokes that shell through the accepted outer
+watchdog210s, shell runs /usr/libexec/capmgr/run_bounded.py --seconds180 with only
+the installed no-argument capmgr-read-transport-probe. The exact invocation is
+recorded in ofd-package-installed-fixture-r1.log. Probe SHA256
+4a1469a19d1564d246d042bf40cbe42bcbc8b876687ac5cdbbad443e63cee117, watchdog
+f53d446e0f56a0e96bbde5e71875294f88a9936aaf5b9c112dccf478dafb1b28, protected
+root:root0755 singlelink/noACL/no-filecap paths, initial PID/mnt namespaces and
+rpm-V are checked before/after. Runtime is PASS remote0/transport0: all8 modes,
+normal24, each negative4 with stable9 (deny/malformed/oversize) or10 (stalled/lost
+reply) FDs in its own process, eight drained service/grant cases, owned successful
+child exits/endpoint absence required before case PASS. REMOVED_SCOPE is exactly
+/opt/usr/capmgr-read-fixture-LDsdiV before READ_TRANSPORT_FIXTURE_PASS; no retained
+markers. Earlier runtime NOT_RUN wording above is historical and superseded by
+this measured result. Cross-mode FD9 versus10 is not a leak claim; split read-half
+liveness still cannot stand for whole-channel authorization. Root bootstrap, new
+policy/direct-open and production activation remain NOT_RUN/unaccepted.
+
+Final independent P06-OFD-PACKAGE-r1 publication disposition is pending for the
+unchanged accepted spec/README plus this accurate administrative08.
+
+P06-OFD-PACKAGE-r1 FINAL RUNTIME/PUBLICATION is ACCEPTED by w1:pA for exact
+spec/README and administrative08. Original reviewed08 SHA256
+58e57587d6131c7bdde8a5f5d33345cb1bb6874a4e9230ad9621f5219b578e7a is preserved.
+Earlier final-pending text is chronological and superseded. This publication
+changes only the accepted two package files and accurate administrative evidence;
+root recovery/role fixture work remains outside this tree and this archive.
+No new policy or product activation is included.
