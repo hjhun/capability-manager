@@ -1104,3 +1104,62 @@ Live revision publication/invalidation, executable authority, authenticated
 production worker admission, old-job absence/crash maintenance, all external
 writer cooperation and image/policy provisioning remain open. No worker production
 factory activation, package/RPM/install, policy mutation or ARM acceptance follows.
+
+### Leased no-job root startup fixture (r3 scoped ACCEPTED)
+
+P04-WORKER-OWNER-ROOT-STARTUP-r1 is a separate build-only development fixture.
+Its fixed image captures the initial namespace witnesses before capability
+reduction, validates the original 0..8 table/context, and derives only the exact
+fresh `/opt/usr/capmgr-leased-bootstrap-fixture-XXXXXX/catalog` topology from its
+own stable borrowed FD7. The six-character scope component is ASCII alphanumeric;
+deleted, truncated, noncanonical and extra-component paths reject. Held/named
+directory identity, protected root ownership/modes/ACL and ext4 ancestry checks
+precede the concrete reader/factory. This private fixture seam is not production
+path provisioning or application-selected policy. Its ancestry helper never
+reopens PID1 namespace objects after Reduce; captured witnesses remain required.
+
+The no-argument normal parent provisions a schema2 persistent-WAL catalog under
+EX, closes SQLite and every parent maintenance/validation lease, then spawns the
+fixed image. It sends no START. Planned normal evidence requires actual typed
+Finish, READY/revision1, independently execd EX BUSY, PrepareStop/reply drain,
+actual normal worker reap and ConfirmNormalExit with empty durable reservations,
+then independently execd EX OK and checked scope removal. Initial/final ECHILD
+boundaries depend on a single-threaded closed ordinary-SIGCHLD topology with
+default retention and an exclusive waiter. They are not live-child enumeration.
+
+Separate fixed negative routes remove only the owned SHM under EX after physical
+writer close, or link a test-only post-close wrapper. The missing-SHM route must
+reject without recreation and prove it remains absent. The wrapper arms only
+immediately before the real private factory; it adds a `/dev/null` descriptor
+only after a non-null sqlite3_close returns SQLITE_OK. Dedicated rejected exit126
+requires both the fired hook and the existing FD-table Finish error text. That
+text also covers an enumeration failure; it does not uniquely identify an extra
+FD or one syscall/errno cause. The parent
+reports that as a source-enforced condition, not a separately printed syscall.
+Other setup failures remain exit125. Rejected generations must be blocked with
+no reservations and an actual expected owned exit, not normal generation success
+or timeout-based negative evidence. Neither fault hook is linked into product
+code or the ordinary fixed image.
+
+Three fixed child records retain worker and both independent probes through exact
+reap/release. A failed ownership observation, wait timeout or empty-boundary
+failure permanently forbids deletion, even after later known cleanup succeeds.
+The fixture-only ChildOperations decorator latches every nonzero Observe, Reap
+and Kill result for the same table passed to WorkerSupervisor, including hidden
+internal retries. Startup/drain calls check the absolute budget before and after
+each operation, including exceptional exits while preserving the original error.
+The supervisor bootstrap and all fixed Session deadline messages also poison the
+latch before rethrow, including the earlier worker-close drain budget. A timeout
+cannot count as an expected negative startup exit.
+Scope destruction reports retention and never deletes. Cleanup validates the
+complete fixed inventory before unlinking only owned regular single-link root600
+files and root700 directories; unknown entries or cleanup errors fail. The
+ordinary helper tests exercise path rejection and injected child-reply retention,
+not successful privileged path validation, physical namespace startup or faults.
+
+All four root images are EXCLUDE_FROM_ALL, uninstalled and absent from CTest.
+Only the ordinary path/child helper test is registered. Native artifacts and
+root methods require separate exact-source/dependency/provenance safety review.
+No job, clone/mount, NamespaceInit/CLI nondelegation, live invalidation, executable
+authority, old-job absence/crash maintenance, policy or production activation is
+established by this source proposal or its host compilation.

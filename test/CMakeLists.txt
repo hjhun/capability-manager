@@ -267,6 +267,57 @@ TARGET_LINK_LIBRARIES(capmgr-worker-spawn-failure-tests PRIVATE
 )
 ADD_TEST(NAME capmgr-worker-spawn-failure COMMAND capmgr-worker-spawn-failure-tests)
 
+ADD_EXECUTABLE(capmgr-leased-bootstrap-path-tests
+  unit/leased_bootstrap_paths_test.cc
+)
+TARGET_LINK_LIBRARIES(capmgr-leased-bootstrap-path-tests PRIVATE
+  capmgr-adapters GTest::gtest_main
+)
+ADD_TEST(NAME capmgr-leased-bootstrap-path COMMAND capmgr-leased-bootstrap-path-tests)
+
+ADD_EXECUTABLE(capmgr-leased-bootstrap-image-fixture EXCLUDE_FROM_ALL
+  fixtures/leased_bootstrap_image.cc
+)
+TARGET_LINK_LIBRARIES(capmgr-leased-bootstrap-image-fixture PRIVATE capmgr-adapters)
+ADD_EXECUTABLE(capmgr-leased-bootstrap-fault-image-fixture EXCLUDE_FROM_ALL
+  fixtures/leased_bootstrap_image.cc
+  fixtures/leased_bootstrap_close_fault.cc
+)
+TARGET_COMPILE_DEFINITIONS(capmgr-leased-bootstrap-fault-image-fixture PRIVATE
+  CAPMGR_LEASED_BOOTSTRAP_CLOSE_FAULT
+)
+TARGET_LINK_OPTIONS(capmgr-leased-bootstrap-fault-image-fixture PRIVATE
+  "-Wl,--wrap=sqlite3_close"
+)
+TARGET_LINK_LIBRARIES(capmgr-leased-bootstrap-fault-image-fixture PRIVATE
+  capmgr-adapters
+)
+
+# Separate fixed no-START parent images; neither is installed or registered.
+FOREACH(LEASED_VARIANT normal fault)
+  SET(LEASED_PROBE "capmgr-leased-bootstrap-${LEASED_VARIANT}-probe")
+  IF(LEASED_VARIANT STREQUAL "fault")
+    SET(LEASED_IMAGE capmgr-leased-bootstrap-fault-image-fixture)
+  ELSE()
+    SET(LEASED_IMAGE capmgr-leased-bootstrap-image-fixture)
+  ENDIF()
+  ADD_EXECUTABLE(${LEASED_PROBE} EXCLUDE_FROM_ALL
+    integration/leased_bootstrap_probe.cc
+    ${CAPMGR_WORKER_SPAWN_SOURCE}
+  )
+  TARGET_COMPILE_DEFINITIONS(${LEASED_PROBE} PRIVATE
+    CAPMGR_WORKER_IMAGE="$<TARGET_FILE:${LEASED_IMAGE}>"
+    CAPMGR_LEASED_BOOTSTRAP_LOCK_PROBE="$<TARGET_FILE:capmgr-sqlite-lock-probe>"
+  )
+  IF(LEASED_VARIANT STREQUAL "fault")
+    TARGET_COMPILE_DEFINITIONS(${LEASED_PROBE} PRIVATE
+      CAPMGR_LEASED_BOOTSTRAP_FAULT_PROBE
+    )
+  ENDIF()
+  TARGET_LINK_LIBRARIES(${LEASED_PROBE} PRIVATE capmgr-adapters)
+  ADD_DEPENDENCIES(${LEASED_PROBE} ${LEASED_IMAGE} capmgr-sqlite-lock-probe)
+ENDFOREACH()
+
 ADD_TEST(NAME capmgr-verification-tools
   COMMAND "${Python3_EXECUTABLE}" -m unittest discover
     -s "${CMAKE_CURRENT_SOURCE_DIR}/tools" -p "*_test.py"
@@ -290,6 +341,7 @@ ADD_CUSTOM_TARGET(check
   COMMAND "${CMAKE_CTEST_COMMAND}" --output-on-failure --no-tests=error
   WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
   DEPENDS
+    capmgr-leased-bootstrap-path-tests
     capmgr-code-image-tests
     capmgr-read-policy-context-tests
     capmgr-recovery-reference-tests

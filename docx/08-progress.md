@@ -32,7 +32,7 @@ Branch main tracks origin/main; upstream initial commit is
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
 | P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
-| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release15 ordinary installed package checks verified; authenticated app_fw/TIDL broker and resource gates open |
+| P04 | IN_PROGRESS | Private worker/session and leased no-job typed startup verified; Release15 ordinary installed package checks verified; authenticated app_fw/TIDL broker and resource gates open |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
 | P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff, API-only peers and stress accepted; Release15 installed tests/transport ACCEPTED; production admission/policy gates open |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
@@ -106,8 +106,9 @@ remains BLOCKED after the diagnostic measured only one allowed UID301 context.
 Worker generation-lifetime reader r2 source/ordinary-native/publication scope is
 ACCEPTED; actual publication is recorded separately. A separate fixed
 System301/priv_platform-group diagnostic is scoped ACCEPTED with no new policy.
-Bootstrap wiring remains separate. Prior failures are preserved; installed
-Release15 and PATH-01/product gates are unchanged.
+Private no-job leased bootstrap is scoped ACCEPTED; NamespaceInit/CLI
+nondelegation and production worker wiring remain separate. Prior failures are
+preserved; installed Release15 and PATH-01/product gates are unchanged.
 
 ### P00 publication checkpoint review
 
@@ -4386,3 +4387,327 @@ administrative08 alone; temporary coordinator/test/methods remain outside Git.
 Next: independently reviewed P04 no-job root typed-startup fixture and revised
 P06 module-mapped reader/server survivor development contract; no extra policy or
 production gate closes from these proposals or the preceding context results.
+
+
+## P04-WORKER-OWNER-ROOT-STARTUP-r1 source/host review pending
+
+Owner w1:pJ; reviewer w1:pA; phase P04, R10/R11/R13/R14 and DB-ACCESS-01.
+Baseline 4c19b56e81a5f2f401efec9b2a3a469d0324d5c6. The exact temporary
+root-startup development design SHA256
+08bb03e8b92dd82e7fa514e2f474517259aca1b0c10827c0b46acc5f2aff4f50 was
+ACCEPTED FOR DEVELOPMENT CONTRACT ONLY. Prior private owner publication
+fb9bcc10028e9ba4a48ec9f6c31878ae74b46dcf remains a distinct accepted ordinary
+checkpoint. No root source/runtime disposition is inferred from either.
+
+This revision adds separate fixed no-START image/parent variants, the exact FD7
+fixture topology/ancestry helper, and fixed child-record retention helpers. It
+uses the actual LeasedWorkerLoop::LoadAndFinish and existing namespace capture,
+spawn, session, journal and supervisor contracts. The normal parent provisions
+under EX and physically retires all parent SQL/leases before spawning. Planned
+measurements are typed READY/revision, independent exec EX BUSY, no-job normal
+stop/reap/durable empty reservations and EX OK. Separate negatives require actual
+rejected exit125 plus absent SHM, or source-enforced post-successful-close hook /
+unexpected-FD gate rejection exit126. No START, job, clone/mount or policy write
+is present. The new parent/image targets are EXCLUDE_FROM_ALL, uninstalled and
+not CTest commands. Only the ordinary helper tests join default check.
+
+Host evidence under /tmp/capmgr-evidence:
+
+- worker-owner-root-path-host-build-r1.log: FAIL, requested new target before
+  regenerating CMake; no rule existed then. Preserved separately from later builds.
+- path configure/build-r2/r3 and path-tests-r1/r2: iterative earlier ordinary
+  helper evidence; not the final ten-case bytes and not privileged path acceptance.
+- worker-owner-root-image-host-configure-r1.log and image-host-build-r1.log: host compile
+  of both fixed images PASS, no image invocation.
+- worker-owner-root-parent-configure-r1.log and parent-build-r1.log: both parent
+  variants compile PASS, before the extracted/tested retention helper amendment.
+- Final worker-owner-root-parent-configure-r2.log and parent-build-r2.log:
+  `cmake -S . -B build-style`, then explicit normal/fault parent plus path-test
+  targets with -j2, EXIT0. Dependencies rebuild both images as needed. Host
+  prefix remains /tmp/capmgr-host-deps/root/usr; no system installation.
+- worker-owner-root-path-host-tests-r3.log: actual10/10 PASS (seven path/borrowed
+  FD negatives/controls plus three injected ownership-reply tests). The latter
+  create no child and prove earlier timeout/observe error retains deletion
+  ineligibility after later exact known cleanup. Invalid borrowed ordinary/O_PATH
+  descriptors remain caller-owned. Successful root ancestry validation is NOT_RUN.
+- worker-owner-root-host-check-r1.log: `cmake --build build-style --target check
+  -j2`, actual CTest12/12 PASS, EXIT0. This registers only the ordinary helper
+  increment; neither new parent nor root image runs during check.
+
+Final source freeze/diff/hashes will accompany the independent review request.
+Native build, native ordinary tests and all new root image/parent execution remain
+NOT_RUN and UNAPPROVED. No NamespaceInit/CLI nondelegation, live invalidation,
+executable authority, crash-old-job absence, full native CTest, RPM/install or
+production gate is claimed. InstalledRelease15 remains unchanged.
+
+In parallel P06-READ-REFERENCE-MODULE-SURVIVOR-DESIGN-r2 at
+c9331552fe993ad697b3d71247d7292580471252826a9989525990161fc221f0 was
+ACCEPTED FOR DEVELOPMENT CONTRACT ONLY. Implementation must distinguish actual
+body/-6 and teardown/HOLD_ACK while alive from final owned reap0, preserve old
+10/20 modes, and keep supervisor output readers through kernel exit without an
+SH reference in the supervisor. No survivor source/runtime or actual journal,
+policy/SQLite/Authorize/Confirm/StageB authority follows from that design verdict.
+
+
+## P04-WORKER-OWNER-ROOT-STARTUP-r2 source re-review pending
+
+Reviewer r1 CHANGES_REQUESTED against exact9-file manifest
+80949c7133456e15e694ff952cbe27bd70e8bbbcf77b9ed1a82ef04b8be61d74;
+archive a5cbee9d67b18105ab8858ea1cc581c1a254ccef26559dd8618c3f3da9450ca4
+and original host10/10/CTest12/12 remain preserved, not accepted root evidence.
+Two fixture cleanup gaps were identified: transient errors in direct supervisor
+Inspect/internal StopAndWait could be overwritten, and startup/drain deadline
+paths could bypass the sticky timeout rule and later delete the scope.
+
+R2 introduces a fixture-only ChildOperations decorator on the SAME owned table
+passed to WorkerSupervisor. Every nonzero Observe/Reap/Kill result permanently
+poisons deletion eligibility before forwarding its result, including internal
+retry paths. Product OwnedChildren and WorkerSupervisor behavior is unchanged.
+Startup/drain absolute deadline checks run before/after operations; the exact
+existing supervisor internal bootstrap deadline message also sets the latch.
+Negative startup requires no timeout/uncertainty before accepting125/126.
+Actual normal release clears the caller's record immediately after supervisor
+confirmation, before further fallible checks. Normal/failure cleanup both use
+one tested gate; later successful absence proof never restores eligibility.
+
+New focused cases exercise direct-table Inspect, internal StopAndWait observe,
+reap and kill errors followed by terminal success, plus startup/drain expiry and
+internal startup deadline followed by successful known cleanup. Injected later
+absence succeeds but removal/phase-PASS calls remain zero. These tests launch no
+child and do not execute a root scope; they exercise the same cleanup gate used
+by the parent. The original path/borrowed-FD and timeout/later-probe cases remain.
+
+The126 report is limited to successful non-null close hook AND the existing
+FD-table gate error text; that text also covers readdir failure. It is not an
+independent syscall trace or unique extra-FD/errno classification. MissingSHM125
+with continued absence remains a rejected-startup observation whose positive
+control is the separate normal no-START case.
+
+Iterative parent-build-r3/path-tests-r4/check-r2 logs under /tmp/capmgr-evidence
+are preserved separately; a subsequent shared CleanupScope gate refinement makes
+them non-final evidence. Final frozen r2 checks will be recorded from
+parent-build-r4, path-host-tests-r5 and host-check-r3. Native/source disposition
+and all new root workload execution remain pending/NOT_RUN. No production,
+NamespaceInit/nondelegation, policy, RPM/install or installedRelease15 change.
+
+
+P04 root-startup r2 final host evidence: parent-build-r4 rebuilds both fixed
+parent variants and the ordinary helper target, EXIT0. path-host-tests-r5 logs
+actual14/14 PASS (path7 + child/proof7, with three internal retry seams repeated
+inside one case). host-check-r3 records actual CTest12/12 PASS, EXIT0. Final source
+bytes stayed unchanged during these checks; no root parent/image was invoked.
+The9-file r2 manifest/diff/archive are frozen for explicit independent re-review;
+author changes do not self-close the two r1 findings. Root execution remains
+NOT_RUN/unapproved and old r1 evidence/frozen inputs remain preserved.
+
+
+## P04-WORKER-OWNER-ROOT-STARTUP-r3 source correction (ACCEPTED)
+
+The reviewer rechecked r2 manifest
+31fbcc60ebb015e8852ebb329623a69f6310b1acf97d3d23e6fc18638bbf0a88
+and CLOSED the observation-decorator finding, but returned CHANGES_REQUESTED
+for the internal worker-close drain deadline. Session can throw after its5s
+budget before the fixture7s budget, skipping the previous after-call check.
+The overall failure could therefore still remove the scope after known cleanup.
+R2 archive65a547942a4f5db6da108d554b9773bc6c240d9cb55cca8c5da97db96d321df4
+and host14/14/CTest12/12 evidence remain historical, not acceptance of that path.
+
+R3 uses one fixture-only WithinDeadline wrapper for startup, PrepareStop and
+drain calls. It checks the same absolute budget on normal and exceptional exits,
+classifies the exact existing Supervisor/Session deadline messages, permanently
+poisons cleanup eligibility and rethrows the ORIGINAL exception. Actual normal
+release still clears the caller record immediately inside the wrapped operation,
+before a fallible post-check. Product Session/Supervisor are unchanged.
+
+Two added deterministic cases exercise the internal Session deadlines and an
+operation throwing after the startup/drain budget. Later simulated exact known
+cleanup and successful empty-boundary verification use the SAME CleanupScope
+gate; removal and phase-PASS calls remain zero, with the original functional
+exception preserved. These are ordinary injected helper tests, not root scope
+execution or raw syscall traces. Final /tmp/capmgr-evidence logs:
+worker-owner-root-parent-build-r5.log rebuilds both parent variants/helper, EXIT0;
+worker-owner-root-path-host-tests-r6.log actual16/16 PASS;
+worker-owner-root-host-check-r4.log actual CTest12/12 PASS, EXIT0.
+
+Separate native-build-r2.log is compile-only evidence for HISTORICAL r2 bytes:
+source189/archive2a314020fbf2f37b1b7880f3abf5ed435192d6ac7d9b880ab55a6455d74eaa55,
+manifestcaf7eb54216ac1afd6d4fddc6821471cd8cc02071e8b587db99b139ad7373d16,
+JSON53, six freshly built target images and eight resolved standard/GTest
+providers, remote0/transport0. No native test or root fixture was invoked; those
+r2 binaries do not supply corrected-r3 evidence. The outside-project ordinary
+14-test method draft was not submitted, transferred, approved or run and is
+superseded by the corrected16-case scope. Exact r3 native compilation/method and
+all root typed startup execution remain NOT_RUN/pending independent review.
+No NamespaceInit/nondelegation, policy, production or installedRelease15 change.
+
+
+P04 root-startup r3 LOCAL SOURCE/host ACCEPTED by independent reviewer against
+manifest6f1b0f6489d74bf148d2cc92d0492142f3b405d7cddc1cb6c8ed020feacb9a06
+and archivefdba3162903b88ba9c8ce859d8e58ead551966df8f99439307dc705e63cc7683.
+Accepted07 SHA3a23e9b94a5f8adeec499c44926e8a02b02c65c065a1a9bf3de56821a5bab22b
+and08 SHA9942938cb686260fd97dac517ee00c9afd34dd808c3be60584c68f94d50f610a
+are preserved before this append. Remaining r2 deadline finding CLOSED; host16
+and CTest12 evidence accepted separately from pending native/root methods.
+No native/root/publication acceptance is inferred from that source disposition.
+
+P06-READ-REFERENCE-SURVIVOR-CORE-r2 temporary LOCAL core ACCEPTED separately
+against manifest43b304064634e58fc3ec52a8dd4ed82e25524f3b47fd32157149e268cdecc7dd,
+helpercf1dc5ba64836a022919cb368a829a5fe8292cbd974ee9965bb07f1ca7ec481a and
+testd6dabcb7a1697349d4578c41f2f1c21db9a49f3390673d723461a7ae9d8d390b.
+Host read-reference-survivor-core-host-r2.log actual20/20 PASS. Late final full
+write/ACK/EOF fail against the same absolute deadline without rollback claims;
+all six pipe descriptions are nonblocking, including output writers and their
+stable copies. Any core Failure must poison future integration cleanup eligibility;
+EOF/retained observed bytes cannot supply authority after a failed operation.
+This is outside-project protocol/core evidence, not completed survivor/adoption/
+reference4/module/timer integration, native/root execution, SH/TLS lifetime or
+actual policy-journal/production authority. Earlier r1 findings remain preserved.
+
+
+P04 root-startup corrected-r3 native COMPILE-ONLY preparation: fresh protected
+worker-owner-root-startup-r3 tree, archive
+2bc433acb89290edc57b9452b56963ae831491dc068ab53637982d9d3183a8bd,
+manifest e97eddd258eb49a436736fae4e4969eb714c761c417c353716030742a719301c.
+Archive189 was independently compared by owner to HEAD4c19b56 plus frozen9; its
+08 is the accepted source snapshot, separate from these later administrative
+appends. worker-owner-root-native-build-r3.log records fresh configure with full
+platform optionsON and -j1 targeted closure rebuild: both parent/worker variants,
+ordinary helper and lock probe. Six image hashes, no RPATH/RUNPATH, clean ldd-r
+and eight resolved protected loader/standard/GTest providers are recorded; final
+source189/JSON53 and remote0/transport0. No native test or root image invoked,
+no whole CTest/generated transport runtime/RPM/install result inferred.
+
+New parent hashes623bd544ec1275c5f6e1bfd866d82c3f607b49dad26a802cf2f35563b755c141
+and9c4ee53a7e2ab4ac32391b3e1af067c550a4ffd0193df8e1b839c1c8acc0d179;
+helper08d29b1c7f8c73f061bd781687fbdd030bf60b8a30ef3e3d79919490b61f072a.
+Worker-image and lock-probe bytes happen to equal historical r2 hashes; this run
+freshly compiled their closure and does not describe copies as new compilation.
+
+Ordinary-method-r2 is frozen for separate review: preflight
+7f3569d17070483200a31a45a0352c07f281a1fdf015174ae1513c6dbabcaf19; runner
+b1b84751ec7ec37ac0c1bd88e154934bf042c957128d25fd07e0a73cf62b9504;
+outer1e17ef81f84b5974c72ba3d04203648851e77990043586025ab820a965f0a184.
+Read-only worker-owner-root-native-ordinary-preflight-r2.log validates transferred
+method2/source189/JSON53/images6/providers8/interpreter/watchdog/protected paths,
+initial namespaces/ext4/no-cache, explicitly NO_TEST_OR_ROOT_IMAGE_INVOKED,
+remote0/transport0. Proposed selection is ordinary helper16 only, installed30s
+watchdog/owner60s; no actual child or root parent/worker is selected. Native
+helper16 execution and every root typed-startup case remain NOT_RUN/unapproved
+until their separate exact-method dispositions. InstalledRelease15 unchanged.
+
+
+P04 root-startup ordinary-method-r2 pre-execution ACCEPTED independently for
+helper16 ONLY, preserving accepted administrative08
+5881524f8d8409be51f69899bd20ce5f653813eb3b517607e3ed341584e856d5.
+Owner ran the exact frozen outer after host method2/outer2 hash rechecks. Actual
+worker-owner-root-native-ordinary-tests-r2.log prints FIRST env-i absolute
+Python-I-B command, installed30s/owner60s and transferred protected method2;
+immediate pre/post source189/JSON53/images6/providers8/interpreter/watchdog/
+initial namespaces/ext4/no-cache PASS. Actual16/16 (path7 + injected children9),
+no skips, HELPER_TEST_RETURN0, ORDINARY_HELPER16_ONLY_PASS, remote0/transport0.
+No timeout/failure marker. No kernel child/root parent/worker/lock-probe image was
+selected. Borrowed-FD/temporary-file and sticky deadline/cleanup assertions are
+source-enforced tests, not raw syscall traces or typed startup success.
+
+Native ordinary-helper final disposition remains pending this actual evidence
+review. Root normal/missingSHM/post-close fault execution remains NOT_RUN and
+unapproved; its separate method is under preparation, with no implicit permission
+from helper16. No NamespaceInit/CLI nondelegation, live invalidation, policy,
+RPM/install or production claim; installedRelease15 unchanged.
+
+
+Independent reviewer ACCEPTED root-startup r3 ORDINARY native helper evidence
+and accurate administrative08 SHA9989229fc5c9163c4dcc1770d608fe160e724a467bf1970cd372b1d9ddfbe051.
+This closes only helper16; parent/worker/probe remained uninvoked in that run.
+The full root-startup gate is explicitly NOT_RUN/unapproved, separate from this
+ordinary-only disposition and all earlier source/host/compile checkpoints.
+
+ROOT-METHOD-r1 proposal is frozen outside Git: exact same preflight
+7f3569d17070483200a31a45a0352c07f281a1fdf015174ae1513c6dbabcaf19, runner
+7ed08164aeb9d09b54f2aed1a7b4dd2cac1d69e621c59aec17ccb909c1cfc937,
+outer72b5878d62ff6c1c8e75ba1212cec7d347e90219c91028510e95342bf8db4a74,
+plan54acc1590ba06ebce59680bc341d4a1257a5ba36961c0e21c335317bb71ec4a2.
+Read-only worker-owner-root-native-startup-preflight-r1.log checks transferred2
+and unchanged protected source189/JSON53/images6/providers8/interpreter/watchdog/
+ns/ext4/no-cache PASS, explicitly NO_TEST_OR_ROOT_IMAGE_INVOKED, remote0/transport0.
+Proposed future route is fixed no-argument normal parent (normal-no-start then
+missingSHM) followed only after success by fixed fault parent, installed90s each
+and owner210s total. Three fresh owned fixture scopes only; no START or CLI exec,
+NamespaceInit/clone/mount, policy/install/production authority. This read-only
+preparation does not authorize the actual root fixture. Exact method request is
+now separate from the accepted ordinary16 evidence; runtime remains NOT_RUN.
+
+
+## P04-WORKER-OWNER-ROOT-STARTUP-r3 measured no-START runtime (ACCEPTED)
+
+ROOT-METHOD-r1 pre-execution ACCEPTED independently for the exact three-case
+route; accepted administrative08
+43a2353cf88e53fc0459c8beb4c2ffff88addb6c055b4349ebbe2e5c30564708
+is preserved before this append. Owner verified method2/outer2 hashes immediately
+before executing /tmp/capmgr-worker-owner-root-execute-startup-r1.py unchanged.
+Complete evidence: /tmp/capmgr-evidence/worker-owner-root-native-startup-tests-r1.log.
+FIRST env-i absolute Python-I-B command, installed90s per fixed parent/owner210s
+are printed; transferred2 and source189/JSON53/images6/providers8/interpreter/
+watchdog/protected paths/initial namespaces/ext4/no-cache pre/post checks PASS.
+Both no-argument parent returns0; final ROOT_NO_START_THREE_CASES_ONLY_PASS,
+CAPMGR_REMOTE_EXIT0 and TRANSPORT_EXIT0. No timeout/retained/failure marker.
+
+Normal scope /opt/usr/capmgr-leased-bootstrap-fixture-aa1NgF: actual typed
+READY revision1/NO_START, independent generation EX BUSY/owned probe reap0, then
+OWNED_NORMAL_WORKER_REAP0/CONFIRM_NORMAL_EXIT/NO_RESERVATIONS and EX OK/probe
+reap0. Source requires all parent provisioning SQL/SH leases physically retired
+before BUSY, normal CanExitCleanly retirement and exact owned supervisor release.
+Those unprinted predicates are source-enforced assertions, not extra raw syscall
+traces or independently printed context/five-descriptor tuples. REMOVED scope
+aa1NgF precedes normal-no-start CASE_PASS.
+
+Missing-SHM scope m6iMLS: LEASED_STARTUP_REJECTED=Invalid worker READY, exact owned
+exit125, MISSING_SHM_STILL_ABSENT, EX OK/owned probe reap0, removal before its
+CASE_PASS. Source requires blocked failed startup with no reservations; this is
+a rejected generation, not normal ConfirmNormalExit. Parent then reports its
+final no-START fixture PASS/return0 and postcheck before the fault parent starts.
+
+Post-close-table-fault scope IJYQcD: Invalid worker READY, owned exit126,
+POST_CLOSE_FAULT_FIRED_AND_TABLE_REJECTED=source-enforced-exit126, EX OK/probe
+reap0, removal before CASE_PASS/final parent PASS/return0. Dedicated worker wrapper
+requires the armed non-null actual successful SQLite close followed by the common
+table-gate failure text. This remains limited source-enforced attribution; that
+text also covers readdir failure and is not a unique errno/extra-FD trace. No
+negative case counts a timeout as success.
+
+Runner additionally checks three matching owned/removal paths and actual absence
+plus removal-before-case ordering. Fixed source requires sticky syscall/deadline
+eligibility, exact record resolution and final ECHILD before pinned complete
+inventory cleanup. ECHILD/topology and cleanup predicates are source-enforced,
+not separate raw wait replies. Printed CMR1 values are validated provisioning
+identities, not a raw SMACK/context tuple; the metadata getter is real/default.
+
+Earlier root runtime NOT_RUN paragraphs are historical and superseded ONLY by
+this exact measured no-START result; final runtime/publication disposition is
+still pending independent review. No START/job/CLI execution, NamespaceInit/
+clone/mount/FD nondelegation, live revision invalidation, executable authority,
+crash-old-job absence, policy/service/load2, full native12/RPM/install, production
+or ARM gate follows. InstalledRelease15 remains unchanged.
+
+
+P04-WORKER-OWNER-ROOT-STARTUP-r3 FINAL NO-START RUNTIME/PUBLICATION ACCEPTED
+independently for the exact reviewed9-path private fixture and administrative08.
+Preserved original accepted07
+3a23e9b94a5f8adeec499c44926e8a02b02c65c065a1a9bf3de56821a5bab22b
+and final accepted08
+dd73e2f9d40d79e8b6ade1238e116054a3350db2bbf4f2a17c20c9273d3b9b81
+before only heading/phase-board/Next/disposition bookkeeping. All reviewed code
+and development clauses stay unchanged; r1/r2 findings/failures and historical
+NOT_RUN text are preserved and explicitly superseded only for this exact no-START
+result. Source/host, native ordinary16, fresh targeted build and root3 results
+remain distinct. Actual Git publication is reported separately after commit/push
+and remote equality verification; this disposition is not that Git evidence.
+
+Next P04 gate is separately reviewed NamespaceInit/CLI FD nondelegation and
+worker/job lifecycle integration; private no-job READY/lease retirement does not
+prove live revision invalidation, executable authority or crash-old-job absence.
+P06 temporary survivor protocol/core is local ACCEPTED only; its complete
+reference4/module/adoption/timer integration remains separate development/review.
+Original different-subject/direct-read matrix and all production/PATH/physical/
+ARM gates remain open. No service/policy/install/RPM change; installedRelease15
+unchanged. No overall completion signal is inferred.
