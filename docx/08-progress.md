@@ -27,9 +27,9 @@ Branch main tracks origin/main; upstream initial commit is
 | P01 | FOUNDATION VERIFIED | Reviewed C++20/C ABI, host/native tests, RPM build/install; async/platform gates open |
 | P02 | IN_PROGRESS | Catalog/parser core and offline subprocess harness tested; authoritative finalizer/MIC integration BLOCKED |
 | P03 | IN_PROGRESS | Queries and Action import core tested; source feed/reconnect BLOCKED |
-| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release13 installed style checkpoint verified; authenticated app_fw/TIDL broker and resource gates open |
+| P04 | IN_PROGRESS | Private worker/session/bootstrap integrated fixture accepted; Release14 installed package checks verified; authenticated app_fw/TIDL broker and resource gates open |
 | P05 | IN_PROGRESS | Private identity experiments tested; PATH-01 pending; production identity, policy, namespace isolation and mount gates open |
-| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff, API-only peers and stress accepted; Release13 style package accepted; Release12 transport fixture accepted; production admission/policy gates open |
+| P06 | IN_PROGRESS | Private read lease/grant/TIDL handoff, API-only peers and stress accepted; Release14 package/installed transport accepted; production admission/policy gates open |
 | P07 | IN_PROGRESS | Native x86_64 builds/tests verified; full product integration NOT_RUN |
 | P08 | IN_PROGRESS | Fixture benchmark/tool work; product stability and physical-device tests NOT_RUN |
 | P09 | NOT_RUN | Gate closed until P08 completion; no ARM build attempted |
@@ -2041,3 +2041,86 @@ checks protected ancestry/binary hash, then runs the unchanged fixture. The owne
 captures the unique remote exit sentinel and SDB transport exit separately.
 InstalledRelease13 is unchanged; no RPM, production authority or global policy
 acceptance is inferred. Reviewed source publication follows this disposition.
+
+PEER-API source publication: 3ca98ab37e2a3485dfd73064ef1bf0012374fb4f,
+commit/push0 and exact origin/main verified; no package change at that checkpoint.
+
+## P06-PEER-WAL-PACKAGE-r1 (2026-09-28, package/runtime accepted)
+
+The source-only revision changes Release13 to14, packaging the separately accepted
+WRITER-WAL cf8e446 and PEER-API3ca98ab checkpoints. Independent source review
+ACCEPTED the one-file manifest /tmp/capmgr-peer-wal-package-r1.sha256;
+spec SHA256: 29e0d20cdbfeef7b62d675007634c8bb54aa2a663628f99c83290afdf8c8112c.
+No declared payload/dependency/scriptlet/service/capability or policy changes.
+
+Exact source archive /tmp/capmgr-release14.tar.gz SHA256:
+0b43e6cd434e06e14d89c0409d4eeccb68414983d348a2b670986de1d5dd6e6e.
+Owner and reviewer independently compared all146 regular files against3ca98ab
+plus the accepted spec override. The archive has no duplicate/traversal/link or
+special members. Pinned JSON SHA256:
+0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406.
+The RPM-tree-relative input manifest pins those two archives and the spec; this
+later administrative progress append is outside the source archive.
+
+peer-wal-package-native-r1.log preserves an environment failure: all targets built
+and RPM CTest8/8 passed, but tests-RPM cpio compression failed with ENOSPC,
+CAPMGR_REMOTE_EXIT1/TRANSPORT_EXIT0. This is not a successful RPM build.
+peer-wal-package-space-r1.log records only prior Release13 BUILD-cache removal
+after trusted ancestry/ACL, no active executable/cwd, pinned identity and
+symlink-safe cleanup checks. Source archives, all four prior RPMs and logs remain;
+351MiB free, remote0/transport0. Exact unchanged inputs are used for the retry.
+
+
+peer-wal-package-native-r2.log: unchanged input3/3, full native build with
+TIDL/Cynara/transport ON, RPM CTest8/8, clean unpackaged check, four binary RPMs
+and SRPM, remote0/transport0. No source workaround or additional cache deletion.
+peer-wal-package-payload-r1.log: normalized Requires/Provides unchanged from13;
+all four package path/mode/owner/group sets unchanged, scripts empty, no filecaps
+or setid modes, audit PASS remote0/transport0.
+
+Exact Release14 artifact SHA256:
+- runtime: 08490d569ea19e404b216f3cf349fba4175ad73afcede4ca33995424265bfcaf
+- devel: 465cfca670639da7af435e82faa50a6b25e49092a0b17af47885297ee30d9a44
+- offline-tools: 011e5f21e5e1915a8581e02f94c40d8f109808311f04cedd48e72d10e605afab
+- tests: 2a85dc9005b5c2930dd18b14d7711bc5e479416cc14531e3268c1e0aecfe7433
+- SRPM: 89677311e87a8ef16dcfdcf00f7dc0195fc62f0c11ecf19cfc769aa9798525cc
+
+peer-wal-package-install-r1.log prints rpm -U --test followed by normal rpm -U
+for all four packages, then installed0.1.0-14. Installed99 unit +162 adapter +15
+peer tests =276 GoogleTests PASS, C_CONSUMER_EXIT0, offline7/7, rpm-V clean;
+capability-manager pkg-config links a second C consumer successfully. The library
+retains12 capmgr_ exports at CAPMGR_0 and SONAME libcapmgr.so.0. Remote0/transport0.
+Known msm tsm_post warning remains recorded; no transaction/test failure or
+production SMACK-policy conclusion follows. The peer count deliberately replaces
+historical packet/lifecycle positives with unavailable-proof negatives.
+
+
+peer-wal-package-installed-fixture-r1.log verifies the installed tests RPM and
+root:root0755 probe SHA256
+cb2f99bac54bdf776d129a0a6aa9dc48359501381decdccdbadb956d82c1af68.
+Owner-run method: outer210s watchdog invokes the installed180s watchdog/probe;
+no source or policy change. All8 modes PASS, normal24 and each public negative4
+iterations. Deny/malformed/oversize FD9/9/9/9 and stalled/lost-reply10/10/10/10
+are stable within each process; different process baselines are not leak proof.
+Raw same-instance/wrong-instance/replay/expiry and both split write-half losses
+pass; read_revents remains0,0 while confirmation rejects. Four stalled-slot and
+four consumed-confirm/lost-reply observations, no failed create publishes a handle.
+Exactly8 SERVER_GRANTS_SERVICES_DRAINED; source requires owned normal child exit
+and endpoint absence before each successful case. REMOVED_SCOPE at
+/opt/usr/capmgr-read-fixture-eRWfGF precedes READ_TRANSPORT_FIXTURE_PASS;
+no retained scope/endpoint, remote0/transport0.
+
+Final independent package/runtime review requested for the unchanged spec and
+this administrative08 diff. New root bootstrap/worker/policy fixtures NOT_RERUN;
+ARM/P09 NOT_RUN. Production create/CLI/broker/remount, actual direct-read policy
+subset, writer OFD maintenance cooperation, task/sender identity and image gates
+remain open. Next development remains read-admission policy and coordinated
+catalog-generation maintenance; package success does not enable those routes.
+
+
+P06-PEER-WAL-PACKAGE-r1 final publication/runtime gate ACCEPTED by w1:pJ for
+exact spec14 and the administrative08 diff, original reviewed08 SHA256
+b080082d7806bb39c89b46e7ee19766f00ed7f6ea95a1ff8229fc8ccf9108cd4.
+This disposition supersedes the preceding request/pending state only; the failed
+first build, recovery and scoped product limits remain unchanged. Reviewed
+spec+progress publication follows; no other product source changes in this commit.

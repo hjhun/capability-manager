@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Name:           capability-manager
 Version:        0.1.0
-Release:        13
+Release:        14
 Summary:        Capability catalog and client library
 License:        Apache-2.0 AND MIT
 URL:            https://github.com/hjhun/capability-manager
