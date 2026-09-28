@@ -88,7 +88,7 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-Reviewed development checkpoints through `e0683a57601603406e2aa2d0295b7d0a1c570369`
+Reviewed development checkpoints through `77d52616433e5021bcc934fb3ca2824d6a46bbbc`
 are committed and pushed on main, with exact remote refs verified. The chronological
 records below retain earlier failures and pending states as historical evidence;
 later entries supersede their status. Raw evidence/builds/dependencies are excluded
@@ -100,9 +100,9 @@ device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gate
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: separately review the exact full policy/crash method after the accepted
-ordinary-child wait-boundary source/native checkpoint. The full-r2
-fixture is overall FAIL; its normal phase passed separately. Release15 remains
+Next: separately review a real TIDL/Cynara policy preflight/design after the
+accepted private modeled-C/full crash fixture checkpoint. The prior full-r2
+fixture remains overall FAIL; its normal phase passed separately. Release15 remains
 accepted. PATH-01 stays a product question; unrelated development can continue.
 
 ### P00 publication checkpoint review
@@ -3094,3 +3094,80 @@ is preserved alongside original source08. This supersedes only local/native
 publication pending wording; changed full --run remains NOT_RUN/unapproved.
 Next: separate exact full-method pre-execution review, then observed full runtime
 review. No package, installedRelease15 or production scope changes follow.
+
+
+### WAIT-BOUNDARY-r1 publication and full fixture runtime (ACCEPTED)
+
+Accepted local source/native checkpoint
+`77d52616433e5021bcc934fb3ca2824d6a46bbbc` was signed off, committed0/pushed0,
+exact origin/main verified and worktree clean. LICENSE remained unchanged. Only
+reviewed four code/test files and accurate08 were published; no package/install.
+
+Independent FULL-METHOD-r1 pre-execution disposition: ACCEPTED for the exact
+protected route after native28 non-policy prerequisite acceptance. Frozen method
+is preflight7875da06...afb2 and full runner
+`7a18a504c028c63f9c7978ff4e1e3605ffe30f38a408e061b1046e3888470626`.
+Owner `capmgr-read-policy-wait-boundary-execute-full-r1.py` immediately verifies
+transferred method2/2/root0600/singlelink/noACL/no-cap/ancestry, then fixed cleanenv
+-B/inherited no-bytecode under installed180s/owner210s. Log
+`read-policy-wait-boundary-native-full-r1.log` records exact source9/9/archive
+6251d45b...fa65e/input6c5bf82e...2198c/copied image46849eea...7872/interpreter/
+watchdog/protected ancestry/initial namespace/ext4/no-cache before and after.
+FULL_MODELED_POLICY_RETURN0, CAPMGR_REMOTE_EXIT0 and TRANSPORT_EXIT0; no timeout.
+A host log-count audit initially counted the literal method marker inside the
+printed invocation too; corrected exact-line matching confirms1 method marker,
+2 source checks,4 recovery receipts and2 scope removals without another native run.
+
+The normal new UUID scope
+`/opt/usr/capmgr-read-policy-0da8e01705d44af3ad47a80a03111569`
+passed the root-writer/UID301 modeled-C matrix. Validated ROLE_CONTEXT now prints
+root writer User::Shell and fixed reader UID/GID301, all-zero capabilities/NNP1,
+new labels and platform-group presence/absence. C++ validation checks the full
+real/effective/saved/group context; compact printed fields are not independent
+raw capget/getresuid syscall output. Allowed readers acquired SH and directory/
+direct-file RO baselines with MAC write veto. Same-group MAC-denied acquired SH,
+then directory/direct-file denial and NULL modeled create/Authorize1/Confirm0/
+Finish0/gate-returnfalse/clientSQLiteNOT_RUN. Missing-group denied at the lock;
+later stages are NOT_RUN. Positive modeled create records Authorize1/Confirm1/
+Finish1 with actual SQLite validation/query, never real TIDL/Cynara authority.
+Generation1->2 local queries/no queryIPC, EX BUSY while reader leases remained,
+sidecar ownership/mode/label and dev/inode identities through writer close,
+fresh RO create/query, final physical closes and EX success all passed. Both
+actual protected --recover invocations return cleanupPASS/errors[]/remaining_rules[];
+REMOVED_SCOPE precedes READ_POLICY_MODELED_MATRIX_PASS_ROOT_WRITER_ONLY.
+
+The separate coordinator-loss scope
+`/opt/usr/capmgr-read-policy-b21d7476623049b2a49b6d7f3ce4fe02`
+passed the revised proof. Frozen source enforces prepared default SIGCHLD/verified
+subreaper and initial ECHILD before crash journal/fork, checked durable full plan
+and flushed recovery argv before first completed load2 write/ACK, and the barrier
+before row2. Actual OWNED_CHILD_REAP logs coordinator3014469 status-9. Exact adopted
+reference3014470 nonexit is observed and logged before/after the actual protected
+--assert-contended CLI, which returns EX_CONTENDED/mutations0; source additionally
+requires unchanged receipts/scope. Flock does not identify holder type/liveness;
+the owned P_PID observations are separate. Adopted reference actual reap status-9
+is logged, then source requires post-reap and final ECHILD plus sticky eligibility
+before two real --recover calls, both cleanupPASS/errors[]/remaining_rules[].
+REMOVED_SCOPE precedes READ_POLICY_COORDINATOR_LOSS_RECOVERY_PASS. Both phase PASS
+markers precede READ_POLICY_FIXTURE_PASS_ROOT_WRITER_MODELED_HANDOFF_ONLY. No
+retained/uncertain/traceback marker is present. Root-only receipt journals remain
+intentionally; remaining_rules is failed-revocation-write reporting, not independent
+kernel rule enumeration. Wait proof still relies on the reviewed closed topology
+and trusted retention semantics, never arbitrary descendant/sole-live enumeration.
+
+This new runtime supersedes only revised full-runtime NOT_RUN as observed passing
+fixture evidence, pending independent final disposition. Prior full-r2 remains
+FAIL and its normal result remains separate. No new C++/role image/rule expansion,
+real TIDL/Cynara authorization, app_fw-owned production-directory protection,
+operational DB, package/install/root bootstrap, product factory/backend/broker/
+mount, PATH or ARM gate closes. InstalledRelease15 is unchanged.
+
+
+Independent WAIT-BOUNDARY-r1 full runtime/administrative publication disposition:
+ACCEPTED for the reviewed root-writer/UID301 modeled-C and coordinator-loss
+fixture only. Accepted final-evidence08 SHA
+`7f9afdb22ed48fa843e525b6ca1f4a1837f36a33029cd8561df70cf7a2763b1e`
+is preserved. This supersedes final runtime review-pending wording, not the prior
+full-r2 FAIL or open product gates. Publish only this accurate administrative08;
+source77d5261 and installedRelease15 remain unchanged. Next is separately reviewed
+real TIDL/Cynara policy preflight, not automatic production selection or grant.
