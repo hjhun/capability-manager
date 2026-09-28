@@ -974,3 +974,34 @@ operational DB, public factory, package or production integration is in Stage A.
 The later Stage B fixed inherited recovery flock SH4, independent generation OFD
 and code3/explicit close3 mapping are a separate reviewed contract/source/runtime
 scope. No Stage A test supplies that recovery-reference or policy evidence.
+
+### Fixed recovery-reference metadata helper (standalone runtime accepted)
+
+P06 Stage B begins with an uninstalled fixture-only RecoveryReference for fixed
+FD4. It borrows the already inherited root:root0600 single-link regular journal
+lock, whose dev/ino/type/mode/access identity comes from trusted durable journal
+setup. This helper does not open/duplicate/close the reference, read its contents,
+change flock state, or infer that SH is held. It requires the actual inherited
+O_RDWR description used by JournalOwner, with non-CLOEXEC before marking and
+CLOEXEC thereafter. No ACL or inaccessible ACL metadata may be accepted. Validation
+failure and destruction never close/unlock/release the caller-owned reference.
+A failed MarkCloexec postcheck can leave CLOEXEC set; startup fails without flag
+rollback or retry as non-CLOEXEC. Fixed role
+code must retain it through library/TLS cleanup until kernel process exit, with
+no later fork/exec/Drop; this helper alone does not enforce those external paths.
+
+Pure metadata tests validate exact identity/type/ownership/mode/access and flag
+transitions. Two opt-in standalone root experiments validate real FD4 and separate
+flock description contention after helper destruction or validation failure,
+then explicit TEST-only FD4 close and EX success. Default host/CTest skips those
+root experiments unless explicitly selected with CAPMGR_RECOVERY_REFERENCE_TESTS=1;
+no privileged CTest workload is enabled by registration alone.
+
+This primitive is not the ordered stable-source spawn mapping, exact pre-load
+table, journal authority/receipt, real recovery, surviving-reader/server adopted
+child lifetime, context drop, module integration or policy fixture. Those remain
+separate exact-source and execution gates. Metadata provenance is not SH/holder/
+liveness or SQLite/catalog permission. In particular fd4 O_RDWR is retained only
+inside a trusted fixed fixture, never exposed to an application/native tool.
+Existing Stage A modes and code-image entry ABI remain unchanged. No global policy,
+group database, installed package, production factory or task authority is added.

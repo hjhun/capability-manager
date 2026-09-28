@@ -33,6 +33,15 @@ TARGET_LINK_LIBRARIES(capmgr-read-policy-context-tests PRIVATE
 )
 ADD_TEST(NAME capmgr-read-policy-context COMMAND capmgr-read-policy-context-tests)
 
+# Metadata-only default tests; root reference experiments are separately opt-in.
+ADD_EXECUTABLE(capmgr-recovery-reference-tests
+  unit/read_policy_recovery_reference_test.cc
+)
+TARGET_LINK_LIBRARIES(capmgr-recovery-reference-tests PRIVATE
+  GTest::gtest_main Threads::Threads
+)
+ADD_TEST(NAME capmgr-recovery-reference COMMAND capmgr-recovery-reference-tests)
+
 SET(CAPMGR_UNIT_TEST_SOURCES
   unit/database_test.cc
   unit/coordinated_writer_test.cc
@@ -274,6 +283,7 @@ ADD_CUSTOM_TARGET(check
   DEPENDS
     capmgr-code-image-tests
     capmgr-read-policy-context-tests
+    capmgr-recovery-reference-tests
     capmgr-unit-tests
     capmgr-c-consumer
     capmgr-adapter-tests

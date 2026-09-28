@@ -3899,3 +3899,118 @@ is separately reviewed inherited recovery-reference lifetime and actual catalog
 Authorize/Confirm/object-access integration; the private worker bootstrap/lease
 owner design is an independent development review. Publish only reviewed7;
 commit/push/exact remote verification will be reported after publication.
+
+### Platform-group publication and recovery-reference local primitive
+
+Reviewed Stage A seven-file checkpoint published as
+402b21b4dd8e5194de4b3aad9baa563c18a5d017, signed/co-authored English message checked
+before/after, commit0/push0 and exact ls-remote main equality. Worktree was clean
+and LICENSE unchanged before this next slice. InstalledRelease15 is unchanged.
+
+P06-READ-RECOVERY-REFERENCE-r1 implements only the first metadata/lifetime helper
+in accepted same-subject-object-r2 development contract. Scope is new fixture
+header read_policy_recovery_reference.hh, new unit test, test/CMakeLists and07/08.
+The fixed borrowed FD4 is not closed, duplicated, read or unlocked by the helper,
+including constructor rejection/destruction. Only trusted expected root0600 lock
+identity/access and CLOEXEC transition are checked, including no ACL; inaccessible
+metadata rejects. No role/spawn/pre-load table or actual module is wired yet.
+
+Host focused-r1/r2 each records four pure metadata tests PASS and two explicit
+standalone root-only tests SKIPPED. The r2 option requires exact environment1;
+no root experiment was executed on the host. These skips do not establish real
+root flock retention, surviving reader/server lifetime, context/label access,
+actual journal CLI or kernel-exit reference release. Full host check and source
+review are pending. Native build/tests and any root experiments are NOT_RUN and
+unapproved pending their exact source/method reviews. No policy/SQLite/role/module/
+RPC/load2/installed/production effect follows from this local helper.
+
+Owner pre-execution review found that r1's opt-in positive test unlinked the lock
+before validating it, changing nlink1 to0 and correctly causing the product
+metadata guard to reject. No root test ran and no product guard is relaxed. Test
+r2 defers unlink until after validation/destruction, TEST-only close4 and actual
+independent EX acquisition; only the test and chronological08 change. Preserve
+r1 focused skips and its original frozen manifest as historical scope, not native
+PASS. Re-run current focused/full host evidence before final source freeze.
+
+Independent r1 source review CHANGES_REQUESTED confirms the same early-unlink
+finding. Correction also verifies actual held metadata/access/flags against the
+positive baseline before corrupting only expected inode, covers held nlink0 in
+pure tests, and checks named dev/ino/root0600/single-link before unlink afterward.
+Owned/removed/retained reference-file markers make test cleanup explicit; no
+watchdog or killed-child outcome supplies test PASS. MarkCloexec documentation
+now says a failed postcheck can leave CLOEXEC set but never releases/unlocks the
+reference; startup fails with no promised flag rollback/non-CLOEXEC retry.
+Root experiments remain NOT_RUN. Current frozen r2 evidence will follow.
+
+Frozen r2 host evidence: focused-r3 four PASS/two honest root skips; full final
+host-check-r4 CTest11/11 PASS. Earlier check-r1/r2/r3 and focused-r1/r2 remain
+historical iterative evidence. Final check-r4 runs after the nlink and MarkCloexec
+wording/test corrections; no concurrent source edit occurs during that run.
+No native compilation/default/root result is inferred. Source re-review pending.
+
+### P06 recovery-reference r2 exact native standalone evidence
+
+Independent r2 local source/contract disposition: ACCEPTED, manifest
+e4099e999101667f87ce54f5567a42c028396831e20f2c0df65efcf7eae11d30.
+Original07 SHAdd22f65ce97116412ba9d790e7044cd6dc4f78b3daa701d6cf2f977de1af91fb
+and original08 SHA704934b1c75d638ba4278c7d12c079f4dda9ea9d3794182ac53844f0b7732495
+are preserved before this administrative evidence. Five-member source archive
+SHA584e83d1c68beb8f3a256415f9ebbb37c89b68d288f527368f4627dab7e5da9e.
+
+Native-build-r2 newly directly compiles the exact standalone test/header with
+GCC14 C++20/-O1/-Wall/-Wextra/-Werror against actual installed GTest; source5 before
+and after, clean ldd-r/no RPATH/RUNPATH, trusted standard/GTest dependency8,0/0.
+This is direct target compile/link, not native CMake/fullcheck/RPM. Protected
+read-recovery-reference-r2/build test image root:root0755/singlelink/noACL/no caps
+SHA35edf12e594b7d9bfbaf78d2ac6650391a2feb1ba62fef439113acbea594d56d.
+
+Outside method-r2 had a local log-path collision: the read-only preparation was
+misnamed read-platform-group-native-tests-r1.log, and execute-tests-r2 would open
+that already existing log with x and fail before test execution. Preserve that
+misnamed log/outer-r2 and independent CHANGES_REQUESTED; neither is native test
+PASS. Outer-r3 fixes only the output path to fresh read-recovery-reference-native-
+tests-r3.log. Fresh read-only native-preflight-r3 passes0/0. Independent narrow
+method-r2/outer-r3 pre-execution disposition: ACCEPTED. Fixed preflight SHA
+eea1f38fe28ff1fea7c696c7fc25fea31785faacb0eaf7863df21e3dfb60282a;
+runner a273d769b1edf4b0bdec678a9d294d19f6c8ae48cc71d6c84a23b5d180063485;
+outer f011f3c52f1b01a0f9f5b8cffe03cca60a788de3b512fc541e203ac0ed46f37b.
+
+Owner invoked execute-tests-r3.py only after that acceptance. Native-tests-r3 logs
+FIRST env-i absolute Python-I-B and installed30s/owner60s; transferred2/root0600/
+noACL/no-cap/digests, checked source-only preflight (no cached bytecode loader),
+exact source5/archive/image1/dependency8/interpreter/watchdog/protected ancestry/
+initial namespaces/ext4/no-cache before and after. Fixed opt-in environment1 and
+only six reviewed compiled cases. Actual6/6 PASS with no skips in5ms; four pure
+metadata cases plus two isolated direct-child tests. Frozen source requires actual
+normal wait/reap0 for each child, not a kill/timeout result.
+
+Actual owned and checked removed temporary references are
+/tmp/capmgr-recovery-reference-yKJcIw and /tmp/capmgr-recovery-reference-H82US0.
+No retained marker or timeout is recorded; NATIVE_REFERENCE_TEST_RETURN0,
+CAPMGR_REMOTE_EXIT0 and TRANSPORT_EXIT0. The source-enforced assertions establish
+independent-description EX exclusion after helper destruction or failed inode
+validation, then TEST-only close4 and EX success before named-identity cleanup.
+Those assertions are not separately printed raw flock/wait syscall replies.
+
+This proves helper nonclose/unlock and the explicit TEST-only release boundary,
+not inherited fixed-role mapping, post-Drop ACL availability, live reader/server
+adoption/coordinator-loss recovery, library/TLS/kernel-exit reference retention,
+actual durable journal CLI, SQLite/catalog policy, Stage B eight-rule integration
+or production authority. No role/Drop/module/RPC/load2/group/policy mutation/RPM
+or installedRelease15 change occurred. Host final CTest11/11 and focused4/two skips
+remain separate evidence. Final scoped runtime/admin publication review pending;
+earlier source/method errors and original acceptance hashes are retained.
+
+Independent final P06-READ-RECOVERY-REFERENCE-r2 standalone source/native/admin
+publication disposition: ACCEPTED for these five paths only. Accepted08 before
+this disposition/heading bookkeeping:
+43a6512e666076da5a4bf6432a5e1070c143be5aee9449c7aca475a4ac2d13bc.
+Original07/08 hashes above remain preserved; only the new07 heading changes.
+This supersedes historical pending statements for the metadata helper, not any
+actual surviving-role or policy gate. Next increment must wire the exact stable
+stdio0..2/journal4 mapping with explicit close3, fixed table and post-Drop/module
+checks, then prove real surviving-reader AND server refusal/reap release under
+separate non-policy source/method review. Worker loop lease owner/startup binding
+has its separate accepted development contract, not source/runtime acceptance.
+InstalledRelease15 and production/PATH/ARM gates are unchanged. Commit/push/exact
+remote equality will be reported separately; no overall completion is implied.
