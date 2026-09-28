@@ -253,7 +253,7 @@ int Server(const std::string& root, const std::string& endpoint,
 int Client(const std::string& endpoint, FixedRole role, bool context_only) {
   stage = "client-context-postcondition";
   Check(!context_only, "context-only must stay module-free");
-  VerifyContext(role.label, role.uid);
+  VerifyContext(role.label, role.uid, role.platform_group);
   stage = "client-registration";
   Registration registration(endpoint + ".client");
   bool positive = false;
@@ -303,12 +303,14 @@ extern "C" __attribute__((visibility("default"))) int CapmgrRealPolicyFixture(
   try {
     Check(kind_arg && root_arg && endpoint_arg && role_arg, "entry arguments");
     std::string kind(kind_arg), root(root_arg), endpoint(endpoint_arg);
-    const auto role = Role(role_arg);
+    const bool platform_group =
+        kind == "platform-server" || kind == "platform-client";
+    const auto role = Role(role_arg, platform_group);
     Check(root.starts_with("/opt/usr/capmgr-real-policy-") &&
               endpoint == "d::org.capmgr.realpolicy." +
                               std::to_string(getppid()) + "." + role.name,
           "fixed native arguments");
-    if (kind == "server") {
+    if (kind == "server" || kind == "platform-server") {
       uid_t real, effective, saved;
       gid_t rgroup, egroup, sgroup;
       Check(!getresuid(&real, &effective, &saved) && !real && !effective &&
@@ -317,7 +319,7 @@ extern "C" __attribute__((visibility("default"))) int CapmgrRealPolicyFixture(
             "never-drop root server IDs");
       return Server(root, endpoint, role);
     }
-    Check(kind == "client", "fixed native kind");
+    Check(kind == "client" || kind == "platform-client", "fixed native kind");
     return Client(endpoint, role, false);
   } catch (const std::exception& error) {
     std::cerr << "REAL_GATE_NATIVE_FAIL stage=" << stage << " " << error.what()

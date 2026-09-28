@@ -25,6 +25,14 @@ ADD_DEPENDENCIES(capmgr-code-image-tests
 )
 ADD_TEST(NAME capmgr-code-image COMMAND capmgr-code-image-tests)
 
+ADD_EXECUTABLE(capmgr-read-policy-context-tests unit/read_policy_context_test.cc)
+TARGET_LINK_LIBRARIES(capmgr-read-policy-context-tests PRIVATE
+  GTest::gtest_main
+  nlohmann_json::nlohmann_json
+  Threads::Threads
+)
+ADD_TEST(NAME capmgr-read-policy-context COMMAND capmgr-read-policy-context-tests)
+
 SET(CAPMGR_UNIT_TEST_SOURCES
   unit/database_test.cc
   unit/coordinated_writer_test.cc
@@ -265,6 +273,7 @@ ADD_CUSTOM_TARGET(check
   WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
   DEPENDS
     capmgr-code-image-tests
+    capmgr-read-policy-context-tests
     capmgr-unit-tests
     capmgr-c-consumer
     capmgr-adapter-tests

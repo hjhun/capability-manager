@@ -31,6 +31,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <span>
 #include <stdexcept>
 
 namespace capmgr::fixture::realpolicy {
@@ -45,17 +46,47 @@ struct FixedRole {
   const char* name;
   uid_t uid;
   const char* label;
+  bool platform_group = false;
 };
 constexpr std::array<FixedRole, 3> kRoles{{{"system301", 301, "System"},
                                            {"shell301", 301, "User::Shell"},
                                            {"shell1", 1, "User::Shell"}}};
-inline const FixedRole& Role(const std::string& name) {
-  for (const auto& role : kRoles)
+constexpr gid_t kPlatformGroup = 10212;
+constexpr std::array<FixedRole, 1> kPlatformRoles{
+    {{"system301-platform", 301, "System", true}}};
+inline const FixedRole& Role(const std::string& name,
+                             bool platform_group = false) {
+  const std::span<const FixedRole> roles =
+      platform_group ? std::span<const FixedRole>(kPlatformRoles)
+                     : std::span<const FixedRole>(kRoles);
+  for (const auto& role : roles)
     if (name == role.name) return role;
   throw std::runtime_error("unknown fixed role");
 }
+inline bool ExactGroups(bool platform_group, std::span<const gid_t> groups) {
+  return platform_group ? groups.size() == 1 && groups.front() == kPlatformGroup
+                        : groups.empty();
+}
+inline void RequirePlatformGroup(const char* name, gid_t gid) {
+  Check(name && std::string_view(name) == "priv_platform" &&
+            gid == kPlatformGroup,
+        "fixed priv_platform group unavailable/mismatched");
+}
+inline void PlatformGroupPreflight() {
+  // Resolve only in the never-drop trusted coordinator BEFORE scope/spawn.
+  // This does not change the image group database or pick a fallback group.
+  std::array<char, 16384> storage{};
+  struct group value{};
+  struct group* found = nullptr;
+  Check(getgrnam_r("priv_platform", &value, storage.data(), storage.size(),
+                   &found) == 0 &&
+            found,
+        "fixed priv_platform group lookup");
+  RequirePlatformGroup(found->gr_name, found->gr_gid);
+}
 inline std::string TaskLabel();
-inline void VerifyContext(const std::string& label, uid_t uid) {
+inline void VerifyContext(const std::string& label, uid_t uid,
+                          bool platform_group = false) {
   uid_t real, effective, saved;
   gid_t rgid, egid, sgid;
   Check(getresuid(&real, &effective, &saved) == 0 && real == uid &&
@@ -65,7 +96,9 @@ inline void VerifyContext(const std::string& label, uid_t uid) {
         "all role IDs");
   std::array<gid_t, 2> groups{};
   int count = getgroups(static_cast<int>(groups.size()), groups.data());
-  Check(count == 0, "exact role groups");
+  Check(count >= 0 && ExactGroups(platform_group,
+                                  std::span<const gid_t>(groups.data(), count)),
+        "exact role groups");
   __user_cap_header_struct header{_LINUX_CAPABILITY_VERSION_3, 0};
   std::array<__user_cap_data_struct, 2> data{};
   Check(syscall(SYS_capget, &header, data.data()) == 0, "capability verify");
@@ -92,7 +125,8 @@ inline std::string TaskLabel() {
   Check(!text.empty() && text.size() <= 255, "own task label bytes");
   return text;
 }
-inline void Drop(const std::string& label, uid_t uid) {
+inline void Drop(const std::string& label, uid_t uid,
+                 bool platform_group = false) {
   // Own-task fixture context only, never peer credential authority.
   int fd = open("/proc/self/attr/current", O_WRONLY | O_CLOEXEC);
   Check(fd >= 0, "own task label writer");
@@ -109,7 +143,10 @@ inline void Drop(const std::string& label, uid_t uid) {
   }
   Check(prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_CLEAR_ALL, 0, 0, 0) == 0,
         "ambient capability clear");
-  Check(setgroups(0, nullptr) == 0, "supplementary groups");
+  const gid_t group = kPlatformGroup;
+  Check(
+      setgroups(platform_group ? 1 : 0, platform_group ? &group : nullptr) == 0,
+      "supplementary groups");
   Check(setresgid(uid, uid, uid) == 0 && setresuid(uid, uid, uid) == 0,
         "role IDs drop");
   __user_cap_header_struct header{_LINUX_CAPABILITY_VERSION_3, 0};
@@ -117,7 +154,7 @@ inline void Drop(const std::string& label, uid_t uid) {
   Check(syscall(SYS_capset, &header, data.data()) == 0,
         "all capability sets clear");
   Check(prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == 0, "no new privileges");
-  VerifyContext(label, uid);
+  VerifyContext(label, uid, platform_group);
 }
 inline void OwnInitialTable(const char*& stage, int code_fd = -1) {
   // Own fixture introspection only; no peer/task authority is derived here.

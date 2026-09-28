@@ -202,17 +202,36 @@ void WriteRecord(const std::string& name, const Json& value) {
   int closed = close(fd);
   Check(!mode && !closed, "fixture record mode/close");
 }
-void Run(bool context_only) {
+void ReportContext(FixedRole role) {
+  std::cout << "REAL_GATE_VERIFIED_CONTEXT role=" << role.name
+            << " uid=" << role.uid << " gid=" << role.uid
+            << " groups=" << (role.platform_group ? "[10212]" : "[]")
+            << " caps=all-zero bounding=0 ambient=0 NNP=1 label=" << TaskLabel()
+            << std::endl;
+}
+void Run(bool context_only, bool platform_group = false) {
+  if (platform_group) {
+    stage = "fixed-platform-group-prerequisite";
+    PlatformGroupPreflight();
+    // NSS/image startup is a premise, not permission to inherit its endpoints.
+    // Refuse any changed task/FD table before creating a scope or spawning.
+    OwnInitialTable(stage);
+  }
+  stage = "fixture-scope";
   Scope scope;
   unsigned positives = 0;
-  for (const auto& role : kRoles) {
+  const std::span<const FixedRole> roles =
+      platform_group ? std::span<const FixedRole>(kPlatformRoles)
+                     : std::span<const FixedRole>(kRoles);
+  for (const auto& role : roles) {
     auto endpoint = "d::org.capmgr.realpolicy." + std::to_string(getpid()) +
                     "." + role.name;
     const auto endpoint_path =
         "/run/aul/rpcport/." + endpoint + "::CapabilityManager";
     Child server, client;
     if (!context_only) {
-      server.Start({Self(), "server", scope.path, endpoint, role.name});
+      server.Start({Self(), platform_group ? "platform-server" : "server",
+                    scope.path, endpoint, role.name});
       // Failures before the explicit drain/endpoint check cannot permit scope
       // deletion merely because a destructor subsequently killed the server.
       scope.retained = true;
@@ -244,8 +263,10 @@ void Run(bool context_only) {
       scope.retained = false;
     };
     try {
-      client.Start({Self(), context_only ? "context" : "client", scope.path,
-                    endpoint, role.name});
+      const char* kind = platform_group ? (context_only ? "platform-context"
+                                                        : "platform-client")
+                                        : (context_only ? "context" : "client");
+      client.Start({Self(), kind, scope.path, endpoint, role.name});
       client.Wait(15s);
       stop();
     } catch (...) {
@@ -292,7 +313,21 @@ void Run(bool context_only) {
   }
   scope.Cleanup();
   if (context_only) {
-    std::cout << "REAL_GATE_CONTEXT_ONLY_PASS\n";
+    std::cout << (platform_group
+                      ? "REAL_GATE_PLATFORM_GROUP_CONTEXT_ONLY_PASS\n"
+                      : "REAL_GATE_CONTEXT_ONLY_PASS\n");
+    return;
+  }
+  if (platform_group) {
+    std::cout << "REAL_GATE_PLATFORM_GROUP_DIAGNOSTIC_COMPLETE positives="
+              << positives << " operational_policy_changes=0\n";
+    std::cout << "REAL_GATE_ORIGINAL_DIFFERENT_SUBJECT_MATRIX_BLOCKED\n";
+    if (positives == 1)
+      std::cout
+          << "REAL_GATE_PLATFORM_GROUP_TUPLE_AVAILABLE_FOR_SEPARATE_OBJECT_"
+             "REVIEW\n";
+    else
+      std::cout << "REAL_GATE_PLATFORM_GROUP_NEXT_OBJECT_MATRIX_BLOCKED\n";
     return;
   }
   std::cout << "REAL_GATE_DIAGNOSTIC_COMPLETE candidate_positives=" << positives
@@ -324,39 +359,44 @@ int main(int argc, char** argv) {
       Run(argc == 2);
       return 0;
     }
+    if (argc == 2 &&
+        (std::string(argv[1]) == "--platform-group-contexts-only" ||
+         std::string(argv[1]) == "--platform-group-rpc")) {
+      Run(std::string(argv[1]) == "--platform-group-contexts-only", true);
+      return 0;
+    }
     stage = "child-arguments";
     Check(argc == 5, "fixed fixture arguments");
     std::string kind = argv[1], root = argv[2], endpoint = argv[3];
-    const auto role = Role(argv[4]);
+    const bool platform_group = kind == "platform-server" ||
+                                kind == "platform-client" ||
+                                kind == "platform-context";
+    const auto role = Role(argv[4], platform_group);
     fixture::TrustedPath(root);
     Check(root.starts_with("/opt/usr/capmgr-real-policy-") &&
               endpoint == "d::org.capmgr.realpolicy." +
                               std::to_string(getppid()) + "." + role.name,
           "fixed parent fixture arguments");
-    Check(kind == "server" || kind == "client" || kind == "context",
+    Check(kind == "server" || kind == "client" || kind == "context" ||
+              platform_group,
           "fixed child kind");
-    if (kind == "context") {
+    if (kind == "context" || kind == "platform-context") {
       stage = "client-own-context";
-      Drop(role.label, role.uid);
-      std::cout << "REAL_GATE_VERIFIED_CONTEXT role=" << role.name
-                << " uid=" << role.uid << " gid=" << role.uid
-                << " groups=[] caps=all-zero bounding=0 ambient=0 NNP=1 label="
-                << TaskLabel() << std::endl;
+      Drop(role.label, role.uid, role.platform_group);
+      ReportContext(role);
       return 0;
     }
     auto code = OpenCodeImage();
-    if (kind == "client") {
+    if (kind == "client" || kind == "platform-client") {
       stage = "client-own-context";
-      Drop(role.label, role.uid);
-      std::cout << "REAL_GATE_VERIFIED_CONTEXT role=" << role.name
-                << " uid=" << role.uid << " gid=" << role.uid
-                << " groups=[] caps=all-zero bounding=0 ambient=0 NNP=1 label="
-                << TaskLabel() << std::endl;
+      Drop(role.label, role.uid, role.platform_group);
+      ReportContext(role);
     }
     return code.Invoke(
         [&](int fd) {
           OwnInitialTable(stage, fd);
-          if (kind == "client") VerifyContext(role.label, role.uid);
+          if (kind == "client" || kind == "platform-client")
+            VerifyContext(role.label, role.uid, role.platform_group);
           stage = "fixed-module-load";
         },
         kind.c_str(), root.c_str(), endpoint.c_str(), role.name);

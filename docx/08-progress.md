@@ -105,7 +105,7 @@ real catalog admission slice. The original different-subject direct-read subset
 remains BLOCKED after the diagnostic measured only one allowed UID301 context.
 Worker generation-lifetime reader r2 source/ordinary-native/publication scope is
 ACCEPTED; actual publication is recorded separately. A separate fixed
-System301/priv_platform-group diagnostic is being implemented without new policy.
+System301/priv_platform-group diagnostic is scoped ACCEPTED with no new policy.
 Bootstrap wiring remains separate. Prior failures are preserved; installed
 Release15 and PATH-01/product gates are unchanged.
 
@@ -3735,3 +3735,167 @@ This paragraph supersedes historical pending statements, preserving their eviden
 Stage A disjoint implementation files are excluded from this publication. No
 overall completion or new production/bootstrap/policy/package gate is inferred.
 Actual commit, push and remote equality will be reported after publication.
+
+### Worker catalog lease publication and fixed platform-group source checkpoint
+
+Reviewed worker lease r2 ten-file checkpoint published as
+6b0aa46bb6a517693f400f8d3f75c292e2c96741. Commit/message/signoff checks passed,
+normal push exited0 and origin/main ls-remote equalled that exact SHA. LICENSE
+is unchanged. The disjoint platform-group fixture WIP was excluded. Installed
+Release15 and bootstrap/invalidation/executable/current-job gates remain open.
+
+P06-READ-PLATFORM-GROUP-r1 implements only Stage A of accepted development design
+same-subject-object-r2 SHA:
+eb7e9f72ddbc1a4797f968024ca4ab4397a387c480854d0afa98a4c87dced1ec.
+Source scope: test/CMakeLists, fixtures/read_policy_context.hh, integration/
+read_policy_tidl_probe.cc and read_policy_tidl_native.cc, new ordinary unit/
+read_policy_context_test.cc,07 clause and this08. The fixed new System301 role has
+only supplementary GID10212 after own drop. Name/GID mapping is read-only and
+checked in the root coordinator before scope/spawn; post-lookup own-table guard
+rejects any NSS-created task/endpoint rather than closing or admitting it. Native
+entry verifies the same tuple before registration. No operational policy, group
+database mutation, arbitrary label/group or new production authority is added.
+
+Separate fixed context-only and RPC top-level modes preserve the existing three
+empty-group paths and reject cross-route role names. New tuple availability uses
+distinct result markers and never increments the original two-subject count.
+Actual generated/default MAIN Cynara, callback validation, body/reply correlation,
+code-FD close before entry and proxy/listener/context lifetime are retained. No
+journal reference, catalog grant, SQLite or Stage B policy matrix is implemented.
+The original different-subject/direct-read subset remains BLOCKED.
+
+Host focused-r1 directly compiled and ran four ordinary fixed-role/group negatives
+and syntax-checked the minimal launcher under C++20/-Wall/-Wextra/-Werror. These
+tests check cross-route rejection, exact missing/wrong/extra/duplicate groups and
+refusal of an unavailable/mismatched image group; they do not Drop or invoke NSS.
+After adding the post-lookup guard, focused-r2 records the actual CMake test target
+four cases and the current launcher syntax. Host check-r1 CTest10/10 adds only the
+ordinary capmgr-read-policy-context target; existing nine names remain. Host
+optional native launcher/module is not built by this host configuration, and
+syntax-only is not module linking or runtime evidence.
+
+Source/07 review, exact native build/dependency audit and ordinary native4-test
+evidence are pending. Both new root context-only and actual RPC routes are
+NOT_RUN/unapproved until separately frozen binary/method reviews. No real-positive
+group tuple, permission repair, policy mutation, installed package or production
+acceptance is inferred. Stage B source remains unimplemented and needs separate
+non-policy surviving-reader/server lifetime plus full recovery/policy review.
+
+### P06 platform-group r1 native preparation and context evidence
+
+Independent exact seven-file local source/07 disposition: ACCEPTED, baseline
+6b0aa46, manifest faec51b412b06b7b50e2fec3e47271e8d1095dbae4df41605d0e540254e2325b.
+Original accepted07 SHA4029a1c74228a6ccfd8a87c98dcdfa50ed733c49b6d4379078ef160c8afed29a
+and original08 SHA0a1ff8d2cc0984f7e4227b792c9f265ef47ff1a2a0c5927d6fad7dbebfc5370a
+are preserved. Later pending statements above are chronological, not a claim that
+source acceptance itself established native success or authorized RPC execution.
+
+Owner native cache inspection found9MiB free. Only prior accepted Release15
+rpmbuild-release15/BUILD was removed after trusted ancestry/initial namespaces/
+ACL, pinned identity and no active cwd/exe checks with symlink-safe removal.
+Two source archives/four binary RPMs/SRPM hashes match before and after; sources,
+RPMs, logs, installedRelease15 and the old0777 tree are preserved. Space-r1 log
+records418544KiB available, remote0/transport0; this is environment evidence only.
+
+Exact current175 regular-file source archive SHA:
+12c092d2bcf8cc3bfc4ba674dc71f2066e888a3b06a712904fc5e4b8af6181fa.
+Fresh trusted JSON subset53 retains SHA206435af4b644e722508c0c95f63a188576c41f2d1f99623ebcc2c79a81fb108.
+Native-build-r1 fails SDB command length before remote execution, transport1;
+no compilation success is inferred. Short-transfer-map build-r2 checks inputs and
+freshly compiles the native CMake target closure, then fails its outside minimal
+closure classifier because standard libdl.so.2 was omitted. Preserve remote1/
+transport0 as FAIL. Build-r3 corrects only that outside classifier and rechecks/
+rebuilds the same targets, including generated proxy/stub and module compilation;
+it is neither a second fresh whole build nor a source amendment. Target subset
+build/audit PASS remote0/transport0, generated IDs0..9/Confirm10, real default
+Cynara/native entry symbols, clean ldd-r, no RPATH/RUNPATH, standard runtime/dl-only
+launcher startup closure and pinned53 resolved dependencies. No native CTest,
+helper/context/RPC or package result follows from those build logs alone.
+
+Final CMake artifacts at protected read-platform-group-r1/build are root:root0755,
+singlelink/noACL/no filecaps: launcher
+4eb5f412aa0e10fbb054a1d1b5b196f55ddcc5b5aabf558d3806736219d0af87;
+module eb4dbd3e13613343b6b7d54a35220ebb02d315cf6d8b8ee6de004e21b786ce0a;
+ordinary helper c60430bf244f7eb849d390ac6277861235217064a5825430358fb37a9997b24c.
+Readonly preflight-r1 passed source175/JSON53/images3/dependencies53/interpreter/
+watchdog/protected ancestry/initial namespaces/ext4/no-cache, remote0/transport0.
+Trusted /etc/group and NSS configuration hashes are logged inputs, not lookup,
+Drop or authorization evidence. No image configuration/group database was changed.
+
+Independent METHOD-r1 pre-execution disposition: ACCEPTED for helper4 first,
+context-only only after success. Owner invoked the frozen execute-r1.py helpers
+and then contexts; each log prints the exact FIRST env-i absolute Python-I-B
+verifier, transferred method3 root0600/hash/noACL/no-cap, clean inherited
+no-bytecode environment and immediate/pre/post preflight. Installed watchdog30s/
+owner60s for helpers,60s/90s for contexts. Native-helpers-r1 actual4/4 PASS and
+PLATFORM_GROUP_HELPERS_ONLY_RETURN0, remote0/transport0. These are pure helper
+assertions; they do not invoke NSS, Drop, module, registration or SQLite.
+
+Native-contexts-r1 logs the exact verified System UID/GID301, groups[10212],
+allcaps/bounding/ambient0, NNP1 labelSystem. Frozen source requires the preceding
+getgrnam_r mapping/post-NSS task/FD check and actual owned normal child completion;
+those are source-enforced conditions, not separately printed syscall replies.
+REMOVED_SCOPE=/opt/usr/capmgr-real-policy-Hg0IhO precedes dedicated
+REAL_GATE_PLATFORM_GROUP_CONTEXT_ONLY_PASS, context return0/remote0/transport0.
+This route never opens/loads the native module. No timeout or retained marker is
+recorded. Native helper/context runtime/publication review remains pending.
+
+Separate RPC-method-r1 now freezes common preflight plus fixed RPC runner and
+FIRST cleanenv outer executor under120s/150s. Readonly native-rpc-preflight-r1
+passes transferred2/provenance/immediate preflight0/transport0 only. Actual
+--platform-group-rpc remains NOT_RUN until separate pre-execution acceptance.
+No context success implies its authorization result. Original different-subject/
+direct-read subset remains BLOCKED; catalog/Authorize/Confirm, SQLite, recovery
+reference, load2, Stage B, production and package gates remain open. Existing
+installedRelease15 is unchanged. Raw evidence is outside Git under
+/tmp/capmgr-evidence/read-platform-group-*.log.
+
+### P06 platform-group r1 actual RPC diagnostic (scoped ACCEPTED)
+
+Independent helper/context runtime disposition: ACCEPTED for the narrow context
+prerequisite. Separate RPC-METHOD-r1 pre-execution safety disposition: ACCEPTED
+for fixed --platform-group-rpc only. Owner invoked execute-rpc-r1.py with installed
+120s watchdog/owner150s; native-rpc-r1 prints the exact FIRST env-i absolute
+Python-I-B command, transferred2 root0600/hash/noACL/no-cap checks and immediate/
+pre/post source175/JSON53/images3/dependencies53/interpreter/watchdog/NSS metadata/
+initial namespaces/ext4/no-cache validation. No source/image update or context,
+label, policy, NSS or permission repair occurred.
+
+Actual verified System UID/GID301/groups[10212]/zero caps/bounding/ambient/NNP1
+client PID3064944 matches the server body rawUID/GID301/socket_labelSystem/token
+system301-platform:3064944, cancel_calls1/other_calls0. Client logs actual result-6;
+frozen source requires exit10 and owned PID/body equality before counting the
+positive. REAL_GATE_SERVER_DRAINED cancel1/rejected_bind0 and correlated positive
+are followed by REMOVED_SCOPE=/opt/usr/capmgr-real-policy-3HgHvk before dedicated
+platform-group diagnostic completion positives1. Source also requires actual
+normal known client/server exits and own endpoint absence; those are enforced
+conditions rather than separately printed wait/syscall replies. Diagnostic return0,
+CAPMGR_REMOTE_EXIT0 and TRANSPORT_EXIT0; no timeout/retained marker recorded.
+
+This is the measured default/generated real MAIN+callback Cancel availability
+route for the fixed new tuple; no AuthorizeCatalog/ConfirmCatalog grant, actual
+catalog C create, direct file/SQLite permission matrix or production authority
+was tested. The tuple is available only as a prerequisite for a separately
+reviewed same-subject/fresh-object increment. The original different-subject/
+direct-read-subset gate is explicitly still BLOCKED. Stage B recovery FD4,
+eight-rule scenario/recovery, reader/server surviving-reference tests, production
+policy/app_fw-owned directory protection, task authority, package/install and
+ARM remain separate. InstalledRelease15 is unchanged.
+
+Exact code and07 remain frozen against the original r1 manifest; only08 has this
+chronological administrative evidence appended. Final scoped runtime/08 publication
+review is pending. Preserve original07/08 hashes recorded above and all failed
+build/transport/audit attempts. No overall completion signal follows.
+
+Independent final P06-READ-PLATFORM-GROUP-r1 Stage A source/runtime/administrative
+publication disposition: ACCEPTED for these seven paths only. Accepted08 before
+this disposition and heading/Next bookkeeping:
+23e58e991c0d340133148760c75a063624d208e1758a2b29101b196d8aeed337.
+Original07/08 hashes above remain preserved; only the new07 heading changes.
+This final disposition supersedes historical pending/NOT_RUN statements for
+Stage A. The measured new-tuple prerequisite does not close the original
+DIFFERENT-subject gate or any catalog/object-policy/production gate. Next work
+is separately reviewed inherited recovery-reference lifetime and actual catalog
+Authorize/Confirm/object-access integration; the private worker bootstrap/lease
+owner design is an independent development review. Publish only reviewed7;
+commit/push/exact remote verification will be reported after publication.

@@ -942,3 +942,35 @@ this lease through closed admission, CanExitCleanly/output drain and owned-child
 cleanup; Quiescent alone and local flush are not frontend durable receipt. Clone
 initially inherits FDs; nondelegation must be proved AFTER NamespaceInit's existing
 close-extras boundary before credential transition and again in the CLI.
+
+### Fixed platform-group real-policy diagnostic (scoped runtime accepted)
+
+P06 Stage A adds a separate build-only System UID/GID301 fixture context with
+exactly supplementary GID10212. The trusted never-drop coordinator resolves the
+existing priv_platform name and requires that fixed mapping before any scope or
+spawn, then repeats its exact one-task/stdio table check. There is no group-database
+write, alternate group or permission repair. Each fresh client sets the one fixed
+group while privileged and verifies all IDs/groups/label/cap sets/bounding/ambient/
+NNP before platform loading, immediately before dlopen and at native entry before
+registration. Child paths use the numeric constant and do not perform NSS lookup
+after Drop. Trusted image/NSS/loader configuration remains a prerequisite.
+
+Separate --platform-group-contexts-only and --platform-group-rpc routes select only
+system301-platform. Existing no-argument/--contexts-only routes keep the same three
+empty-group roles; cross-route role selection rejects. Context-only never opens
+the platform module. The real RPC route retains unchanged generated MAIN/callback
+checks, default all-UID MAIN Cynara and body/owned-PID/rawUID/GID/SMACK/token
+correlation with actual client -6/exit10. It creates no catalog grant or job and
+does not claim cancellation success. Generic exceptions are NOT_PROVED, not an
+observed Cynara ACCESS_DENIED decision. Private proxy/context/listener lifetime,
+mapping retention, owned child exits, server drain/endpoint absence and checked
+scope cleanup remain unchanged.
+
+A measured positive of this new tuple is required before the later same-subject/
+fresh-object catalog slice; an empty-group positive cannot substitute. The new
+result must not increase the original different-subject positive count or close
+the BLOCKED direct-read subset. No journal FD, catalog/SQLite, policy/load2,
+operational DB, public factory, package or production integration is in Stage A.
+The later Stage B fixed inherited recovery flock SH4, independent generation OFD
+and code3/explicit close3 mapping are a separate reviewed contract/source/runtime
+scope. No Stage A test supplies that recovery-reference or policy evidence.
