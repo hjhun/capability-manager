@@ -92,6 +92,45 @@ IF(CAPMGR_REQUIRE_CYNARA)
 ENDIF()
 
 ## Explicit development probes; privileged workloads are not CTest registrations.
+ADD_EXECUTABLE(capmgr-read-policy-role
+  integration/read_policy_role.cc
+  ${CAPMGR_API_SOURCES}
+)
+TARGET_INCLUDE_DIRECTORIES(capmgr-read-policy-role PRIVATE
+  "${PROJECT_SOURCE_DIR}/src"
+  "${PROJECT_SOURCE_DIR}/src/api"
+)
+TARGET_LINK_LIBRARIES(capmgr-read-policy-role PRIVATE
+  capmgr-adapters
+  Threads::Threads
+)
+# Build-only fixture: no install, policy scriptlet or privileged CTest command.
+ADD_CUSTOM_COMMAND(TARGET capmgr-read-policy-role POST_BUILD
+  COMMAND chmod 0755 $<TARGET_FILE:capmgr-read-policy-role>
+  VERBATIM
+)
+# Enumeration faults are linked only into distinct fixed test images.
+FOREACH(SCAN task fd)
+  SET(SCAN_TARGET "capmgr-read-policy-${SCAN}-scan-failure")
+  ADD_EXECUTABLE(${SCAN_TARGET}
+    integration/read_policy_role.cc
+    fixtures/read_policy_scan_failure.cc
+    ${CAPMGR_API_SOURCES}
+  )
+  TARGET_INCLUDE_DIRECTORIES(${SCAN_TARGET} PRIVATE
+    "${PROJECT_SOURCE_DIR}/src"
+    "${PROJECT_SOURCE_DIR}/src/api"
+  )
+  TARGET_LINK_LIBRARIES(${SCAN_TARGET} PRIVATE capmgr-adapters Threads::Threads)
+  TARGET_LINK_OPTIONS(${SCAN_TARGET} PRIVATE "LINKER:--wrap=readdir")
+  IF(SCAN STREQUAL "task")
+    TARGET_COMPILE_DEFINITIONS(${SCAN_TARGET} PRIVATE CAPMGR_FAIL_TASK_SCAN)
+  ENDIF()
+  ADD_CUSTOM_COMMAND(TARGET ${SCAN_TARGET} POST_BUILD
+    COMMAND chmod 0755 $<TARGET_FILE:${SCAN_TARGET}>
+    VERBATIM
+  )
+ENDFOREACH()
 ADD_EXECUTABLE(capmgr-namespace-probe integration/namespace_probe.cc)
 TARGET_LINK_LIBRARIES(capmgr-namespace-probe PRIVATE capmgr-adapters)
 ADD_EXECUTABLE(capmgr-worker-probe integration/worker_probe.cc)
@@ -171,6 +210,10 @@ ADD_TEST(NAME capmgr-verification-tools
   COMMAND "${Python3_EXECUTABLE}" -m unittest discover
     -s "${CMAKE_CURRENT_SOURCE_DIR}/tools" -p "*_test.py"
 )
+SET_TESTS_PROPERTIES(capmgr-verification-tools PROPERTIES
+  ENVIRONMENT
+    "CAPMGR_READ_POLICY_ROLE_IMAGE=$<TARGET_FILE:capmgr-read-policy-role>;CAPMGR_READ_POLICY_TASK_FAILURE_IMAGE=$<TARGET_FILE:capmgr-read-policy-task-scan-failure>;CAPMGR_READ_POLICY_FD_FAILURE_IMAGE=$<TARGET_FILE:capmgr-read-policy-fd-scan-failure>"
+)
 ADD_TEST(NAME capmgr-offline-package
   COMMAND "${Python3_EXECUTABLE}"
     "${CMAKE_CURRENT_SOURCE_DIR}/integration/package_tool_test.py"
@@ -198,5 +241,8 @@ ADD_CUSTOM_TARGET(check
     capmgr-worker-spawn-failure-tests
     capmgr-bootstrap-probe
     capmgr-bootstrap-context-probe
+    capmgr-read-policy-role
+    capmgr-read-policy-task-scan-failure
+    capmgr-read-policy-fd-scan-failure
   USES_TERMINAL
 )

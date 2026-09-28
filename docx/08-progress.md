@@ -2500,3 +2500,136 @@ cd017db0d0e97aa8d017be938a9a58a66164f2de79991158ea306ca78caf7544 is preserved.
 The r2 bytecode-selection finding is CLOSED by source-only loading; previous
 pending states are chronological and superseded. Actual real-rule recovery,
 fixed-role/provisioning and root policy execution remain separate unaccepted gates.
+
+### P06-READ-POLICY-ROLES-r1 — private fixed-role transport (review pending)
+
+Owner w1:pJ implemented a build-only `capmgr-read-policy-role` image and a private
+single-threaded Python coordinator transport. This is the next local slice after
+recovery checkpoint `5728f81973be1f0e083782633ce7d658b5615b0e`; no fixture policy
+write, root credential-drop role execution, operational DB or package is enabled.
+The full provisioning/matrix orchestrator and real-journal crash/recovery remain
+unimplemented and require separate frozen safety review before `load2` writes.
+
+The parent owns no SQLite state. Each preallocated Role retains positive returned
+PID ownership before handshake/logging, or marks an ambiguous spawn outcome as
+uncertain. Stable source duplicates >=6 precede the final single-thread FD
+snapshot; signal handlers are blocked across that snapshot and spawn/PID recording.
+Ordered mappings establish null stdio, command FD3, status FD4 and the inherited
+journal SH reference FD5. All other descriptors close in the child. The fixed C++
+image refuses missing/extra/aliased/wrong-direction endpoints before setup/SQLite;
+it never writes diagnostics to FD4 until the complete table is validated.
+Recovery SH is close-only and retained through process exit. ECHILD disables
+signaling; ESRCH is not absence proof. Unknown spawn/cleanup must retain the journal,
+scope and rules and cannot produce PASS or automatic recovery.
+
+The root writer owns coordinated SQLite and issuer leases in its separate process;
+UID301 reader commands use real leases/local C queries with explicitly modeled
+Authorize/Confirm/Finish. The fixed image has no arbitrary executable, UID, path,
+policy-rule or production backend command. Root-writer ownership and injected
+handoff are narrower than a production app_fw writer, TIDL or Cynara result.
+Full context/ancestor/control-pipe and real object-label checks precede causal
+DAC/MAC interpretation. Same-label denied-MAC is directory-admission/direct-file
+veto, not a claim that SQLite ran. Actual native role/matrix results are NOT_RUN.
+
+Host `read-policy-roles-host-build-r2.log` builds the image. Focused host
+`read-policy-roles-host-tests-r5.log` runs 16 transport/table tests: 15 PASS and one
+explicit root-owned-journal positive-table skip. Fake-image closed stdio/high FD,
+partial writes/deadlines, inherited SH, unknown spawn, ECHILD/ESRCH and actual fixed
+image invalid table guards are covered without changing IDs/labels or opening
+SQLite. The first focused attempt retained a child-only response writer in the
+parent, hiding child EOF until timeout; `host-tests-r1.log` FAIL is preserved.
+The fix closes child-only pipe ends before handshake; r2 transport10/10 PASS.
+`host-tests-r3.log` correctly refuses the non-root journal in the positive fixed
+image setup and is preserved; r4/r5 report that root-only case honestly as skipped.
+`read-policy-roles-host-check-r1.log` CTest8/8 PASS includes these local guards,
+not privileged execution. Exact native compilation/guard-only tests and independent
+source disposition remain pending. Global policy, real C admission under labels,
+recovery CLI on an actual journal and production/direct-open gates stay open.
+
+
+READ-POLICY-ROLES-r1 source review requested two corrections; it was not accepted.
+Task/FD enumeration must distinguish readdir error from EOF, and a perpetually
+writable partial/EAGAIN sender must still enforce the absolute deadline. r2 clears
+errno per readdir, rejects incomplete scans/closedir failure before any FD4
+message, and adds two distinct test-only GNU ld wrapped fixed images injecting EIO
+after one task/all six expected FD entries. The normal image has no failure seam.
+Send checks remaining time before select and again before each write; three new
+ready/partial/EAGAIN and retained-owner regressions cover the finding.
+
+The historical r1 compile-only native attempt at protected read-policy-roles-r1
+matched5/5 source and75 unchanged accepted core files, reused pinned accepted
+Release15 catalog/adapter archives and compiled the new role/API files successfully
+(remote0/transport0). It executed no role or policy and does not supersede source
+CHANGES_REQUESTED. r2 host `read-policy-roles-host-check-r3.log` CTest8/8 and
+focused `read-policy-roles-host-tests-r6.log`21 cases (20 PASS/1 root-positive table
+skip) pass. Guard-only native execution remains NOT_RUN pending exact corrected
+archive/image/protected-path review. Neither revision proves real label context,
+causal C admission, policy writes or actual real-journal CLI recovery.
+
+
+READ-POLICY-ROLES-r2 source findings were independently closed. Native guard-only
+method-r2 was revised before execution because nested Python lacked inherited
+bytecode suppression and the repeated path audit omitted build itself. Accepted
+method-r3 propagates PYTHONDONTWRITEBYTECODE=1, retains -B, audits build/source
+ancestors and exact source files, and refuses any cache before/after. The bounded
+native guard attempt `read-policy-roles-native-guards-r2.log` matched source6/6,
+method2/2 and all three binaries/protected metadata both before and after. It ran
+21 tests: 19 PASS and two FAIL, remote1/transport0; no writer/reader setup, SQLite
+or policy executed. Both injected EIO enumeration guards and normal valid-table
+invalid-role refusal passed. Closed-stdio driver exit120 and the4KiB byte-limit
+case reaching its incidental100ms deadline are preserved as fixture failures.
+
+The r3 amendment changes tests only: the closed-stdio driver sends the bounded exit
+RPC without logging through stale Python stdio, verifies actual child exit/reap,
+closes its Role/journal descriptors and then _exit(0); it cannot bypass child proof.
+The4KiB byte-limit case gets2s for native one-byte processing; its separate50ms
+partial-frame deadline and always-ready/partial/EAGAIN absolute-budget tests are
+unchanged. Host focused-r7 runs21 cases20PASS/1 explicit root-only skip; full
+`read-policy-roles-host-check-r4.log` CTest8/8 PASS. Four other code/build files are
+byte-identical to accepted r2 source. Native r3 guard-only rerun is NOT_RUN pending
+revised exact archive/method/protected path safety review. No fixture/root policy,
+real-journal CLI recovery or production acceptance is inferred.
+
+Final r3 host tests-r8 and check-r5 repeat the21-case (20PASS/1skip) and CTest8/8
+results on the final test bytes: only the4096-byte size case uses2s; EOF/duplicate
+cases retain100ms and independent absolute deadline regressions remain unchanged.
+
+
+### P06-READ-POLICY-ROLES-r3 — native guard evidence (ACCEPTED)
+
+The independently accepted r3 source/guard-only pre-execution manifest6/6 has
+original08 SHA `5ab39d5aff080876513b2af8eb1837e643d7b2a719c8fa84c0c313079fc20533`; its archive SHA is
+`eca2a2bbb6763ba532a757b98184a1d7b9ef2e3fccf3b4468018562296cd7091`.
+Runtime `read-policy-roles-native-guards-r3.log` records actual owner SDB invocation
+with outer90s, transferred method2/2 assertions, protected root600 method files,
+installed hash-checked60s watchdog and fixed clean environment including inherited
+PYTHONDONTWRITEBYTECODE=1/-B. Exact source6/6 and archive/protected ancestry,
+initial namespaces/ext4/no-cache checks precede and follow execution.
+
+All21 native tests PASS without skips, including both injected readdir-EIO errors,
+valid-table invalid-role refusal before Drop/SQLite, corrupt table/regularFD4
+non-write, closed stdio/high sentinel, inherited SH lifetime, ambiguous spawn and
+ECHILD/ESRCH bookkeeping, partial-frame/always-ready/EAGAIN deadlines and actual
+owned child reaps. Three identical reviewed images were copied into the new r3
+scope, not freshly compiled: normal9be1b39f9c2f67309cb21a5bd25c46162a2f680199c6a7d312a7f23a6f090be4,
+task1055c866c2cbe29dde45b6f961c595a1ecea13beff0ade09a94c5e010d286ad9,
+FD b5e2b20d232de2185219f86273477c859fdb8bf68cb1c9252b4053152244a5a8.
+Post-run preflight and guard return0, remote0/transport0, no timeout/unknown actual
+child or cache mutation was observed. Earlier r2 native19PASS/2FAIL remains FAIL.
+This supersedes only the historical r3 guard-runtime NOT_RUN statement.
+
+No real root-writer/UID301 context-drop, SQLite workload, provisioning/load2,
+real-journal recovery, TIDL/Cynara authorization, package/install or production
+admission follows. Full causal matrix/crash-route remain separate development and
+pre-execution gates. InstalledRelease15 and previous product gates are unchanged.
+Next: implement/freeze normal matrix and refusal-only crash/recovery safety
+scope after publishing this accepted local source/guard checkpoint. No policy write may precede that separate exact fixture review.
+
+
+Independent final READ-POLICY-ROLES-r3 disposition: ACCEPTED for reviewed five
+source/build/test files plus administrative08. Original reviewed08
+`80d1207034f4344a35af945594f96e7a8d4638d38045e32f053092e93d71e0dd`
+and earlier source08 hash are preserved above. Native21/21 and exact method,
+pre/post checks, cleanup/exit evidence close only the private guard checkpoint;
+full normal-role/policy/crash/recovery/package and production gates remain open.
+Only pending heading/Next and this disposition were changed after that review.
