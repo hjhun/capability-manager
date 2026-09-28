@@ -151,7 +151,8 @@ class Barrier(unittest.TestCase):
 
 class CrashOwnership(unittest.TestCase):
     """Exercise the actual orchestrator with no fork/FD/filesystem/policy IO."""
-    def run_fixture(self, rosters, child_fault=None, assertion_error=None):
+    def run_fixture(self, boundaries, child_fault=None, assertion_error=None,
+                    setup_error=None):
         records = []
         class FakeChild:
             def __init__(self):
@@ -191,7 +192,8 @@ class CrashOwnership(unittest.TestCase):
             ready, {'stage':'held','pid':200},
             {'stage':'first-write-complete','rows':1}]))
         children = types.SimpleNamespace(OwnedChild=FakeChild,
-                                         enable_subreaper=Mock())
+            prepare_wait_boundaries=Mock(side_effect=setup_error),
+            require_no_children=Mock(side_effect=boundaries))
         output = io.StringIO()
         with contextlib.ExitStack() as stack:
             stack.enter_context(contextlib.redirect_stdout(output))
@@ -200,7 +202,6 @@ class CrashOwnership(unittest.TestCase):
                 stack.enter_context(patch.object(probe, name, value, create=True))
             for target, attribute, kwargs in [
                 (probe, 'dependencies', {}), (probe, 'executable', {}),
-                (probe, 'own_child_roster', {'side_effect':rosters}),
                 (probe, 'receipt_snapshot', {'return_value':{'plan.json':b'fixed'}}),
                 (probe, 'journal_cli', {'side_effect':assertion_error}),
                 (probe, 'real_recovery', {}),
@@ -216,48 +217,62 @@ class CrashOwnership(unittest.TestCase):
             ]:
                 stack.enter_context(patch.object(target, attribute, **kwargs))
             recovery_call = probe.real_recovery
-            roster_call = probe.own_child_roster
+            boundary_call = children.require_no_children
+            fork_call = probe.os.fork
             error = None
             try:
                 probe.run_crash()
             except BaseException as caught:
                 error = caught
-        return output.getvalue(), error, recovery_call, roster_call, records
+        return output.getvalue(), error, recovery_call, boundary_call, records, fork_call
 
-    def test_unexpected_extra_then_empty_at_every_inventory_boundary(self):
-        normal = [set(), {200}, {200}, set(), set()]
-        for boundary in range(len(normal)):
+    def test_unexpected_child_then_echild_at_each_empty_boundary(self):
+        for boundary in range(3):
             with self.subTest(boundary=boundary):
-                rosters = normal[:boundary]+[normal[boundary] | {201}, set()]
-                output, error, recover, roster, records = self.run_fixture(rosters)
+                outcomes = [None]*boundary+[RuntimeError('child absence not proved'),None]
+                output, error, recover, empty, records, fork = self.run_fixture(outcomes)
                 self.assertIsInstance(error, RuntimeError)
                 recover.assert_not_called()
                 self.assertNotIn('REMOVED_SCOPE=', output)
                 self.assertNotIn('_PASS', output)
-                if boundary in (1,2,3):
-                    self.assertEqual(roster.call_count, boundary+2)
+                if boundary == 0:
+                    fork.assert_not_called()
+                    self.assertEqual(records, [])
+                else:
+                    self.assertEqual(empty.call_count, 3)
                     self.assertTrue(all(r.status is not None for r in records))
                     self.assertIn('independent recovery required', output)
 
-    def test_inventory_read_failure_then_empty_cannot_restore_eligibility(self):
-        normal = [set(), {200}, {200}, set(), set()]
-        for boundary in range(len(normal)):
-            with self.subTest(boundary=boundary):
-                rosters = normal[:boundary]+[OSError('injected roster read error'), set()]
-                output, error, recover, roster, records = self.run_fixture(rosters)
-                self.assertIsNotNone(error)
-                recover.assert_not_called()
-                self.assertNotIn('REMOVED_SCOPE=', output)
-                self.assertNotIn('_PASS', output)
-                if boundary in (1,2,3):
-                    self.assertEqual(roster.call_count, boundary+2)
-                    self.assertTrue(all(r.status is not None for r in records))
+    def test_empty_boundary_error_then_echild_cannot_restore_eligibility(self):
+        for boundary in range(3):
+            for fault in (InterruptedError('injected EINTR'), OSError('unknown wait error')):
+                with self.subTest(boundary=boundary, fault=fault):
+                    outcomes = [None]*boundary+[fault,None]
+                    output, error, recover, empty, records, fork = self.run_fixture(outcomes)
+                    self.assertIsNotNone(error)
+                    recover.assert_not_called()
+                    self.assertNotIn('REMOVED_SCOPE=', output)
+                    self.assertNotIn('_PASS', output)
+                    if boundary == 0:
+                        fork.assert_not_called()
+                    else:
+                        self.assertEqual(empty.call_count, 3)
+                        self.assertTrue(all(r.status is not None for r in records))
+
+    def test_setup_failure_precedes_pipes_fork_and_empty_boundary(self):
+        output, error, recover, empty, records, fork = self.run_fixture(
+            [], setup_error=RuntimeError('fixture wait setup failed'))
+        self.assertIsInstance(error, RuntimeError)
+        fork.assert_not_called()
+        empty.assert_not_called()
+        self.assertEqual(records, [])
+        recover.assert_not_called()
+        self.assertNotIn('_PASS', output)
 
     def test_adoption_and_ownership_loss_remain_sticky_after_known_cleanup(self):
-        for fault, rosters in [('adoption', [set(),{200},set()]),
-                              ('observation', [set(),{200},set()])]:
+        for fault in ('adoption', 'observation'):
             with self.subTest(fault=fault):
-                output, error, recover, _, records = self.run_fixture(rosters, fault)
+                output, error, recover, _, records, _ = self.run_fixture([None,None], fault)
                 self.assertIsInstance(error, RuntimeError)
                 self.assertTrue(all(r.status is not None and not r.uncertain
                                     for r in records))
@@ -266,8 +281,8 @@ class CrashOwnership(unittest.TestCase):
                 self.assertNotIn('_PASS', output)
 
     def test_functional_assertion_failure_with_intact_ownership_can_recover(self):
-        output, error, recover, _, records = self.run_fixture(
-            [set(),{200},set()], assertion_error=RuntimeError('CLI assertion failed'))
+        output, error, recover, _, records, _ = self.run_fixture(
+            [None,None], assertion_error=RuntimeError('CLI assertion failed'))
         self.assertIsInstance(error, RuntimeError)
         self.assertTrue(all(r.status is not None for r in records))
         self.assertEqual(recover.call_count, 2)
@@ -275,14 +290,31 @@ class CrashOwnership(unittest.TestCase):
         self.assertNotIn('_PASS', output)
 
     def test_normal_flow_requires_known_cleanup_before_two_recoveries_and_pass(self):
-        output, error, recover, roster, records = self.run_fixture(
-            [set(),{200},{200},set(),set()])
+        output, error, recover, empty, records, _ = self.run_fixture([None,None,None])
         self.assertIsNone(error)
         self.assertEqual(recover.call_count, 2)
-        self.assertEqual(roster.call_count, 5)
+        self.assertEqual(empty.call_count, 3)
         self.assertTrue(all(r.status == -probe.signal.SIGKILL for r in records))
+        self.assertEqual(output.count('OWNED_CHILD_REAP='), 2)
+        self.assertEqual(output.count('OWNED_CHILD_NONEXIT='), 2)
+        self.assertLess(output.index('"phase": "before-assertion"'),
+                        output.index('"phase": "after-assertion"'))
         self.assertLess(output.index('REMOVED_SCOPE='),
                         output.index('READ_POLICY_COORDINATOR_LOSS_RECOVERY_PASS'))
+
+
+class ContextObservation(unittest.TestCase):
+    def test_only_validated_context_is_printed(self):
+        reply = {'stage':'writer-context','label':'fixture-writer',
+                 'scope':'root-writer-only'}
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            probe.context(reply, 'key', 'writer', 'fixture-writer')
+        self.assertIn('ROLE_CONTEXT=', output.getvalue())
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), self.assertRaises(RuntimeError):
+            probe.context(reply, 'key', 'writer', 'wrong-label')
+        self.assertEqual(output.getvalue(), '')
 
 
 if __name__ == '__main__':

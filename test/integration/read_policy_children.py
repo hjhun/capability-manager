@@ -6,8 +6,10 @@ waiter may use these records. A reported PID alone never grants signaling author
 No task credentials, identity or liveness is inferred from procfs or flock.
 """
 import ctypes
+import errno
 import os
 import signal
+import sysconfig
 import time
 
 
@@ -24,6 +26,42 @@ def enable_subreaper():
     observed = ctypes.c_int()
     require(libc.prctl(37, ctypes.byref(observed), 0, 0, 0) == 0 and
             observed.value == 1, 'verify fixture child subreaper')
+
+
+def prepare_wait_boundaries():
+    """Own single-thread trusted POSIX CPython setup before crash journal/fork.
+
+    getsignal alone does not query SA_NOCLDWAIT. The explicit reset relies on
+    trusted HAVE_SIGACTION CPython PyOS_setsig setting sa_flags=0. Actual native
+    live/zombie retention checks are separate evidence, not source provenance.
+    """
+    require(len(os.listdir('/proc/self/task')) == 1,
+            'single-thread fixture wait setup')
+    require(sysconfig.get_config_var('HAVE_SIGACTION') == 1,
+            'trusted POSIX CPython sigaction required')
+    require(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
+            'default SIGCHLD/exclusive waiter required')
+    prior = signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+    require(prior == signal.SIG_DFL and
+            signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
+            'reset fixture default SIGCHLD')
+    enable_subreaper()
+
+
+def require_no_children():
+    """ECHILD-only ordinary-SIGCHLD absence barrier; never reap P_ALL results.
+
+    Requires prepared default SIGCHLD/no SA_NOCLDWAIT, exclusive waiter and the
+    closed fixture fork topology. None does not enumerate/exclude live children.
+    This is not a general descendant/clone/namespace or peer identity proof.
+    """
+    try:
+        observed = os.waitid(os.P_ALL, 0, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+    except OSError as error:
+        if error.errno == errno.ECHILD:
+            return
+        raise
+    raise RuntimeError('ordinary-child absence not proved: '+repr(observed))
 
 
 class OwnedChild:

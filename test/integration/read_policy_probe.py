@@ -155,6 +155,7 @@ def context(reply, key, role, writer_label):
     if role == 'writer':
         require(reply == {'stage':'writer-context','label':writer_label,
                           'scope':'root-writer-only'}, 'root writer context mismatch')
+        print('ROLE_CONTEXT='+json.dumps(reply, sort_keys=True), flush=True)
         return
     labels = recovery.label_names(key)
     require(reply == {'stage':'context','role':role,'uid':301,'gid':301,
@@ -162,6 +163,7 @@ def context(reply, key, role, writer_label):
                       'caps':'all-zero','NNP':1,
                       'label':labels['Denied' if role == 'denied-mac' else 'Allowed']},
             'full fixed reader context mismatch')
+    print('ROLE_CONTEXT='+json.dumps(reply, sort_keys=True), flush=True)
 
 
 def executable(path):
@@ -354,19 +356,6 @@ def run_matrix():
 # normal/crash supervisor and explicit pre-policy review request.
 
 
-def own_child_roster():
-    # Own fixture child inventory only, not untrusted peer credentials or signal
-    # authority. waitid of the exact adopted PID remains the kernel proof.
-    require(len(list(Path('/proc/self/task').iterdir())) == 1,
-            'single-thread fixture supervisor')
-    data = Path('/proc/self/task/'+str(os.getpid())+'/children').read_bytes()
-    require(len(data) <= 4096, 'own child inventory limit')
-    parts = data.split()
-    require(all(x.isdigit() and int(x) > 0 for x in parts) and
-            len(set(parts)) == len(parts), 'own child inventory malformed')
-    return {int(x) for x in parts}
-
-
 def crash_coordinator(command, status, key, image):
     """Fixed child creates journal after fork; supervisor inherits no SH."""
     scope = recovery.PARENT/(recovery.PREFIX+key)
@@ -427,19 +416,16 @@ def receipt_snapshot(journal):
 
 
 class RecoveryEligibility:
-    """Sticky ownership proof loss; later empty inventories cannot restore it."""
+    """Sticky proof loss; later ECHILD or known cleanup cannot restore it."""
     def __init__(self):
         self.eligible = True
 
-    def inventory(self, expected, cause):
+    def require_empty(self):
         try:
-            observed = own_child_roster()
+            children.require_no_children()
         except BaseException:
             self.eligible = False
             raise
-        if observed != expected:
-            self.eligible = False
-            raise RuntimeError(cause)
 
     def record_uncertainty(self, *records):
         if any(record.uncertain for record in records):
@@ -450,8 +436,8 @@ def run_crash():
     dependencies()
     require(os.getresuid()==(0,0,0) and os.getresgid()==(0,0,0), 'root fixture IDs')
     ownership = RecoveryEligibility()
-    ownership.inventory(set(), 'unexpected initial fixture child')
-    children.enable_subreaper()
+    children.prepare_wait_boundaries()
+    ownership.require_empty()
     image = Path(__file__).absolute().parents[3]/'build/capmgr-read-policy-role'
     executable(image)
     executable(Path(sys.executable).resolve())
@@ -500,20 +486,29 @@ def run_crash():
                 'first actual load2 write barrier')
         require(coordinator.kill_and_wait(5) == -signal.SIGKILL,
                 'coordinator signalled exit not confirmed')
-        ownership.inventory({reported_pid}, 'unexpected adopted descendants')
+        print('OWNED_CHILD_REAP='+json.dumps({'role':'coordinator',
+              'pid':coordinator.pid,'status':coordinator.status}), flush=True)
+        # Exact P_PID proves this child's ownership/nonexit, not that it is the
+        # sole live child. The closed ordinary-child topology and final ECHILD
+        # barriers are separate prerequisites before destructive recovery.
         require(adopted.verify_adoption(reported_pid), 'hold already exited before assertion')
+        print('OWNED_CHILD_NONEXIT='+json.dumps({'role':'adopted-reference',
+              'pid':adopted.pid,'phase':'before-assertion'}), flush=True)
         before = receipt_snapshot(journal)
         scope_before = identity(expected_scope.lstat())
         journal_cli(journal, assertion=True)
         require(not adopted.observe(), 'hold expired during assertion experiment')
-        ownership.inventory({reported_pid}, 'unexpected holder/child inventory')
+        print('OWNED_CHILD_NONEXIT='+json.dumps({'role':'adopted-reference',
+              'pid':adopted.pid,'phase':'after-assertion'}), flush=True)
         require(receipt_snapshot(journal) == before and
                 identity(expected_scope.lstat()) == scope_before,
                 'assertion changed scope or receipts')
         print('CAUSAL_EX_CONTENDED_WITH_SEPARATE_OWNED_LIVE_REFERENCE_PROOF', flush=True)
         require(adopted.kill_and_wait(5) == -signal.SIGKILL,
                 'adopted hold child final status')
-        ownership.inventory(set(), 'unexpected post-reap descendant')
+        print('OWNED_CHILD_REAP='+json.dumps({'role':'adopted-reference',
+              'pid':adopted.pid,'status':adopted.status}), flush=True)
+        ownership.require_empty()
         passed = True
     except BaseException as error:
         ownership.record_uncertainty(coordinator, adopted)
@@ -536,11 +531,11 @@ def run_crash():
                   adopted.status is not None and not adopted.uncertain)
         ownership.record_uncertainty(coordinator, adopted)
         try:
-            ownership.inventory(set(), 'unexpected final child inventory')
+            ownership.require_empty()
             empty = True
         except BaseException as error:
             empty = False
-            errors.append('crash inventory: '+repr(error))
+            errors.append('crash child-absence boundary: '+repr(error))
         if journal is not None and absent and empty and ownership.eligible:
             try:
                 real_recovery(journal)

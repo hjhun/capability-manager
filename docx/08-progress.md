@@ -88,7 +88,7 @@ parser .info marks vitalness=true. These are precedents, not CapMgr PASS results
 
 ## Publication and limitations
 
-Reviewed development checkpoints through `154a9b4e216e02e881dc9759cde36a16fe70880c`
+Reviewed development checkpoints through `e0683a57601603406e2aa2d0295b7d0a1c570369`
 are committed and pushed on main, with exact remote refs verified. The chronological
 records below retain earlier failures and pending states as historical evidence;
 later entries supersede their status. Raw evidence/builds/dependencies are excluded
@@ -100,9 +100,10 @@ device: none discovered; NOT_RUN. ARM build/runtime: NOT_RUN, intentionally gate
 INSTALL-01 and SYNC-01 require platform integration beyond private fixture tests;
 fail-closed behavior must not be reported as successful online registration.
 
-Next: implement and review the causal read-admission policy/direct-open fixture
-before native policy changes; Release15 runtime/publication review is ACCEPTED. PATH-01 remains a
-product question, not a reason to block unrelated catalog/CLI work.
+Next: separately review the exact full policy/crash method after the accepted
+ordinary-child wait-boundary source/native checkpoint. The full-r2
+fixture is overall FAIL; its normal phase passed separately. Release15 remains
+accepted. PATH-01 stays a product question; unrelated development can continue.
 
 ### P00 publication checkpoint review
 
@@ -2949,3 +2950,147 @@ native/publication pending status. Next: separately review the frozen full-runti
 plan and protected invocation before any root-writer/UID301 drop, SQLite, load2,
 real-journal CLI or adopted-child policy-crash execution. No full --run acceptance,
 package/install or production activation is implied by this private checkpoint.
+
+### FIXTURE-r2 publication and FULL-METHOD-r2 runtime (overall FAIL)
+
+Accepted local-source/non-policy checkpoint
+`e0683a57601603406e2aa2d0295b7d0a1c570369` was signed off, committed/pushed0 and
+exact remote main verified with a clean tree. InstalledRelease15 remains separate.
+Independent FULL-METHOD-r2 pre-execution safety disposition accepted only the fixed
+reviewed source/image route, clean environment and installed180s/owner210s bounds.
+It did not accept a runtime outcome, rule broadening or production activation.
+
+Owner `capmgr-read-policy-fixture-execute-full-r2.py` immediately rechecks transferred
+method2/2/protected metadata, then invokes the reviewed runner. Log
+`read-policy-fixture-native-full-r2.log` records source9/9/archive/image46849e...7872,
+interpreter/watchdog/protected ancestry/initial namespace/ext4/no-cache checks
+before and after. The full command returned1, CAPMGR_REMOTE_EXIT1 and
+TRANSPORT_EXIT0; no timeout or full fixture PASS occurred. This run is preserved
+as FAIL, independently confirmed NOT_ACCEPTED for the overall fixture result.
+
+The normal root-writer/UID301 modeled-C phase completed separately: allowed readers
+acquired shared OFD locks, directory/direct-file RO baselines and MAC write vetoes;
+same-group denied-MAC acquired its shared lock but failed directory/direct-file
+read and create returned NULL/Authorize1/Confirm0/Finish0/gate-returnfalse/client
+SQLite NOT_RUN. Missing-group role failed at lock admission with later stages
+NOT_RUN. Positive clients had Authorize1/Confirm1/Finish1 and actual local SQLite
+validation/query. Source checked exact ID/group/capability/NNP/label context tuples,
+but those raw replies were not printed in this log and are not claimed visible.
+Generation1->2 local queries, EX BUSY while leases remained, unchanged DB/WAL/SHM
+mode/label/dev/inode through writer close, fresh RO create/query and final physical
+client closes allowing EX all passed. Two actual protected --recover calls each
+returned cleanup PASS/errors[]/remaining_rules[]; then
+REMOVED_SCOPE=/opt/usr/capmgr-read-policy-0d6098ed45244b98b4b3e83e27f6d801 preceded
+READ_POLICY_MODELED_MATRIX_PASS_ROOT_WRITER_ONLY. The root-only receipt journal
+remains intentionally; remaining_rules reports failed writes, not kernel enumeration.
+
+The crash phase failed at its initial own-child inventory read:
+/proc/self/task/3006813/children ENOENT. Frozen source places this before subreaper
+setup, pipes/fork or crash UUID/journal/policy creation. Thus crash functionality
+was NOT_RUN; there was no crash child/journal to clean up and no reported uncertain
+normal-phase cleanup. Missing proc surface is never treated as empty. Local kernel
+39b6687 sources gate it on CONFIG_PROC_CHILDREN and disable it in tizen_emul_defconfig,
+but runtime ENOENT is not installed configuration or exact-build provenance proof.
+The completed normal phase does not substitute for full crash/recovery acceptance.
+
+Next development-contract proposal replaces live-roster equality with a distinct
+closed ordinary-child spawn topology, exact P_PID ownership/nonexit and P_ALL
+ECHILD-only expected-empty boundaries. P_ALL None is not absence/live enumeration;
+unknown child events/errors and prior uncertainty remain sticky. No fallback or
+full rerun is implemented/authorized by that proposal. Already validated context
+replies will be printed in a separately reviewed fixture-only revision. All real
+TIDL/Cynara, app_fw-owner, product, package/install, PATH/remount and ARM gates stay
+open. The exact changed contract/source/method requires independent review first.
+
+### P06-READ-POLICY-WAIT-BOUNDARY-r1 (local source/native ACCEPTED)
+
+Owner w1:pJ; reviewer w1:pA; phase P06; R02/R13/R14 and DB-ACCESS-01.
+Development contract design SHA
+`114d011c5111aa8dc66896a9f171a7bb8d143e57d0fdcbee9bc88b1e36b1f09e`
+was independently ACCEPTED FOR DEVELOPMENT CONTRACT ONLY. This explicitly
+revises the proof; waitid does not enumerate all live children and is not a
+replacement with equivalent roster semantics. Full-r2 remains overall FAIL and
+its normal-phase evidence/cleanup remains separately passing as recorded above.
+
+The own-process setup checks one task and trusted POSIX CPython HAVE_SIGACTION,
+requires default SIGCHLD, explicitly resets it and verifies the subreaper.
+signal.getsignal alone does not query SA_NOCLDWAIT. Local CPython29231b9
+PyOS_setsig sa_flags=0 and kernel39b6687 wait source are source observations, not
+exact target-image/interpreter provenance. Native retention tests remain required.
+All crash setup and the first empty boundary precede crash journal/pipes/fork.
+
+Only actual errno ECHILD from P_ALL/WEXITED/WNOHANG/WNOWAIT proves an expected
+empty ordinary-child boundary. None, a child event, EINTR and unknown errors fail;
+no P_ALL result is reaped/signaled. The closed trusted ordinary-SIGCHLD topology,
+exclusive waiter, no automatic reaping/ptrace/nonstandard clone/PID namespaces or
+escaping descendants are essential premises. Exact P_PID adoption/nonexit remains
+separate before/after the contention assertion and makes no sole-live-child claim.
+Post-known-reap and final empty barriers plus both known actual reaps and sticky
+eligibility precede automatic recovery. Later ECHILD or known cleanup cannot erase
+an earlier proof loss. Only validated ROLE_CONTEXT and actual verified known-child
+nonexit/reap observations are printed; they do not infer holder identity from flock.
+
+Host child API preflight passed before implementation. Outside-project prototype
+r1 had one failing extra-live subcase because a second child inherited the earlier
+parent control writer; prototype r2 closed that FD and passed4/4. These are test
+harness diagnostics, not product-policy results. The project drivers close earlier
+control writers and use bounded isolated children/exclusive positive-PID records.
+`read-policy-wait-children-host-r1.log` and final-r2 each pass11/11; the final tests
+cover actual setup/live None, retained zombie, extra live/exited children, exit
+race and adoption; injected exact flags/errno/setup failures; no generic reap.
+`read-policy-wait-probe-host-r1.log` and final-r2 each pass17/17. Orchestrator tests
+cover all three empty boundaries, later-empty sticky failures, lost adoption,
+setup-before-fork, safe ordinary-error cleanup and validated observation ordering.
+Orchestrator/CLI/receipt/rule operations are fake in those tests, not policy runs.
+`read-policy-wait-host-check-r1.log` records full CTest8/8 PASS; git diff --check
+passes. Native wait tests and changed full fixture runtime remain NOT_RUN pending
+separate frozen source/method/protected-path safety review. No role image/C++/ABI,
+rule matrix, package/install, operational DB or production admission is changed.
+
+
+Independent WAIT-BOUNDARY-r1 local source disposition: ACCEPTED for the exact
+five-file source/contract scope. Original source-reviewed08 SHA
+`eae60ed56a6ef29bb1e2ffe6596eb19612f5ae0bfc8d2ff9f5fe1fc1f111b591`
+is preserved. This acceptance does not imply a full policy/crash runtime result.
+Native preparation creates a new protected read-policy-wait-boundary-r1 scope:
+archive `6251d45bde6f964cd4899629b8b2eac54bac42b0c660335e90bf0e061e7fa65e`,
+input manifest `6c5bf82e541bf67dec359586cb5f505b3ec5949166db20d9a45b46760cf2198c`,
+source9/9/unchanged core75 and static archives, copied unchanged role image
+46849eea...7872 (not recompiled). Native-prepare-r1 and read-only-preflight-r1
+both record remote0/transport0. No role runs during preparation/preflight.
+
+Independent NON-POLICY-METHOD-r1 pre-execution disposition: ACCEPTED for exactly
+children11+probe17 selected tests only. Method hashes are preflight
+`7875da06e394a86831d3a11d90d7d4bf441c0a97c2d2fcdc8e6130ca6a76afb2`
+and runner
+`a6f350c12c379559642def02a49686ad7c81b7698cd3fa6008d2c3589d17cad7`.
+Owner `capmgr-read-policy-wait-boundary-execute-safety-r1.py` validates transferred
+method2/2/root0600/singlelink/noACL/no-cap/protected ancestry immediately before
+execing the fixed clean -B/inherited-no-bytecode environment. Installed60s watchdog
+and owner90s outer bounds are logged. `read-policy-wait-boundary-native-safety-r1.log`
+records source9/9/image/interpreter/watchdog/namespace/ext4/no-cache pre/post checks;
+all28 tests PASS without skips (0.335s), NON_POLICY_SAFETY_RETURN0,
+CAPMGR_REMOTE_EXIT0 and TRANSPORT_EXIT0. The actual isolated own-child setup/live
+None/retained zombie/extra-live/extra-zombie/exit-race/adoption and exact-reap tests
+passed on the pinned target interpreter. Source assertions enforce retention;
+individual driver stdout is captured by the tests rather than independently printed.
+This does not prove exact source provenance of interpreter or kernel signal flags.
+The orchestrator/CLI/receipt outputs remain fake; no role image/context drop/SQLite/
+load2/actual policy-journal CLI was selected. No timeout or retained marker occurred.
+
+This supersedes only the changed native non-policy tests' NOT_RUN status. Final
+native/publication disposition is pending; full changed policy/crash invocation
+remains NOT_RUN/unapproved and requires its separate exact safety review. Prior
+full-r2 overall FAIL/normal scoped pass remains preserved. InstalledRelease15 and
+production, real TIDL/Cynara, app_fw-owner/direct-open, package and ARM gates stay
+unchanged.
+
+
+Independent final WAIT-BOUNDARY-r1 local source/non-policy native/publication
+verdict: ACCEPTED for the four reviewed code/test files plus accurate08 only.
+Accepted final-evidence08 SHA
+`67602b7f65550f0a4c71f2c05e6e451e9eaa8ff5433a679fd5e452b2c0e9e253`
+is preserved alongside original source08. This supersedes only local/native
+publication pending wording; changed full --run remains NOT_RUN/unapproved.
+Next: separate exact full-method pre-execution review, then observed full runtime
+review. No package, installedRelease15 or production scope changes follow.
