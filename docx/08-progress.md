@@ -4312,3 +4312,77 @@ Next: publish the reviewed12 paths, then separately design/freeze successful
 root typed Finish/five-FD startup and NamespaceInit/CLI nondelegation evidence.
 No root workload, package/install, revision invalidation, crash maintenance or
 production gate closes from the ordinary test-TU Ready bypass.
+
+P04-WORKER-OWNER-r2 reviewed12-path publication completed as
+fb9bcc10028e9ba4a48ec9f6c31878ae74b46dcf: signoff/coauthor/message line checks,
+commit0/push0, exact origin/main equality, clean working tree and unchanged
+LICENSEc71d239d...d0ab4. Only accepted07 heading and administrative08 disposition/
+Next changed after the final verdict; temporary P06 coordinator/methods were not
+included. InstalledRelease15 is unchanged. Successful root owner bootstrap and
+NamespaceInit/nondelegation still need their separate reviewed increment.
+
+### P06-READ-REFERENCE-CONTEXT-COORDINATOR-r2 own-context evidence (accepted inert scope)
+
+Separate temporary coordinator/test source2 manifest57b67514dfa93b3884fbd7c51d11c8368b5ca7144480c0fcc15b5b06e57f53ab
+is LOCAL SOURCE ACCEPTED, not project inclusion. R1 source-loader finding was
+complete stat_result comparison including read-induced atime. R2 compares explicit
+stable dev/ino/mode/uid/gid/nlink/size/mtime_ns/ctime_ns, ignores atime and retains
+NOFOLLOW/CLOEXEC, bounded exact read, digest-before-compile and named/held checks.
+Host-r4 actual11/11 FakeOperations PASS includes every held/named stable-field
+negative, atime-only positive, digest rejection before execution and first-child
+cleanup failure followed by later successful cleanup/final absence with zero
+removal. Those mocked tests are not native context evidence.
+
+Own-method-r1 received separate pre-execution safety acceptance. It pins the
+complete old source10 closure plus coordinator/test2, explicitly executed
+read_policy_children.py and reference_spawn.py, JSON53/image1/standarddeps6,
+interpreter/watchdog, protected ancestry/initial namespaces/ext4 and no cache.
+Actual own-native-contexts-r1 attempt FAIL is SDB service-name-too-long/transport1
+before any remote sentinel/scope/role; no remote run or cleanup claim. Preserve
+that log. Length-only short-outer-r2 received a new explicit safety verdict.
+Protected root0600/singlelink/noACL/no-cap verifier992341d80936aebd20ea3834a952a7d884c5d3b2b5facf14df4459709abca59f
+contains the original approved verifier bytes plus a newline. FIRST env-i absolute
+Python-I-B short949-byte source-only launcher validates that file before compile;
+original method4 and code image remain unchanged. No weaker checks or repair.
+
+Actual own-native-contexts-r2.log records the approved short command, transferred
+method4 and immediate pre/post complete preflight, installed60s watchdog/owner90s.
+Fixed module-free image217c1b008b1dae3d734276c963643d340ba2a2550c1eb28afae539829fa0ec3c
+runs sequential root-user-shell then system301-platform. Both exact per-role
+stdout markers have status0/stderr empty; source requires exclusive actual owned
+normal reap0. System final UID/GID301, sole group10212, labelSystem/allcaps0/
+bounding0/ambient0/NNP1 and reference4 metadata/table are source-enforced checks,
+not separately printed raw syscall replies. Post-Drop ACL accessibility succeeds
+for this exact inherited reference/context; no permission/rule/FD repair occurs.
+
+Fresh linked inert reference under root0700 scope/root0600 file is NOT a recovery
+journal. OWNED_INERT_REFERENCE_CONTEXT_SCOPE and both validated role markers
+precede REMOVED_REFERENCE_CONTEXT_SCOPE=/opt/usr/capmgr-bootstrap-build-p4h4og7o/reference-context-9_u4fjgv,
+which precedes REFERENCE_CONTEXT_ONLY_PASS. Source enforces prepared default
+SIGCHLD/subreaper/exclusive waiter, initial/final ECHILD, sticky unknown-state
+refusal, pinned scope cleanup and independent final EX after parent SH close.
+Those are passing conditions, not raw kernel traces or sole-child enumeration.
+OWN_REFERENCE_CONTEXT_RETURN0, CAPMGR_REMOTE_EXIT0, TRANSPORT_EXIT0; no timeout,
+traceback or retained scope is recorded. Actual source/dependency/image bytes
+remain unchanged before/after; C++ image is the earlier direct-compile artifact,
+not a newly rebuilt or installed code path.
+
+Final measured runtime/administrative-document review is pending. Parent-held SH
+and final EX do not prove a surviving reader/server keeps recovery blocked, TLS
+or module lifetime, adoption or real-journal authority. No actual journal/CLI
+recovery, module/RPC/SQLite, policy/load2, Stage B, package/install or production
+admission occurred. Temporary coordinator/methods remain outside Git. Next P06
+increment separately wires exact reference4 into delayed platform loading and
+proves surviving reader AND server lifetime/refusal/reap before any new policy
+fixture. The original different-subject matrix remains BLOCKED.
+
+
+P06-READ-REFERENCE-CONTEXT-COORDINATOR-r2 FINAL MEASURED RUNTIME/admin-only
+publication ACCEPTED by independent reviewer. Accepted administrative08
+7488866b80631037ce9b515e4dc078de3f612d71e7823288b267c44098162239 is
+preserved before this heading/disposition bookkeeping. The previous pending
+paragraph is superseded for this inert-reference own-context scope only. Publish
+administrative08 alone; temporary coordinator/test/methods remain outside Git.
+Next: independently reviewed P04 no-job root typed-startup fixture and revised
+P06 module-mapped reader/server survivor development contract; no extra policy or
+production gate closes from these proposals or the preceding context results.
