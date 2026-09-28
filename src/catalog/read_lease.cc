@@ -156,6 +156,20 @@ const std::string& CatalogReadLease::Path() const noexcept {
   return impl_->path;
 }
 void CatalogReadLease::Check() { impl_->Check(); }
+void CatalogReadLease::MatchDirectory(int source) {
+  try {
+    Check();
+    struct stat supplied{};
+    const int flags = fcntl(source, F_GETFL);
+    Require(flags >= 0 && (flags & O_ACCMODE) == O_RDONLY &&
+            !(flags & O_PATH) && !fstat(source, &supplied) &&
+            S_ISDIR(supplied.st_mode) &&
+            Same(supplied, impl_->directory_identity));
+  } catch (...) {
+    impl_->poisoned = true;
+    throw;
+  }
+}
 std::string CatalogReadLease::Descriptor() {
   Check();
   static_assert(sizeof(dev_t) <= sizeof(uint64_t) &&

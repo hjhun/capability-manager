@@ -891,3 +891,54 @@ when released. WAL readers normally allow BEGIN_IMMEDIATE; they are not tested a
 writer-exclusion locks. Unsafe ordinary-close diagnostics remain preserved failures
 of the old invariant, distinct from corrected host/native regression results.
 No new policy, root workload, operational DB, installed factory or RPM is enabled.
+
+### Leased worker catalog reader (r2 local source/native accepted)
+
+P04-WORKER-CATALOG-LEASE adds a distinct private WorkerCatalogReader; the legacy
+LoadWorkerCatalog and general Database/Statement lifetimes remain separate. The
+reader accepts only trusted ReadLeasePolicy and a stable borrowed readable
+non-O_PATH directory. It rejects a borrowed data FD without duplication/close,
+then independently acquires the concrete CatalogReadLease and matches its pinned
+directory identity before opening SQLite READONLY without CREATE. Its actual RO
+connection must report the same trusted canonical pathname and WAL mode; named
+DB/WAL/SHM identities, policy and ACL/labels are rechecked through the same lease.
+Metadata pins alone never stand in for the actual SQLite open and reads.
+
+One RO transaction captures schema2, integer/nonnegative revision and published
+CLI entries only, with the equivalent eleven private-field types, stored detail
+parsed as an object JSON, nonempty name/owner, canonical ID, registry uniqueness/
+path limits and at most256 entries.
+Pending and other kinds are excluded. The registry is materialized before commit;
+all statements and the transaction are destroyed before checked sqlite3_close.
+Only SQLITE_OK permits transfer of the SAME independent lease into a move-only
+LeasedWorkerCatalogSnapshot; move assignment is forbidden and result transfer is
+nothrow. Explicit BUSY/error retains connection, materialized pending data and
+lease for retry, exposing no snapshot. Close may abandon a failed read, but the
+reader retains its lease until destruction or a successful Finish transfer.
+
+The private implementation exposes no SQLite handle, statement, blob, backup or
+callback-backed ReadAccess. Creator TGID guards every SQLite helper entry,
+finalization, rollback and physical close. Forked reader operations reject, and
+inherited reader destruction fail-stops before SQLite; those children must exec
+or _exit. Constructor unwinding closes before lease release. Fail-stop for a
+failed physical close is limited to the trusted internal no-escape invariant;
+ordinary acquisition, permission, schema/content, allocation and rollback IO
+failures never become successful snapshots and can end through physical close.
+No close_v2 is used. An already-closed snapshot is a separate lifetime: inherited
+lease references may close only, never F_UNLCK, and keep EX busy until last close.
+
+The snapshot excludes only cooperating generation/name/policy maintenance. A
+legitimate in-place WAL commit can advance a fresh reader while this registry and
+revision remain old; this is evidence of snapshot limits, not invalidation.
+Trusted ancestry/mount/procfs, all external writer cooperation, executable
+registration/subset and ordered revision publication/invalidation remain gates.
+Worker crash can release OFD references while old jobs remain; EX availability is
+not job-absence proof and a persistent maintenance/journal barrier remains open.
+
+This first slice supplies no bootstrap five-FD report/wiring, worker lifetime
+owner, per-Step IO, NamespaceInit nondelegation evidence, root workload, policy,
+public factory, package/install or production authority. Later wiring must retain
+this lease through closed admission, CanExitCleanly/output drain and owned-child
+cleanup; Quiescent alone and local flush are not frontend durable receipt. Clone
+initially inherits FDs; nondelegation must be proved AFTER NamespaceInit's existing
+close-extras boundary before credential transition and again in the CLI.

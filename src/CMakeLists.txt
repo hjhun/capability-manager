@@ -15,6 +15,7 @@ SET(CAPMGR_ADAPTER_SOURCES
   launcher/worker_session.cc
   launcher/worker_spawn.cc
   launcher/worker_catalog.cc
+  launcher/worker_catalog_lease.cc
   launcher/worker_supervisor.cc
   launcher/worker_bootstrap.cc
   launcher/worker_result.cc

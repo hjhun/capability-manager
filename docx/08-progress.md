@@ -103,8 +103,11 @@ fail-closed behavior must not be reported as successful online registration.
 Next: review the concrete same-authorized-System-subject/different-fixture-object
 real catalog admission slice. The original different-subject direct-read subset
 remains BLOCKED after the diagnostic measured only one allowed UID301 context.
-Worker generation-lifetime integration is a separate development design. Prior
-failures are preserved; installedRelease15 and PATH-01/product gates are unchanged.
+Worker generation-lifetime reader r2 source/ordinary-native/publication scope is
+ACCEPTED; actual publication is recorded separately. A separate fixed
+System301/priv_platform-group diagnostic is being implemented without new policy.
+Bootstrap wiring remains separate. Prior failures are preserved; installed
+Release15 and PATH-01/product gates are unchanged.
 
 ### P00 publication checkpoint review
 
@@ -3555,3 +3558,180 @@ Earlier loader-test summary phrase "entry-before-close" was a wording error:
 reviewed source/tests require owned code-FD close BEFORE native entry. No code or
 method changes are made by this correction. Publish this accurate administrative
 result separately; existing source4b549f0 and installedRelease15 remain unchanged.
+
+### P04 worker catalog lease r1 local source/host checkpoint (review pending)
+
+Owner w1:pJ; reviewer w1:pA; R02/R10/R13/R14. Baseline administrative RPC evidence
+`7894900dee2d49100d39291296f71415201aca57` was committed/pushed0 with exact
+origin/main verification and clean tree before this work. It records the accepted
+one-positive real diagnostic only; installedRelease15 is unchanged. Original
+two-subject read-policy/direct-open subset remains BLOCKED. The independent
+worker lease design SHA
+`31cf85c5c8cdb5f7b02cec74e2c049ca6c839aa131dacad619df314952340ae1`
+was accepted FOR DEVELOPMENT CONTRACT ONLY. Reviewer confirmed that a distinct
+private connection owner, instead of broadening legacy Database, fits the contract.
+
+The new WorkerCatalogReader encapsulates concrete CatalogReadLease plus its RO
+SQLite connection and all queries/transaction. It checks borrowed directory
+without duplicating invalid data FDs, acquires an independent SH before SQL,
+requires actual READONLY/WAL/canonical path and same pinned generation, captures
+schema/revision/published bounded registry in one RO transaction and transfers the
+same lease only after actual sqlite3_close OK. Explicit close errors retain both
+owners and no result; lexical/constructor cleanup physically closes first.
+LeasedWorkerCatalogSnapshot is move-only/nothrow without move assignment. Creator
+checks cover SQL entry/finalization/rollback/close and inherited reader destruction
+fails before SQL. Closed snapshot fork references close only. General legacy
+loader/Database/Statement, worker/bootstrap and production factory are unchanged.
+
+Source scope is src/CMakeLists, catalog/read_lease hh/cc, new launcher/
+worker_catalog_lease hh/cc, test/CMakeLists, test/fixtures/sqlite_lock_probe.cc,
+new unit/worker_catalog_lease_test.cc,07 contract and this08. MatchDirectory is
+private to the new reader; no arbitrary channel ReadAccess/FD authority getter.
+The existing tests-only independent-exec SQLite probe gains a separate generation
+EX observation mode. New prepare/step/open/close interposition belongs ONLY to
+the adapter test executable and resets each case; no product failure accessor.
+
+Host build-ofd uses accepted prefix /tmp/capmgr-host-deps/root/usr, Release
+-O1/-DNDEBUG, platform transport/Cynara/TIDL OFF, SQLite3.45.1. Initial focused-r1
+ran17:13PASS/4FAIL because the test counter also counted legacy sqlite3_close(NULL)
+after fixture provisioning, not a violated physical-close invariant; preserve that
+FAIL log. Counter now observes non-null connections only. Subsequent focused-r2
+19/19, r3/r4 23/23 passed while coverage grew; they are not final-manifest evidence.
+Final host-build/check-r2 CTest9/9 and host-focused-r5 24/24 PASS on current bytes.
+Evidence files are /tmp/capmgr-evidence/worker-catalog-lease-host-*.log, with exact
+commands embodied in the build/check and focused test invocations. Tests use unique
+owned /tmp fixtures and injected labels, not real policy authorization. OwnedChildren
+reserves before fork/spawn, pins returned positive PID before logging, requires
+actual exit/reap and retains/fail-stops before scope deletion on unconfirmed cleanup.
+
+The24 cases cover independent EX busy before/during/after physical close until
+snapshot's final reference ends; real escaped-statement BUSY/finalize/retry;
+synthetic close IO retry without reopen; constructor and post-open/allocation faults;
+post-close allocation refusal; BUSY destructor/constructor invariant fail-stop;
+invalid borrowed DB/SHM and directory/O_PATH; missing sidecar/schema/content refusal;
+published/pending/other-kind and256/257 differential comparisons to legacy loader;
+in-place commit with explicitly unchanged old registry/revision; inherited SQL-owner
+rejection versus closed-snapshot close-only/last-reference behavior; and independent
+exec WAL write/exclusive/read-snapshot checkpoint exclusion through loader success
+and failure. O_PATH metadata is not a read-permission proof. Ordinary rollback IO
+failure is retained as failed load, not an automatic invariant fail-stop.
+
+Exact native current-source build/tests are pending, NOT_RUN; native preparation
+will use a new protected tree and pinned source/dependencies. No root/bootstrap
+run, five-FD Finish wiring, NamespaceInit/CLI nondelegation, new rules, real TIDL,
+RPM/install, live invalidation or production/current-job authority is claimed.
+Source/07/host review requested before any publication; original accepted hashes
+will be retained before heading-only bookkeeping. Full product/P09 gates stay open.
+
+
+### P04 worker catalog lease r2 JSON validation correction (review pending)
+
+Independent r1 review returned CHANGES_REQUESTED for detail validation parity:
+legacy GetPrivate parses stored detail and requires an object, while r1 only
+checked its TEXT type. This is a source/content finding; host24/24 did not close
+it. R2 parses those exact selected bytes as object JSON inside the same RO
+transaction before registry construction; malformed/non-object/invalid UTF-8
+returns no snapshot on the failed-load path. No legacy Database escape or lifetime
+change. The new differential test covers not-json, array, null, invalid UTF-8 and
+a valid nested object, comparing the legacy loader. For each rejection independent
+EX remains BUSY through physical Close until reader retirement, then succeeds.
+
+Frozen r2 host check-r3 CTest9/9 and focused-r6 25/25 PASS, SQLite3.45.1/injected
+labels. Prior r1 logs and10-file manifest are preserved separately, not relabelled.
+Native build-r1 reached exact source174 but rejected reused JSON dependency's
+root:root775 source ancestry BEFORE configure/compile, remote1/transport0. It is
+FAIL, not product/compiler evidence. No older JSON tree was altered. Compile-only
+retry uses a fresh protected subset of the accepted JSON3.11.3 archive
+SHA0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406,
+including CMake/templates/headers, individually hash-verified and extracted0600
+under700 directories. Current native-build-r2 still targets frozen SOURCE-r1
+archive5e1b80346b96bf2c1184007026e39662b85e90c1d5b147f4182918578ec1ba0a
+with no unit execution; it cannot substitute for corrected r2 build/tests.
+
+New r2 source/07 and actual exact native outcome still await review/evidence;
+root/bootstrap/policy/package remain NOT_RUN for this change. Typed five-FD report,
+worker lifetime/nondelegation, live invalidation/executable/job-absence and full
+production gates stay open. Parallel same-subject/object proposal is only a draft,
+including separate fixed supplementary-group authorization measurement and a
+separately reviewed EIGHT-rule recovery variant; no mutation authorization follows.
+
+### P04 worker catalog lease r2 exact ordinary native evidence (ACCEPTED)
+
+Independent local source/07 review ACCEPTED r2 at manifest
+c2c8273d0d309fa20d85f4a73f095d9adc57665b160da72e8fc3e66e4a5c293e.
+The malformed/non-object/invalid-UTF8 detail finding is CLOSED. Original accepted
+07 SHA124ef413701fd0f65e2ed7e467026706d3f2cd7d06c15a199d070e1a8f3e486b
+and original frozen08 SHAdf71ad0091a6fdb734bf0c8f1afd796aeac67b77e27c6e719a843b0e1ca33acc
+are preserved before subsequent administrative bookkeeping. The other nine entries
+remain byte-identical to the accepted r2 source manifest.
+
+Native build-r2, still using historical SOURCE-r1, configured with the fresh
+protected JSON subset but exceeded its300s compile watchdog, remote124/transport0.
+Preserve this FAIL; a watchdog outcome is not child-absence or test proof. Before
+exclusive cache reuse, build-r3 refused active cwd/exe references into the owned
+scope and checked the old source/dependency hashes, then updated only the four
+changed r2 source/test/document entries. It rebuilt affected objects and API/test
+targets incrementally with -j1, not a fresh whole build. Source174 and JSON53 hashes,
+clean ldd-r on the four initial artifacts and final hashes passed; remote0/transport0.
+Corrected r2 archive SHA:
+40d1ca98c109a8ea33f5ef4db9a8fcda8520df5a90150952e35b25765b6c86ee.
+The exclusive protected tree is
+/opt/usr/capmgr-bootstrap-build-p4h4og7o/worker-catalog-lease-r2.
+Native SQLite3.50.2/GCC14.2/platform options ON are distinct from host3.45.1.
+
+Method-r2 pre-execution review found missing pins for the executed CLI fixture
+and C consumer's loaded libcapmgr. No tests ran under that revision. Method-r3
+adds both exact digests BEFORE and after execution, protected root/singlelink/
+noACL/no-cap metadata, exact root0700 leaves observed from owned umask077,
+root-owned fixed SONAME symlink targets and the C consumer's sole trusted build
+RUNPATH/actual resolved library. No chmod or permission fallback was needed.
+Read-only code-audit-r3 rejected an overstrict0755 expectation with a traceback;
+transport0/no remote success marker is not PASS. Corrected audit-r4 and
+preflight-r3 each passed remote0/transport0. Standard installed system dependency
+and trusted-root/no-concurrent-update premises remain. Fixed method SHA:
+dfd6ab6a423454805a8b9240816109b07d5a68a40a9941bbb7ce0f7119742d3d;
+outer executor SHA:
+1da58a50588c1a43c20e06dd663b981f66a8c1057ba168ee2850a8d25d48b744.
+Independent method-r3 bounded ordinary-execution disposition was ACCEPTED.
+
+Owner executed /tmp/capmgr-worker-catalog-lease-execute-native-r3.py, whose log
+prints the exact FIRST /usr/bin/env -i plus absolute Python-I-B verifier command.
+It verifies transferred method hash/root0600/noACL/no-cap before immediate
+preflight, then invokes installed hash-checked run_bounded.py --seconds180 with
+the fixed ordinary runner, under owner210s. Native-tests-r3 records source174/
+JSON53/images6/protected ancestry/initial namespaces/ext4/interpreter/watchdog/
+no-cache and C-library resolution checks before and after. No timeout occurred.
+CTest --show-only selection is asserted to exactly unit/adapters/C-consumer3;
+--verbose/--no-tests=error records3/3 PASS, actual unit123/123 and adapters187/187
+(310 GoogleTests), plus C consumer. Focused WorkerCatalogLease25/25 and existing
+CoordinatedWriter24/24 pass separately; these repeat subsets, not49 additional
+unique tests. CAPMGR_REQUIRE_METADATA_TESTS=1 observes real User::Shell metadata
+and honestly reports user xattrs UNSUPPORTED. Direct C_CONSUMER_EXIT=0, exactly12
+versioned CAPMGR_0 exports, ORDINARY_NATIVE_ONLY_PASS, remote0/transport0.
+
+Evidence is /tmp/capmgr-evidence/worker-catalog-lease-native-{build-r1,build-r2,
+build-r3,code-audit-r3,code-audit-r4,preflight-r2,preflight-r3,tests-r3}.log;
+host-check-r3 CTest9/9 and focused-r6 25/25 stand separately. Scratch SQL tests
+inject Fixture labels; the existing real metadata regression does not turn this
+loader checkpoint into a real worker catalog authorization test. OwnedChildren
+cleanup assertions remain required; no watchdog/transport exit supplies absence.
+Native selected3 is not a full native CTest9, RPM or installed result.
+
+Final exact native/administrative publication verdict is pending. No bootstrap
+five-FD wiring, NamespaceInit workload/nondelegation, live invalidation/current-job
+authority, operational DB, new rules, installed package or production activation
+follows. InstalledRelease15 is unchanged. Separately accepted Stage A development
+contract now has disjoint WIP fixed supplementary-group diagnostic sources, which
+are excluded from this worker lease manifest/publication and from the native
+archive. Stage B recovery-reference FD4 and eight-rule matrix remain unimplemented
+and separately gated; explicit close3 is required in its future ordered mapping.
+
+Independent final r2 ordinary-native/publication disposition: ACCEPTED for these
+ten private source/test/contract/administrative paths only. The accepted08 hash
+before this disposition and heading/Next bookkeeping was
+381ce549d0bf531a08f2c7355bbc331735df643f046d116db535753108ef784c.
+The original07 hash above is retained; only its pending-review heading changes.
+This paragraph supersedes historical pending statements, preserving their evidence.
+Stage A disjoint implementation files are excluded from this publication. No
+overall completion or new production/bootstrap/policy/package gate is inferred.
+Actual commit, push and remote equality will be reported after publication.

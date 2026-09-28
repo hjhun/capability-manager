@@ -4,6 +4,8 @@
 #include "catalog/read_lease.hh"
 
 #include <filesystem>
+#include <cerrno>
+#include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
 
@@ -17,6 +19,24 @@ int main(int argc, char** argv) {
   if (argc != 5) return 2;
   const std::string path = argv[1], lock = argv[2], mode = argv[3];
   const bool want_busy = std::string(argv[4]) == "BUSY";
+  if (mode == "generation") {
+    // Fresh, independent description: never inherits/duplicates the reader SH.
+    const int fd = open(lock.c_str(), O_RDWR | O_NOFOLLOW | O_CLOEXEC);
+    if (fd < 0) return 5;
+    struct flock requested{};
+    requested.l_type = F_WRLCK;
+    requested.l_whence = SEEK_SET;
+    const int rc = fcntl(fd, F_OFD_SETLK, &requested);
+    const int error = errno;
+    if (close(fd)) return 5;
+    const bool busy = rc < 0 && (error == EAGAIN || error == EACCES);
+    std::cout << "GENERATION_EX="
+              << (busy      ? "BUSY"
+                  : rc == 0 ? "OK"
+                            : "ERROR")
+              << " EXPECTED=" << argv[4] << std::endl;
+    return (want_busy ? busy : rc == 0) ? 0 : 4;
+  }
   try {
     Labels labels;
     ReadLeasePolicy policy{std::filesystem::path(path).parent_path().string(),

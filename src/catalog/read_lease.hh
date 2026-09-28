@@ -61,6 +61,9 @@ class CatalogReadLease final : public ReadAccess {
   void Opened(
       Database&) override;  // RO/WAL and resolved-file check before publish
  private:
+  friend class WorkerCatalogReader;
+  // Startup owner only; borrowed readable directory remains stable throughout.
+  void MatchDirectory(int);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

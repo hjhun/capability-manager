@@ -79,6 +79,7 @@ SET(CAPMGR_ADAPTER_TEST_SOURCES
   unit/worker_loop_test.cc
   unit/worker_session_test.cc
   unit/worker_catalog_test.cc
+  unit/worker_catalog_lease_test.cc
   unit/worker_supervisor_test.cc
   unit/worker_result_test.cc
 )
@@ -88,6 +89,14 @@ TARGET_LINK_LIBRARIES(capmgr-adapter-tests PRIVATE
   GTest::gtest_main
 )
 ADD_DEPENDENCIES(capmgr-adapter-tests capmgr-cli-fixture)
+ADD_DEPENDENCIES(capmgr-adapter-tests capmgr-sqlite-lock-probe)
+# Faults belong only to the private reader tests, never a product accessor.
+TARGET_LINK_OPTIONS(capmgr-adapter-tests PRIVATE
+  "LINKER:--wrap=sqlite3_open_v2"
+  "LINKER:--wrap=sqlite3_prepare_v2"
+  "LINKER:--wrap=sqlite3_step"
+  "LINKER:--wrap=sqlite3_close"
+)
 ADD_TEST(NAME capmgr-adapters COMMAND capmgr-adapter-tests)
 
 ADD_EXECUTABLE(capmgr-peer-tests
