@@ -1056,3 +1056,51 @@ The image is built explicitly but not installed or registered for CTest executio
 Real context runs, reader AND server surviving/adopted references, module-entry
 FD4 retention, real recovery refusal and Stage B policy are separate reviewed
 native methods. Kernel-exit release in a fake direct child is not those proofs.
+
+### Isolated leased worker owner (accepted private ordinary checkpoint)
+
+P04-WORKER-OWNER-r1 implements the accepted owner-api-boundary-r2 development
+contract. Private nonmovable LeasedWorkerLoop::LoadAndFinish calls the existing
+exact initial bootstrap Validate before acquiring CatalogReadLease/RO SQLite.
+WorkerCatalogReader physically closes SQLite before transferring the SAME leased
+snapshot. Only that owner can supply its concrete five-descriptor report to the
+new typed Finish; the six loop aliases and namespace witnesses are checked with
+it before/after witness closure. The independently opened owned directory and
+borrowed fixed7 have distinct numbers and intentionally matching inode identity.
+Exclusive descriptor-table ownership, trusted paths/procfs and no unlock or
+conversion remain premises; metadata is not hostile OFD-description ABA proof.
+
+Finish reserves a one-shot attempt before metadata/witness work; failure is
+terminal and admits no Step. Factory publication follows successful Finish only.
+The wrapper exposes no loop, registry or lease replacement/extraction. Step adds
+no SQLite/stat/xattr/lease/revision work. Every operation checks creator TGID
+before loop queries/locks/signals/reap or metadata. Inherited wrapper destruction
+fail-stops before member cleanup; inherited already-closed standalone snapshots
+retain their accepted close-only behavior. Process fail-stop still releases FDs
+at kernel exit and does NOT replace the persistent crash-maintenance barrier.
+
+Snapshot precedes loop in member order. Pre-admission construction/startup failure
+can unwind; no START/Step could have escaped. After readiness implicit destruction
+requires CanExitCleanly: closed admission, confirmed owned-child cleanup, no job,
+and flushed output without delivery loss. Zero children or Quiescent alone is
+insufficient. RetireCleanly and RetireAfterDeliveryLoss are terminal; the latter
+requires DeliveryLost AND Quiescent and reports abnormal LOCAL retirement only.
+It does not require Jobs==0 as a substitute for child ownership. Current WorkerLoop
+clears its tested lost tokens after confirmed cleanup; the owner does not infer
+frontend receipt, durable Complete, reservation release or clean exit0 from that.
+
+A friend defined only in the test TU constructs a real completed snapshot owner
+and marks test startup ready for ordinary lifetime cases. It can construct only
+an invalid namespace witness for actual factory refusal-before-load/one-shot
+negative tests. No runtime policy/allow hook or successful root startup bypass
+is linked into the product. The concrete report checks real FD types/access/
+CLOEXEC/O_PATH/pinned identity and label-policy validation; test labels are injected.
+Ordinary test startup is NOT successful root bootstrap, fixed-table admission,
+NamespaceInit isolation or nondelegation evidence. Full successful typed Finish,
+namespace-init extra-FD cleanup and CLI absence require separately frozen root
+source/image/method safety review.
+
+Live revision publication/invalidation, executable authority, authenticated
+production worker admission, old-job absence/crash maintenance, all external
+writer cooperation and image/policy provisioning remain open. No worker production
+factory activation, package/RPM/install, policy mutation or ARM acceptance follows.

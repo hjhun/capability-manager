@@ -47,6 +47,11 @@ class WorkerInitialNamespaces {
   bool Close() noexcept;
 
  private:
+  friend class LeasedWorkerLoopTestAccess;
+  // Test-TU-only INVALID witness, for refusal-before-load/one-shot negatives.
+  // It cannot satisfy ValidateCurrent or bypass the real startup gate.
+  struct Uncaptured {};
+  explicit WorkerInitialNamespaces(Uncaptured) noexcept {}
   std::array<int, 2> fds_{-1, -1};
   std::array<dev_t, 2> devices_{};
   std::array<ino_t, 2> inodes_{};
@@ -73,6 +78,10 @@ void ValidateWorkerBootstrap(const WorkerBootstrapPolicy&);
 // access direction and CLOEXEC are checked, and every other post-load FD rejects.
 void FinishWorkerBootstrap(const WorkerBootstrapPolicy&,
                            std::span<const int> loop_fds = {});
+class LeasedWorkerLoop;
+// Owner-bound, one-shot gate: adds only THIS owner's concrete five lease FDs.
+// The same catalog directory inode at fixed7 and its owned alias is intentional.
+void FinishWorkerBootstrap(const WorkerBootstrapPolicy&, LeasedWorkerLoop&);
 }
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_BOOTSTRAP_HH_

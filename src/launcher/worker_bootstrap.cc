@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "launcher/worker_bootstrap.hh"
+#include "launcher/leased_worker_loop.hh"
 #include <algorithm>
 #include <array>
 #include <charconv>
@@ -180,11 +181,14 @@ void OneTask() {
   Check(!error && count == 1, "bootstrap requires one task");
 }
 void CheckDescriptors(bool initial, std::span<const int> aliases = {},
-                      std::span<const int> namespaces = {}) {
+                      std::span<const int> namespaces = {},
+                      std::span<const int> catalog = {}) {
   Check(aliases.empty() || aliases.size() == 6,
         "bootstrap owned FD witness shape");
   Check(namespaces.empty() || namespaces.size() == 2,
         "bootstrap namespace FD witness shape");
+  Check(catalog.empty() || (catalog.size() == 5 && aliases.size() == 6),
+        "bootstrap catalog FD witness shape");
   struct stat null{};
   Check(!stat("/dev/null", &null), "bootstrap null device");
   std::array<struct stat, 4> pipes{};
@@ -238,6 +242,29 @@ void CheckDescriptors(bool initial, std::span<const int> aliases = {},
               (flags & O_ACCMODE) == (i == 2 ? O_WRONLY : O_RDONLY),
           "bootstrap owned FD identity");
   }
+  for (size_t i = 0; i < catalog.size(); ++i) {
+    const int fd = catalog[i];
+    const int flags = fcntl(fd, F_GETFL);
+    struct stat actual{};
+    Check(fd >= 9 && fcntl(fd, F_GETFD) == FD_CLOEXEC && flags >= 0 &&
+              (flags & O_ACCMODE) == O_RDONLY &&
+              ((i >= 2) == bool(flags & O_PATH)) && !fstat(fd, &actual) &&
+              (i == 1 ? S_ISDIR(actual.st_mode)
+                      : S_ISREG(actual.st_mode) && actual.st_nlink == 1) &&
+              std::find(aliases.begin(), aliases.end(), fd) == aliases.end() &&
+              std::find(namespaces.begin(), namespaces.end(), fd) ==
+                  namespaces.end() &&
+              std::find(catalog.begin(), catalog.begin() + i, fd) ==
+                  catalog.begin() + i,
+          "bootstrap catalog owned FD");
+    if (i == 1) {
+      struct stat supplied{};
+      // Different numbers, intentional same directory inode as borrowed fixed7.
+      Check(!fstat(7, &supplied) && actual.st_dev == supplied.st_dev &&
+                actual.st_ino == supplied.st_ino,
+            "bootstrap catalog directory mismatch");
+    }
+  }
   DIR* dir = opendir("/proc/self/fd");
   Check(dir, "bootstrap FD directory");
   int own = dirfd(dir);
@@ -252,7 +279,8 @@ void CheckDescriptors(bool initial, std::span<const int> aliases = {},
         (fd > 8 && fd != own &&
          std::find(aliases.begin(), aliases.end(), fd) == aliases.end() &&
          std::find(namespaces.begin(), namespaces.end(), fd) ==
-             namespaces.end()))
+             namespaces.end() &&
+         std::find(catalog.begin(), catalog.end(), fd) == catalog.end()))
       extra = true;
   }
   int error = errno;
@@ -337,5 +365,31 @@ void FinishWorkerBootstrap(const WorkerBootstrapPolicy& policy,
   Parent();
   Context(policy);
   OneTask();
+}
+void FinishWorkerBootstrap(const WorkerBootstrapPolicy& policy,
+                           LeasedWorkerLoop& owner) {
+  owner.BeginStartup();  // Creator + one-shot reservation before metadata.
+  try {
+    policy.namespaces.ValidateCurrent();
+    const auto loop = owner.LoopDescriptors();
+    const auto catalog = owner.CatalogDescriptors();
+    CheckDescriptors(false, loop, policy.namespaces.Descriptors(), catalog);
+    Parent();
+    Context(policy);
+    OneTask();
+    Check(policy.namespaces.Close(), "bootstrap namespace witness close");
+    // Revalidate THIS owner's actual pins/policy after witness closure. Neither
+    // another snapshot nor a caller-supplied FD span can satisfy this overload.
+    const auto final_catalog = owner.CatalogDescriptors();
+    Check(catalog == final_catalog, "bootstrap catalog report changed");
+    CheckDescriptors(false, loop, {}, final_catalog);
+    Parent();
+    Context(policy);
+    OneTask();
+    owner.CompleteStartup();
+  } catch (...) {
+    owner.FailStartup();
+    throw;
+  }
 }
 }

@@ -105,6 +105,7 @@ SET(CAPMGR_ADAPTER_TEST_SOURCES
   unit/worker_session_test.cc
   unit/worker_catalog_test.cc
   unit/worker_catalog_lease_test.cc
+  unit/leased_worker_loop_test.cc
   unit/worker_supervisor_test.cc
   unit/worker_result_test.cc
 )

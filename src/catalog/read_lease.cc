@@ -170,6 +170,26 @@ void CatalogReadLease::MatchDirectory(int source) {
     throw;
   }
 }
+std::array<int, 5> CatalogReadLease::WorkerDescriptors() {
+  Check();  // Creator/poison check precedes all descriptor/policy work.
+  const std::array<int, 5> result{impl_->lock.value, impl_->directory.value,
+                                  impl_->files[0].value, impl_->files[1].value,
+                                  impl_->files[2].value};
+  try {
+    for (size_t i = 0; i < result.size(); ++i) {
+      Require(fcntl(result[i], F_GETFD) == FD_CLOEXEC);
+      const int flags = fcntl(result[i], F_GETFL);
+      Require(flags >= 0 && (flags & O_ACCMODE) == O_RDONLY &&
+              ((i >= 2) == bool(flags & O_PATH)) &&
+              (i != 0 || (flags & O_NONBLOCK)));
+      for (size_t j = 0; j < i; ++j) Require(result[i] != result[j]);
+    }
+  } catch (...) {
+    impl_->poisoned = true;
+    throw;
+  }
+  return result;
+}
 std::string CatalogReadLease::Descriptor() {
   Check();
   static_assert(sizeof(dev_t) <= sizeof(uint64_t) &&

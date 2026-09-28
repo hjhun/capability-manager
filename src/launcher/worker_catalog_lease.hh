@@ -41,6 +41,7 @@ class LeasedWorkerCatalogSnapshot final {
 
  private:
   friend class WorkerCatalogReader;
+  friend class LeasedWorkerLoop;
   LeasedWorkerCatalogSnapshot(WorkerCatalogSnapshot&&,
                               std::unique_ptr<CatalogReadLease>&&) noexcept;
   WorkerCatalogSnapshot snapshot_;

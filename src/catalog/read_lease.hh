@@ -17,6 +17,7 @@
 #define CAPABILITY_MANAGER_CATALOG_READ_LEASE_HH_
 
 #include "catalog/read_access.hh"
+#include <array>
 #include <memory>
 #include <sys/types.h>
 namespace capmgr {
@@ -62,8 +63,11 @@ class CatalogReadLease final : public ReadAccess {
       Database&) override;  // RO/WAL and resolved-file check before publish
  private:
   friend class WorkerCatalogReader;
+  friend class LeasedWorkerLoop;
   // Startup owner only; borrowed readable directory remains stable throughout.
   void MatchDirectory(int);
+  // Borrowed startup report only; no ownership/lock transfer or runtime use.
+  std::array<int, 5> WorkerDescriptors();
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

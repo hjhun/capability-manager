@@ -4178,3 +4178,137 @@ Next: publish these seven reviewed paths, then implement the separate P04 owner
 boundary and prepare an independently reviewed real reference-context method.
 No real root context/Drop, module/TLS, journal recovery, policy or product gate
 closes. Disjoint P04 source WIP is excluded from this publication.
+
+## P04-WORKER-OWNER-r1 isolated owner/factory local checkpoint
+
+Owner w1:pJ, reviewer w1:pA; baseline264d13b80a3432b9e6d4f8a353cec67ae980a328.
+Accepted owner-api-boundary-r2 development plan SHA
+774d1dac6c3ec85d9d85c2adcea75e7121e3a6ad53d59decfa21bdef7e89a4c4,
+with the earlier bootstrap contract d7401c2c7dc4f0fadd5107e912671a9288895e68f047bed406d58be1ea70bf61.
+Scope: src/CMake; read_lease.hh/.cc private borrowed report; snapshot friend;
+worker_bootstrap.hh/.cc typed owner Finish; leased_worker_loop.hh/.cc; test/CMake,
+leased_worker_loop_test.cc;07 and08. P06 seven-path publication264d13b is distinct,
+push0/exact remote main equality/LICENSE unchanged. Its native eleven fake-image
+mapping tests do not provide worker-owner bootstrap evidence.
+
+Factory validates exact initial bootstrap BEFORE acquisition, physically closes
+RO SQLite through the accepted reader, moves the SAME snapshot into a nonmovable
+registry-bound loop owner, and publishes only after one-shot typed Finish. Five
+actual concrete-lease FDs join six aliases/witnesses in both table checks. No
+caller-supplied or unrelated snapshot can satisfy the production factory. The
+private invalid namespace constructor is reachable only by the test-TU friend
+and cannot satisfy ValidateCurrent; it tests actual factory refusal-before-load,
+not an alternate allow policy. Step has no additional metadata/SQLite operations.
+
+Host-build-r1 compiles the owner/adapters. Host-build-r2 FAIL is a test-only
+-Werror=dangling-else around EXPECT_THROW; explicit braces correct it. Subsequent
+focused-r1/r2 and fullcheck-r1 preserve FAIL because a test incorrectly required
+Jobs>0 after lost-delivery cleanup. Actual existing WorkerLoop explicitly clears
+those tokens when lost after confirmed child cleanup; no product change was
+needed. Removed that false assertion, retaining the stronger real unreaped-child
+retirement rejection and lost+Quiescent boundary. No new blanket guard relaxation.
+Final host-build-r5/focused-r3 actual11/11 PASS; host-check-r2 CTest11/11 PASS.
+Independent exec generation EX stays BUSY through readiness, queued child-free
+Complete and delivery-loss cleanup, then succeeds after actual lease retirement.
+The tests use injected label metadata, real SQLite/physical close and real owned
+fork/exec/wait/reap. They do not drop IDs/SMACK or run real NamespaceInit.
+
+Tests distinguish open-admission/no-job destruction, queued child-free Complete
+with saturated output, normal drain/terminal retirement, delivery loss with an
+unreaped child versus after cleanup, constructor/moved-from/inherited snapshot
+rejection, inherited wrapper operations and fail-stop before inherited loop dtor.
+Normal factory refusal/one-shot failure is tested with invalid namespace witnesses;
+trusted test startup bypass supplies ordinary owner lifetime evidence only. No
+successful real root typed Finish/table or namespace/CLI nondelegation claim.
+Source/native review pending; native compilation/ordinary execution NOT_RUN for
+this revision. InstalledRelease15, production admission, revision invalidation,
+executable authority, crash maintenance, policy/RPM and ARM gates stay unchanged.
+
+P04-WORKER-OWNER-r1 disposition DEFERRED pending an owner-acknowledged test
+ownership amendment; no r1 test execution/publication acceptance. R1 native
+compile-only archive183 bc881d2cbf201bc6d8dfeaeeb727054480d0261034cddba0c5cea1ed60b0e64a
+is historical frozen source, not r2 test evidence. No native tests have executed.
+Owner self-audit found a single fixture child_id could be overwritten by a later
+probe while an earlier wait remained unresolved; base fixture removal could then
+precede OwnedChildren destruction. R2 retains separate preallocated records for
+every fixture/probe child until exact reap/release. Teardown attempts all known
+records, requires no unresolved record/table entry AND a sticky uncertainty guard
+before closing references/base rmtree. Unknown observation errors or Uncertain
+status permanently poison deletion eligibility; later successful probes cannot
+restore it. A known live child/no-budget wait can be retried without pretending
+its absence; its record remains owned throughout.
+
+The added actual live-child/zero-budget wait followed by independent successful
+probe preserves the first record and rejects deletion eligibility until its exact
+known kill/wait/reap/release. A separate pure injected-uncertainty test has no
+actual ownership loss and tests the sticky guard after a successful probe; its
+TEST-only reset is for that synthetic no-lost-child setup, not a runtime escape.
+R2 also preserves the declared O_NONBLOCK lease-lock descriptor flag in startup
+report checks, with a real clear/restore/poison negative. F_OFD_SETLK was already
+nonblocking and this flag is not what makes OFD acquisition nonblocking.
+Host-build-r6/focused-r4 12/12/check-r3 CTest11/11 precede that final flag/sticky
+amendment. Final host-build-r7/focused-r5 actual14/14/check-r4 CTest11/11 PASS.
+No product worker-loop behavior change; source re-review and exact-r2 native
+compile/execution methods remain pending. Root successful Finish, NamespaceInit,
+reference-context Drop, policies, installedRelease15 and production remain separate.
+
+### P04-WORKER-OWNER-r2 ordinary native evidence (accepted private scope)
+
+Independent LOCAL SOURCE/host verdict ACCEPTED for exact12 manifest
+9d121daa9f96c81150d5e4333d73dd65ac535bdb238bac3c9f3fe5813fe6ae6d.
+Reviewed07 remains295385ef29164051d326538c94bcea6717b9908fea9a1fede867175812ee17ae;
+original reviewed08 3fc0cf2e412e5f50747ad2411754f88ca25415e28eaec593bbd6a12ff309ecd6
+is preserved before this append. Historical source/native-pending text above is
+superseded only within the explicit local/ordinary scope described here.
+
+Native-build-r1 FAIL: runner_test.cc cc1plus reports Killed signal, gmake error2,
+remote1/transport0. The cause is not established; neither timeout nor OOM is
+claimed. No tests ran. Original183-source archivebc881d2c...e64a and log remain.
+Native-build-r2 verifies protected existing worker-owner-r1 tree, initial
+namespaces/ext4, original source hashes and no active owned cwd/exe before reuse.
+Current archive183 SHAecc5df28d8507d9ccb73a9ef06aa85d30de2905cf6e28691b0fed9eef14f4727,
+manifest0282b3cf4570c4c36eb7a19f1cffee048215ce4ffc6e6b5b4f3040d45261241f,
+changes only accepted read_lease.cc/test/administrative08. Incremental -j1 builds
+the affected source and completes previously unbuilt test/API targets; it is not
+a fresh whole build. Six project-image hashes, clean ldd-r and final183 pass0/0.
+Source12 and ordinary method-r1 were independently reviewed before execution.
+
+Actual owner command is preserved in worker-owner-native-tests-r1.log: FIRST
+/usr/bin/env -i and absolute /usr/bin/python3 -I -B verifier, protected runner
+hash124ced2b182f052f8296ffe7a18eb0dc28d52ae9158b9142a3d686d707108db1,
+installed180s watchdog with owner210s outer bound. Immediate pre/post checks pin
+source183/JSON53/images6, CLI fixture and project library BEFORE tests, exact
+SONAME links/sole build RUNPATH/C-consumer library resolution, interpreter,
+watchdog, protected ancestry/initial namespaces/ext4 and no bytecode cache.
+Source files and the exclusive owned build tree remain frozen throughout.
+
+Observed selected CTest registration and actual execution exactly3/3 with verbose
+--no-tests=error: unit123/123 + adapters201/201 =324 unique GoogleTests, plus the
+pure C consumer. Separate focused LeasedWorkerLoop14/14, WorkerCatalogLease25/25
+and CoordinatedWriter24/24 PASS repeat those subsets. Real metadata prints
+User::Shell with user xattrs explicitly UNSUPPORTED; loader test labels remain
+injected. Direct C_CONSUMER_EXIT0 and exactly12 capmgr_@@CAPMGR_0 exports pass.
+ORDINARY_NATIVE_ONLY_PASS, CAPMGR_REMOTE_EXIT0 and TRANSPORT_EXIT0; no timeout or
+retained marker is recorded. Source-enforced exact fork/exec/wait/reap and lease
+assertions are not separately printed syscall evidence.
+
+This is ordinary owner/lifetime evidence, using the test-TU Ready bypass, not
+successful root typed Finish/five-FD startup or real NamespaceInit/CLI
+nondelegation. Native full11, RPM/install, production admission, live revision
+invalidation, executable authority and crash-maintenance proof remain unexecuted
+or gated. InstalledRelease15 unchanged. Final scoped runtime/document/publication
+review is pending; next action is that verdict, followed by reviewed publication
+and separately designed root bootstrap integration. No reference-context Drop,
+module/service/RPC, global policy or operational DB result is inferred.
+
+
+P04-WORKER-OWNER-r2 FINAL ORDINARY-NATIVE/PUBLICATION ACCEPTED by independent
+reviewer for the exact12-path private checkpoint. Original accepted07
+295385ef29164051d326538c94bcea6717b9908fea9a1fede867175812ee17ae and
+reviewed administrative08 9f0dc2af9c2e1a718f459f372c024a95d5bcdb1248a0ae5c6c23b25dda44dede
+are preserved before these heading/Next/disposition edits. The preceding final
+review-pending text is chronologically superseded only by this scoped verdict.
+Next: publish the reviewed12 paths, then separately design/freeze successful
+root typed Finish/five-FD startup and NamespaceInit/CLI nondelegation evidence.
+No root workload, package/install, revision invalidation, crash maintenance or
+production gate closes from the ordinary test-TU Ready bypass.
