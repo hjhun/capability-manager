@@ -18,6 +18,7 @@
 #include "../fixtures/read_policy_context.hh"
 #include "../fixtures/read_policy_code_image.hh"
 #include "../fixtures/read_policy_survivor_hold.hh"
+#include "../fixtures/read_policy_socket_creation.hh"
 
 #include <charconv>
 #include <limits>
@@ -121,10 +122,18 @@ int main(int argc, char** argv) {
         [&](int fd) {
           if (kind == "reader-hold")
             VerifyContext("System", 301, true);
-          else
-            Check(TaskLabel() == "User::Shell", "never-drop server subject");
+          else {
+            Check(!getresuid(&r, &e, &s) && !r && !e && !s &&
+                      !getresgid(&rg, &eg, &sg) && !rg && !eg && !sg &&
+                      TaskLabel() == "User::Shell",
+                  "never-drop server identity");
+          }
           OwnInitialTable(stage, fd,
                           &reference);  // exact0..4 before constructors
+          if (kind != "reader-hold") {
+            stage = "reference-server-creation-mask";
+            EstablishReferenceServerCreationMask();
+          }
         },
         kind.c_str(), root.c_str(), endpoint.c_str());
   } catch (const std::exception& error) {

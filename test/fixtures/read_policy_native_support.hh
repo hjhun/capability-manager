@@ -265,7 +265,11 @@ class Factory final : public Stub::ServiceBase::Factory {
   registration.Close();
   return 0;
 }
-int Client(const std::string& endpoint, FixedRole role, bool context_only) {
+using ClientObservation = void (*)(const char*, const std::string&, FixedRole,
+                                   const char*, const char*) noexcept;
+
+int Client(const std::string& endpoint, FixedRole role, bool context_only,
+           ClientObservation observe = nullptr) {
   stage = "client-context-postcondition";
   Check(!context_only, "context-only must stay module-free");
   VerifyContext(role.label, role.uid, role.platform_group);
@@ -280,6 +284,7 @@ int Client(const std::string& endpoint, FixedRole role, bool context_only) {
     const char* native_failure = nullptr;
     try {
       stage = "client-connect";
+      if (observe) observe("client-preconnect", endpoint, role, stage, nullptr);
       proxy->Connect(true);
       Check(listener.connected, "connect listener unavailable");
       stage = "client-method-reply";
@@ -299,9 +304,13 @@ int Client(const std::string& endpoint, FixedRole role, bool context_only) {
                  InvalidProtocolException&) {
       native_failure = "InvalidProtocolException";
     }
+    const char* const original_stage = stage;
+    if (native_failure && observe)
+      observe("client-native-failure", endpoint, role, original_stage,
+              native_failure);
     if (native_failure)
       std::cout << "REAL_GATE_NOT_PROVED role=" << role.name
-                << " stage=" << stage << " native=" << native_failure
+                << " stage=" << original_stage << " native=" << native_failure
                 << " specific_Cynara_decision=NOT_OBSERVED" << std::endl;
     stage = "client-teardown";
     if (listener.connected) proxy->Disconnect();

@@ -5539,6 +5539,39 @@ Ordinary64 final evidence review and separate exact root safety review are pendi
 Retained iCNk4Q/B29oJu untouched; no cleanup/repair or policy expansion.
 
 
+### P06 route-r2 root diagnostic measured FAIL (final evidence review pending)
+
+Independent reviewer ACCEPTED ordinary64 evidence and exact ROOT-METHOD-r1
+pre-execution safety only. Owner rechecked exact method3/outer-plan2 hashes then
+ran the unchanged bounded route. Complete native-root-tests-r1 log prints FIRST
+clean env-i absolute Python-I-B, installed120s/owner150s, transferred2 and immediate
+pre/post source210/JSON53/SDK5/images7/providers53/provenance checks.
+ROOT_SURVIVOR_RETURN1, remote1/transport0; no timeout/full fixture PASS.
+
+Server sbEzCW separately completes printed barrier/coordinator reap-9/adopted
+nonexit/EX contention/nonexit/actual normal reap0/EX release/removal before server
+CASE_PASS. New bounded AUL server Listen/terminal query records match the expected
+MAIN path and successful named socket metadata, with zero lifetime service/cancel/
+other/rejection counters. Source-enforced initial/final ownership/barrier assertions
+remain distinct from individually printed observations.
+
+Reader Vmiui5 is RETAINED before its barrier. Known attached report records reader
+3314926/server3314925. Server Listen, reader preconnect and native-failure queries
+all report the same expected representable95-byte MAIN path with successful lstat,
+matching metadata dev20/inode15414846/root UID/GID0; own registration-name reports
+match expected. Client query explicitly independent/rawUID301, actual proxy target
+and retained path NOT_OBSERVED. Saved lstat errno0 is not a failed RPC errno. Actual
+129-byte untruncated REAL_GATE_NOT_PROVED preserves client-connect/InvalidIOException/
+specific_Cynara_decision NOT_OBSERVED; there is no reader body/ACK/teardown/lifetime
+proof, nor final reader-server drain sample. Matching independent path APIs/socket
+metadata do not identify internal prepare/connect/send/receive/credential failure.
+
+Overall full route remains FAIL/NOT_ACCEPTED; server-only evidence is separate.
+Fresh retained Vmiui5 plus historical iCNk4Q/B29oJu are untouched externally; no
+cleanup/repair/rerun follows. Source/provider guidance remains distinct from exact
+installed binary provenance. No policy/SQL/real recovery/StageB/product result.
+
+
 ### Prospective publication series administrative boundary (review pending)
 
 Four exact filesystem-only source trees based on published07780c7 use frozen
@@ -5567,3 +5600,216 @@ Host checks12/14/14/22 were sequential reconfigure/affected rebuilds in one reus
 build directory, not four fresh native builds. Route11/session/spec changes are
 excluded from the four source commits. Actual owner commit/push/ref checks follow
 separately; historical pending paragraphs retain their chronological meaning.
+
+
+### Ordered publication owner result and package presentation acceptance
+
+Owner verified each selected index tree against frozen path/hash maps with Git
+canonical file modes, preserving the route WIP worktree. Commits pushed on main:
+mechanical133 06779a532b5be22fb04c0fb2217de1cc009a4405; survivor-r3 SOURCE20
+c73945a00c953b5841852eadccbe7e784c683df9; layout8
+8e1fa44958b75a93b1ee180e0f393b0baff5995d; signal7
+c1fa923d843fc827a2825e06d8dfe43cfc96fdb8; accepted admin2
+243211e47f7944e9b3023cc013dda3b82e60465d; separate package spec presentation1
+38ce9ba36111a7bc7e92c4d3e16e73baebbc1b23. Every push exit0 and exact remote
+ref equality verified; source-only survivor runtime remains FAIL. Original first
+publication-verifier attempt refused archive physical0664 versus Git canonical
+100644 before any commit, despite equal bytes/executable bits. R2 canonical
+Git-mode comparison fixed only that outside-project verifier. GitHub initially
+rejected survivor push with fatal commit_refs; same reviewed commit retry succeeded
+without history rewrite. Logs/maps/failures remain external evidence.
+
+Independent reviewer ACCEPTED separate spec SHA
+b559690ce1a16e99df6ae66960b44446bdf6f3aeabf703aabe4c1002a5750e54: only
+command continuations/blank separation,109 joined logical lines/tokens unchanged,
+host/native/native-prefix rpmspec parses0/0 and expanded arguments equal. Existing
+pc Name/filename/template and LICENSE unchanged. Release15 unchanged; no rebuilt
+RPM/install/package activation follows from source publication.
+
+P06 root diagnostic is independently ACCEPTED AS ACCURATE FAILURE EVIDENCE ONLY,
+not full runtime: preserve accepted08 SHA102741de349b60379798ef95ad80225b1aa1c3e63218583ce897ebae91dddd93
+before bookkeeping. Server-only sbEzCW passes; retained Vmiui5 has no reader proof.
+Observed socket49600 decodes S_IFSOCK|0700/root UID/GID0, not a failed syscall errno.
+A separate accepted development contract permits fixed early root-server-only
+creation-mask transition, before module load, with unchanged real authorization.
+No new source/native/runtime result is inferred by design acceptance.
+
+
+### P06 socket-creation-r1 local implementation/host evidence (review pending)
+
+Independent reviewer ACCEPTED development contract e4d6173578dd3bed6ecc33f938a5a79e29ef77a48cdfba780cce16408759323c,
+not new native/root execution. New standard-runtime helper changes only validated
+server-hold/reader-server creation mask after complete pre-dlopen one-task/context/
+reference validation. Unexpected prior mask rejects; no socket repair or threaded
+query-toggle. Both native observer and Python supervisor reject wrong named
+root/socket0777/API/literal prerequisites before readiness; informational success
+alone supplies no barrier/authentication. Source-owned record opens request0600
+and mkdtemp/private directory creation0700, with provider creation side effects
+explicitly part of the process-wide000 server premise. Shared original-mode
+support/entry unchanged; no generated policy/FD/lease/lifetime weakening.
+
+Ordinary host helper11/11 PASS16ms (existing route6 + actual isolated creation4 +
+pure prerequisite1), Python61/61 PASS0.234s, full host CTest23/23 PASS11.34s, launcher
+-fsyntax-only exit0. Optional native module/AUL is not compiled by those host
+checks; pure helpers/protocol and trusted startup bypass remain distinct from
+actual root/module authorization. Initial helper build-r1 used stale build tree
+and failed No rule to make target before compilation; configure actual build-style
+and build-r2 passed. Final catch/cleanup presentation change rebuilt as r3 before
+these recorded results; earlier successful binary is not substituted for final
+source bytes. No corrected native compile/test/root invocation yet.
+
+Frozen review union14 includes accepted route11 plus changed launcher and two new
+standard-only helper/test files; delta10 against captured actual originals includes
+contracts/evidence. Published source-only survivor/layout/signal/spec checkpoints
+remain unchanged; new current07/08 include separate administrative publication
+records without silently staging route WIP. All historical failures/retained
+scopes and original acceptance hashes remain external immutable evidence.
+
+### P06 socket-creation-r2 ordinary wait-budget correction (review pending)
+
+Reviewer CHANGES_REQUESTED r1 only for ExactReap accepting a positive wait after
+its absolute end. Frozen r1 union14/manifest99f27a259282548ac8307b50d4bd826ea726afb9f30efabc2e66dabc0e150047
+and archive5ab8aa0016789e3bb5c9cb53353bb9a566c2df37955678f26d2580878c5a3cee
+remain historical source/host evidence. Production launcher/native/Python gate
+bytes are unchanged. Corrected SAME test helper checks before and after wait;
+late actual reap fails without another wait/signal/removal. Three deterministic
+Test-TU clock/wait cases reject expiry before retry and late final positive reap,
+and accept on-time completion. They launch no child and make no kernel claim.
+
+Final helper build-r4 return0; helper-r4 actual14/14 no skips PASS17ms. Full host
+check-r2 CTest23/23 PASS11.47s. Python61 remains unchanged and runs within that
+check; prior independent Python61/syntax0 evidence remains separate. Session
+SETSID candidate is held outside the worktree during this fullhost rerun; the
+accepted signal baseline is preserved. Frozen socket r2 changes only the test
+and07/chronological08 from r1. Corrected native compilation/tests/root remain
+NOT_RUN/unapproved; prepared source212-r1 was never transferred/executed and
+will be superseded before any future compile. All retained reader scopes untouched.
+
+### P06 socket-creation-r2 accepted source / native compile / ordinary method
+
+Reviewer accepted exact union14 manifest2467835020b2cfbdabb7d669afc107bab3ce0f3b9d9f73022e4b51c3a236f49d
+and archive df98bf6e98dba962882588a2530cc68bee78532d61b89f5b311ae446e3b5e245
+for local source/host only; r1 late-positive-reap finding closed by explicit verdict.
+Original r2 snapshot07/08 bytes/hashes retained before this administrative append.
+
+Fresh protected native read-reference-socket-r2 compile/audit: source212 is frozen
+historical source210 overridden by accepted socket14, unchanged202 plus existing
+delta8/new2. Archivec58209928e7290f08ebfbcc77ed6eab96b230fa8c8c6241e2487e3beae55cc99
+manifest5912575bc59a9cf1efac1733f1fd10266881414f6c13bddeb16d230bd5e6889b.
+This is not a whole current-HEAD/native build; LAUNCH-SESSION is excluded. SDK5
+four official headers remain exact; diagnostic pc changes only the protected
+include-prefix to fresh tree, not library/SDK/system installation or LD path.
+Targeted native O1/j1 configure/compile/link/audit remote0/transport0. All7 image
+hashes and53 providers/closures recorded; IDs/default Cynara/entries/PIC/JSON,
+old/new module linkage, minimal launcher standard-only closure, AUL imported
+absolute link/NEEDED resolution and clean ldd-r/no RPATH/RUNPATH checked. Compiler
+commands identify early-mask launcher and new ordinary test inputs. This proves
+target compilation/linking, not module entry, socket creation or authorization.
+Installed1800s/owner1830s compile-only bounds recorded. No test/role executed.
+
+Prepared ordinary-method-r1 and read-only preflight: transferred3 methods checked,
+source212/JSON53/SDK5/images7/providers53/interpreter/watchdog/namespaces/ext4/
+no-cache PASS, explicit NO_TEST_OR_MODULE_OR_ROLE_INVOKED/remote0/transport0.
+Pending selection is exact helper14 plus three Python modules61 =75/no skips,
+FIRST clean Python-I-B checked source-only verifier/installed60s/owner90s and
+immediate before/after preflight. Test execution remains NOT_RUN/unapproved until
+separate exact method disposition. Root survivor method is not requested here.
+All retained iCNk4Q/B29oJu/Vmiui5 remain untouched; previous full FAILs stand.
+
+### P06 socket-creation-r2 ordinary75 result / root method pending
+
+Targeted compile/audit and exact ordinary-method-r1 separately ACCEPTED by
+reviewer; preserve accepted08 SHA1d81d7855ef4ffa4470f8c079a808ceb9908514afafec20e3c023d706e78fa45
+before this append. Exact method3/outer-plan2 hashes rechecked before owner run.
+Native ordinary-tests-r1: helper14/14 and Python61/61 (0.128s), no skips, both
+returns0, ORDINARY_SOCKET_HELPER14_PYTHON61_ONLY_PASS, remote0/transport0. Approved
+FIRST clean startup/installed60s/owner90s and immediate pre/post212/JSON53/SDK5/
+images7/providers53/provenance pass. Four actual ordinary owned-child socket tests
+measure077->0700/early000->0777/private creation/parent-reader preservation and
+unexpected mask refusal; exact reaps/cleanup are source-enforced assertions,
+not printed syscall traces. Three fake clock/wait tests launch no child. Python
+fake-image/protocol and helper pure metadata remain separate from platform role
+execution. No launcher/module/AUL/RPC/Drop/root survivor was selected.
+
+Root-method-r1 preparation: same fixed sequential server then reader inert-reference
+experiment, exact fresh socket-r2 launcher/module and preflight/source212 bindings;
+FIRST clean source-only verifier/installed120s/owner150s, immediate full pre/post,
+no workload/cleanup predicate broadening. Accepted early process-wide server000
+creation premise and negative pre-READY named0777 gate are the source amendment.
+Read-only root-preflight-r1 checks transferred2/provenance PASS remote0/transport0,
+explicit NO_TEST_OR_MODULE_OR_ROLE_INVOKED before watchdog/role invocation. Full
+root runtime remains NOT_RUN/UNAPPROVED pending separate exact pre-execution review.
+All three historical retained readers and prior overall FAIL/server-only evidence
+remain unchanged; no automatic cleanup/repair/policy/SQL/real-journal authority.
+
+### P06 socket-creation-r2 approved root method / measured two-case result
+
+Reviewer accepted ordinary75 evidence/admin prefix d5bcb5c555125fa3fb2cdf06a76f1766d5ada4bdb54039eff75926db2e5ab3df
+and exact root-method-r1 pre-execution separately. Owner rechecked method3/outer-
+plan2 hashes immediately before fixed invocation. Complete native-root-tests-r1
+records FIRST clean env-i absolute Python-I-B/source-only verifier, installed120s/
+owner150s and full212/JSON53/SDK5/images7/providers53/provenance checks before/after.
+ROOT_SURVIVOR_RETURN0, ROOT_SURVIVOR_TWO_CASES_ONLY_PASS, remote0/transport0; no
+timeout/retained/failure marker in this new run. Final runtime/publication review
+is pending; prior three overall FAILs and retained scopes remain unchanged.
+
+Server scope o0zK5l: Listen and terminal counters created/rejected/services/cancel/
+other all0, named root0:0 socket49663 (=S_IFSOCK|0777), complete expected95-byte
+literal. Printed independent barrier, actual coordinator reap-9, adopted role
+3328421 nonexit before/EX contention/nonexit after, actual normal adopted reap0,
+EX available then REMOVED before server CASE_PASS.
+
+Reader scope5No9sh: spawned reader3328524/server3328523 diagnostics; Listen and
+independent rawUID301 preconnect samples match the expected95-byte literal and
+named socket dev20/ino15474556/root0:0/mode49663/lstat0/errno0. Actual proxy retained
+target/path remains NOT_OBSERVED. Native body PID3328524/token system301-platform:
+3328524/raw UID/GID301/System/cancel1/other0 and actual client reply-6 printed.
+Server terminal counts created1/rejected0/services0/cancel1/other0. Source requires
+checked server drain/normal reap/endpoint absence and reader teardown/context/ref
+validation plus independent HOLD_ACK/coordinator body correlation before barrier;
+those conditions are not independently printed raw syscall tuples. Then printed
+barrier/coordinator reap-9/adopted nonexit/EX contention/nonexit/normal reap0/EX
+available/REMOVED before reader CASE_PASS. Both phases precede full fixture PASS.
+
+Five bounded route JSON records, one body/reply, two owned/removal pairs and two
+known adoption sequences were audited from complete log; local audit JSON is
+extra owner analysis, not separate device execution. Initial/default SIGCHLD/
+subreaper/table/drop/pre-dlopen exact077->000/code3 closure/borrowed4 retention,
+post-known-reap/final ECHILD/sticky eligibility and pinned inventory checks remain
+source-enforced, not individually printed syscall evidence. Server000 is process-
+wide including trusted pinned provider constructors/creation effects, not socket-
+local or production policy. Named observations are not retained socket identity,
+Cynara raw decision or the historical failed connect/send/receive syscall/errno.
+
+The new measured fixed fixture now traverses actual real generated/default MAIN/
+callback/Cancel route and post-teardown reader lifetime under the accepted setup.
+It does not prove arbitrary descendants/native TLS behavior, actual journal/CLI
+recovery, SQL/Authorize/Confirm/StageB/direct-read subset or production admission.
+iCNk4Q/B29oJu/Vmiui5 untouched externally; their FAIL evidence is preserved.
+No original-mode/namespace/remount/policy/load2/install/package/ARM authority.
+LAUNCH-SESSION isolated candidate is source/host accepted separately and still
+unapplied to current worktree/device source212/index; native support remains open.
+
+### P06 socket-creation-r2 final scoped runtime/publication ACCEPTED
+
+Independent reviewer w1:pA accepted the complete measured two-case log, exact
+method3/outer-plan2, reviewed13 code/07 hashes and administrative08
+d55cb3346194b4cee920ce8c9bea04387f3e50a3cf3c92e0b90a191ae37869d7.
+Prospective14 and complete212-file tree were independently reconstructed from
+HEAD38ce9ba plus those exact overrides; LAUNCH-SESSION remained excluded.
+Historical NOT_RUN/UNAPPROVED paragraphs above describe their pre-execution
+states; the later fixed inert-reference runtime is now ACCEPTED. Earlier full
+FAILs/server-only results and retained iCNk4Q/B29oJu/Vmiui5 remain unchanged.
+
+Accepted scope is measured registered-server and post-RPC reader survival/release
+under the fixed ownership/topology and early process-wide server000 premise,
+with original exceptions, default policy and informational-observation limits.
+No historical failing syscall/errno, arbitrary TLS/descendants, real journal/CLI
+recovery, SQL/Authorize/Confirm/StageB/direct-read subset, product admission,
+package/install or ARM acceptance follows. No further root run is requested.
+
+Next: publish only the reviewed14 paths after exact selected-tree verification,
+record actual commit/push/remote equality, then separately apply the accepted
+LAUNCH-SESSION-r2 four code/build overrides and append-merge its contract/evidence
+into current documents. Actual-tree host checks and a frozen native target/method
+remain required; no session native test or privileged workload is approved.

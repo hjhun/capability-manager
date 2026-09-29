@@ -18,6 +18,7 @@ ADD_SUBDIRECTORY(integration)
 ADD_TEST(NAME capmgr-code-image COMMAND capmgr-code-image-tests)
 ADD_TEST(NAME capmgr-survivor-hold COMMAND capmgr-survivor-hold-tests)
 ADD_TEST(NAME capmgr-survivor-publication COMMAND capmgr-survivor-publication-tests)
+ADD_TEST(NAME capmgr-reference-route COMMAND capmgr-reference-route-tests)
 ADD_TEST(NAME capmgr-read-policy-context COMMAND capmgr-read-policy-context-tests)
 ADD_TEST(NAME capmgr-recovery-reference COMMAND capmgr-recovery-reference-tests)
 ADD_TEST(NAME capmgr-unit COMMAND capmgr-unit-tests)
@@ -71,6 +72,7 @@ ADD_CUSTOM_TARGET(check
   DEPENDS
     capmgr-survivor-hold-tests
     capmgr-survivor-publication-tests
+    capmgr-reference-route-tests
     capmgr-leased-bootstrap-path-tests
     capmgr-code-image-tests
     capmgr-read-policy-context-tests

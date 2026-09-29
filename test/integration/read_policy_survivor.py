@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import stat
 import sys
@@ -198,6 +199,119 @@ def cleanup_child(record):
         record.kill_and_wait(3)
 
 
+
+class RouteObservationFailure(RuntimeError):
+    """A validated bounded error report, never an informational success."""
+
+
+class RouteRecords:
+    """Finite informational samples only; never feeds the proof ledger."""
+    def __init__(self, mode):
+        self.mode, self.seen, self.failed = mode, set(), False
+
+    def observe(self, origin, record):
+        try:
+            check(not self.failed, 'route observation already failed')
+            native_mode = ('server-hold' if self.mode == 'server' else
+                           'reader-server' if origin == 'server' else 'reader-hold')
+            server = native_mode != 'reader-hold'
+            phases = ('server-listen', 'server-terminal') if server else (
+                'client-preconnect', 'client-native-failure')
+            check(origin == 'role' if self.mode == 'server' else origin in ('role','server'),
+                  'fixed route origin')
+            check(record.get('mode') == native_mode and record.get('phase') in phases,
+                  'fixed route mode/phase')
+            check(type(record.get('pid')) is int and record['pid'] > 0,
+                  'route own PID report')
+            key = (origin, record['phase'])
+            check(key not in self.seen and len(self.seen) < 4,
+                  'finite one sample per route phase')
+            stages = ('reference-server-listen','reference-server-loop') if server else (
+                'client-connect','client-method-reply')
+            check(record.get('native_stage') in stages and record.get('native_exception') in (
+                'NONE','PermissionDeniedException','InvalidIOException','InvalidProtocolException'),
+                  'fixed saved native classification')
+            check(record.get('stage') in ('reference-route-observation','reference-route-error'),
+                  'fixed informational route stage')
+            base = {'stage','mode','phase','pid','native_stage','native_exception'}
+            if record['stage'] == 'reference-route-error':
+                check(set(record) == base | {'reason'} and
+                      record['reason'] == 'observation-failed', 'exact route error schema')
+            else:
+                check(set(record) == base | {'endpoint','query_kind','query_uid',
+                      'actual_proxy_target_path','own_name','path','metadata','server_counts'},
+                      'exact route observation schema')
+                endpoint = record['endpoint']
+                check(type(endpoint) is str and re.fullmatch(
+                    r'd::org\.capmgr\.referencesurvivor\.[1-9][0-9]{0,9}\.system301-platform', endpoint),
+                    'bounded fixed route endpoint')
+                check(record['query_kind'] == ('stub-source-query' if server else 'independent') and
+                      record['actual_proxy_target_path'] == ('NOT_APPLICABLE' if server else 'NOT_OBSERVED'),
+                      'independent query cannot claim actual proxy path')
+                check(type(record['query_uid']) is int and 0 <= record['query_uid'] <= 0xffffffff and
+                      (server or record['query_uid'] == 301), 'fixed independent client query UID')
+                for name in ('own_name','path'):
+                    value = record[name]
+                    fields = {'hex','sample_bytes','complete','api_status','expected_match'}
+                    if name == 'path': fields |= {'expected','length_representable'}
+                    check(type(value) is dict and set(value) == fields, 'route text schema')
+                    check(type(value['sample_bytes']) is int and 0 <= value['sample_bytes'] <= 512 and
+                          type(value['hex']) is str and len(value['hex']) == 2 * value['sample_bytes'] and
+                          re.fullmatch('[0-9a-f]*', value['hex']), 'bounded escaped route bytes')
+                    check(type(value['complete']) is bool and type(value['expected_match']) is bool and
+                          type(value['api_status']) is int, 'route text types')
+                own_expected = endpoint + ('' if server else '.client')
+                own = record['own_name']
+                check(own['expected_match'] == (own['complete'] and own['hex'] == own_expected.encode().hex()),
+                      'actual bounded own-name comparison')
+                path = record['path']
+                expected = '/run/aul/rpcport/.' + endpoint + '::CapabilityManager'
+                check(path['expected'] == expected and type(path['length_representable']) is bool and
+                      path['length_representable'] == (len(expected.encode()) < 108) and
+                      path['expected_match'] == (path['complete'] and path['hex'] == expected.encode().hex()),
+                      'full literal and sun_path comparison')
+                metadata = record['metadata']
+                check(type(metadata) is dict and set(metadata) == {
+                    'attempted','result','errno','dev','ino','uid','gid','mode'}, 'named metadata schema')
+                check(type(metadata['attempted']) is bool, 'metadata observation type')
+                if metadata['attempted']:
+                    check(path['api_status'] == 0 and path['complete'] and path['expected_match'] and
+                          path['length_representable'] and path['hex'] == expected.encode().hex(),
+                          'lstat only exact permitted API path')
+                    check(type(metadata['result']) is int and metadata['result'] in (0,-1) and
+                          type(metadata['errno']) is int and metadata['errno'] >= 0,
+                          'separate lstat result/errno')
+                    check(metadata['errno'] == 0 if metadata['result'] == 0 else metadata['errno'] > 0,
+                          'immediate lstat success/error classification')
+                    for field in ('dev','ino','uid','gid','mode'):
+                        check((type(metadata[field]) is int and metadata[field] >= 0)
+                              if metadata['result'] == 0 else metadata[field] is None,
+                              'metadata success/failure fields')
+                else:
+                    check(all(value is None for field,value in metadata.items() if field != 'attempted'),
+                          'unattempted metadata has no syscall result')
+                if server and record['phase'] == 'server-listen':
+                    check(path['api_status'] == 0 and path['complete'] and
+                          path['expected_match'] and path['length_representable'] and
+                          metadata['attempted'] and metadata['result'] == metadata['errno'] == 0 and
+                          metadata['uid'] == metadata['gid'] == 0 and
+                          metadata['mode'] == (stat.S_IFSOCK | 0o777),
+                          'fresh root server socket creation prerequisite')
+                counts = record['server_counts']
+                if server:
+                    check(type(counts) is dict and set(counts) == {'created','rejected','services','cancel','other'} and
+                          all(type(v) is int and 0 <= v <= 0xffffffff for v in counts.values()),
+                          'finite lifetime server counters')
+                else:
+                    check(counts is None, 'client does not report server counters')
+            self.seen.add(key)
+            if record['stage'] == 'reference-route-error':
+                raise RouteObservationFailure('reported route observation failure')
+        except BaseException:
+            self.failed = True
+            raise
+
+
 class BarrierRecords:
     """Bounded reports, never signal authority; both independent inputs required."""
     def __init__(self, core, mode):
@@ -206,6 +320,7 @@ class BarrierRecords:
         self.reference = None
         self.pending = []
         self.barrier = None
+        self.routes = RouteRecords(mode)
 
     def observe(self, origin, data):
         if origin in ('error','server-error'):
@@ -226,6 +341,14 @@ class BarrierRecords:
             print('SURVIVOR_DIAGNOSTIC='+data.decode('utf8'), flush=True)
             return
         record = self.core.decode(data)
+        if record.get('stage') in ('reference-route-observation','reference-route-error'):
+            try:
+                self.routes.observe(origin, record)
+            except RouteObservationFailure:
+                print('SURVIVOR_ROUTE_DIAGNOSTIC=' + repr(data), flush=True)
+                raise
+            print('SURVIVOR_ROUTE_DIAGNOSTIC=' + repr(data), flush=True)
+            return
         if origin == 'coordinator' and record.get('stage') == 'spawned':
             check(self.pid is None and set(record) == {'stage','pid','server_pid','dev','ino'},
                   'exact single spawn report')
@@ -237,6 +360,7 @@ class BarrierRecords:
                   or (self.mode == 'server' and server is None), 'fixed server roster')
             self.pid, self.server = record['pid'], server
             self.reference = (record['dev'],record['ino'])
+            print('KNOWN_REFERENCE_SPAWN=' + json.dumps(record, sort_keys=True), flush=True)
             self.barrier = self.core.Barrier(self.mode, self.pid, self.server)
             for prior in self.pending: self.barrier.observe(*prior)
             self.pending.clear()
@@ -249,7 +373,7 @@ class BarrierRecords:
             self.barrier.observe(origin,data)
 
     def ready(self):
-        return self.barrier is not None and self.barrier.ready()
+        return self.barrier is not None and self.barrier.ready() and not self.routes.failed
 
 
 def prove_survival(ops, ledger):

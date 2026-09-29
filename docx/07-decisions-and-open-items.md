@@ -1273,6 +1273,50 @@ results and successful authentication/job lifetime/production authority stay
 separate gates.
 
 
+## P06 reference-route observations (private diagnostic development)
+
+The new-only reference module may report bounded own registration and fixed AUL
+port-path queries plus lstat metadata at finitely defined Listen/preconnect/native
+failure/terminal phases. Server query uses aul_getuid as the local stub source
+route does; client query_kind is independent, query_uid301 and actual proxy
+target/path NOT_OBSERVED. No diagnostic call to mutating rpc_port_get_target_uid
+or production getter. Compare complete API path bytes to the entire fixed literal
+and its representable sun_path length before lstat; no alternate stat/access/open/
+connect fallback on null/error/truncation/mismatch. Matching d:: queries does not
+measure UID routing discrimination or the proxy's retained internal path.
+
+Returned strings are bounded/freed; arbitrary bytes are hex in bounded JSON.
+API status and immediately saved lstat errno are separate from the original
+native exception/stage retained before observation/teardown. Snapshot creation/
+output errors are contained (including GLib callbacks), preserve teardown and
+fail this new fixture, never replace the original exception with a claimed RPC
+errno. Server counters are lifetime factory-create/rejection/cancel/other counts,
+not inferred solely from current empty services. Only initial Listen and terminal
+samples are emitted, no per50ms loop output/deadline extension.
+
+The supervisor accepts only fixed origin/mode/phase/type/byte schemas, at most one
+record per finite phase. Informational/error frames do not set ACK, coordinator
+correlation, readiness, child ownership or cleanup eligibility. Existing unsupported
+REAL_GATE_NOT_PROVED refusal remains. A printed already-attached positive spawn
+record supplies diagnostic correlation only; exact P_PID adoption/waits and both
+ECHILD barriers still independently supply the frozen ownership proof. No new
+observer PID chooses signal/reap authority or retroactively appears in old logs.
+
+Shared Client observer defaults null for original modes; new-only module declares
+its required AUL dependency. Old exit10/20/C entries/generated/default real policy
+remain. Metadata inode/owner/error or path equality does not identify the internal
+connect/send/receive/Cynara failure. Local source/pure host, native compilation/
+providers and any runtime method remain separate reviews. No retained-scope repair,
+policy/SQL/real journal/recovery/StageB/production or install authority follows.
+
+Route revision r2 independently treats a validated reference-route-error as a
+permanent supervisor failure, preserving its bounded diagnostic before raising.
+Neither subsequent valid proof frames nor eventual exact known cleanup restore
+readiness/retirement eligibility. The reader-server timer rechecks the same
+absolute deadline after its terminal observer; observation time cannot turn an
+expired reader drain into success. Server-only hold expiry keeps its separate rule.
+
+
 ## Checkpoint publication boundary
 
 Mechanical source presentation, source-only survivor diagnostics, build layout
@@ -1283,3 +1327,50 @@ selected CTest3 and LAUNCH-SIGNAL8 evidence remain their exact targeted scopes.
 The next route-observation and session changes are excluded from these source
 checkpoints until their own reviewed publication. Namespace, policy, packaging
 activation and installedRelease15 gates remain unchanged.
+
+
+## P06 reference root-server creation premise (source revision r1)
+
+Only the fixed server-hold/reader-server root launcher roles may change their
+process-wide creation mask from exactly077 to000. Fixed root IDs/User::Shell,
+validated topology/borrowed reference and exact one-task pre-load table precede
+this operation; platform constructors have not run. Unexpected prior mask fails
+before dlopen, without restore/retry/fallback. The000 mask persists throughout
+that root server lifetime, including provider constructors; it is not socket-local.
+Reader/supervisor/coordinator077 and original modes remain unchanged. Provider
+creation side effects remain part of this private trusted-image fixture premise,
+not an assurance of socket-only changes or production policy.
+
+Project-owned ready/body publication requests0600 at open before any fchmod;
+private scope/directory creation is0700, established before server transition.
+No broad intermediate data file or post-failure socket chmod/chown is permitted.
+At server Listen, complete expected API literal plus actual named S_IFSOCK|0777
+root UID/GID0 metadata is a negative setup gate BEFORE READY/HOLD_ACK. Native
+observation errors and supervisor mismatches poison eligibility; even later valid
+barrier/reap data cannot erase them. A passing creation sample alone grants no
+readiness, authentication, retained stub/proxy FD identity or cleanup authority.
+Unchanged real generated MAIN/callback/Cynara/Cancel-body correlation still governs
+reader proof and can fail independently. Saved lstat errno remains only that
+metadata syscall, never the historical failing RPC errno.
+
+Ordinary isolated tests use a trusted one-task/default-SIGCHLD/exclusive ordinary
+child topology to show inherited077 creates0700 versus early server000 creates0777,
+unchanged reader/parent mask, unexpected-mask refusal and explicit0600/0700 private
+objects. Parent never changes its mask; bounded exact known reaps/ECHILD and pinned
+scratch directory validation precede removal. Unknown waits/timeouts retain the
+scratch scope. These tests bypass the root launcher context/reference gate and
+are not root identity, AUL, module, policy or survivor lifetime evidence.
+
+All three prior readers iCNk4Q/B29oJu/Vmiui5 remain retained and untouched. Their
+full-runtime FAILs and separate server-only results remain historical evidence.
+This creation premise follows the observed0700 root socket candidate but does not
+identify the previous proxy syscall/path/errno or exact provider-source provenance.
+Exact new native compilation/ordinary/full methods remain separate required gates;
+no SQL/real journal/recovery/StageB/install/production authority follows.
+
+Socket-creation revision r2 checks the same absolute reap budget before every
+wait attempt and immediately after every returned wait. A late actual positive
+reap is completed ownership but remains elapsed-budget failure; no retry/signal
+or scope removal follows. Test-TU clock/wait cases exercise expiry before retry,
+late positive completion and on-time success without launching a child. These
+are classification tests, not preemptible scheduling or target runtime evidence.

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Injected supervisor orchestration, not module/root/reference runtime evidence."""
 import contextlib
+import errno
 import io
 import json
 import hashlib
@@ -145,6 +146,181 @@ class SupervisorProof(unittest.TestCase):
         self.assertTrue(all(fd == -1 for value in created for fd in value.ends))
         self.assertIn('RETAINED_', output.getvalue())
         self.assertNotIn('CASE_PASS', output.getvalue())
+
+
+class RouteReports(unittest.TestCase):
+    def record(self, error=False):
+        base = dict(stage='reference-route-error' if error else 'reference-route-observation',
+                    mode='reader-hold',phase='client-preconnect',pid=200,
+                    native_stage='client-connect',native_exception='NONE')
+        if error:
+            return dict(base,reason='observation-failed')
+        endpoint = 'd::org.capmgr.referencesurvivor.123.system301-platform'
+        expected = '/run/aul/rpcport/.'+endpoint+'::CapabilityManager'
+        text = dict(hex='',sample_bytes=0,complete=False,api_status=-1,expected_match=False)
+        return dict(base,endpoint=endpoint,query_kind='independent',query_uid=301,
+                    actual_proxy_target_path='NOT_OBSERVED',own_name=dict(text),
+                    path=dict(text,expected=expected,length_representable=True),
+                    metadata=dict(attempted=False,result=None,errno=None,dev=None,ino=None,uid=None,gid=None,mode=None),
+                    server_counts=None)
+
+    def test_information_and_error_never_supply_barrier_or_cleanup(self):
+        for error in (False,True):
+            reports=fixture.BarrierRecords(core,'reader')
+            ledger=core.Retirement()
+            with contextlib.redirect_stdout(io.StringIO()):
+                if error:
+                    with self.assertRaises(fixture.RouteObservationFailure):
+                        reports.observe('role',frame(self.record(error)))
+                else:
+                    reports.observe('role',frame(self.record(error)))
+            self.assertFalse(reports.ready())
+            self.assertIsNone(reports.pid)
+            self.assertIsNone(reports.barrier)
+            self.assertEqual(reports.pending,[])
+            self.assertFalse(ledger.eligible())
+
+    def test_valid_error_before_spawn_cannot_be_restored_by_all_proof_frames(self):
+        reports, spawned, ack, correlated = BarrierReports().records('reader')
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            with self.assertRaises(fixture.RouteObservationFailure):
+                reports.observe('role',frame(self.record(True)))
+            for origin, record in [('coordinator',spawned),('role',ack),
+                                   ('coordinator',correlated)]:
+                reports.observe(origin,frame(record))
+        self.assertTrue(reports.barrier.ready())  # isolated proof data is valid
+        self.assertTrue(reports.routes.failed)
+        self.assertFalse(reports.ready())
+        self.assertIn('SURVIVOR_ROUTE_DIAGNOSTIC=',output.getvalue())
+
+    def test_valid_error_after_barrier_during_realproof_drain_poison_is_sticky(self):
+        reports, spawned, ack, correlated = BarrierReports().records('reader')
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            for origin, record in [('coordinator',spawned),('role',ack),
+                                   ('coordinator',correlated)]:
+                reports.observe(origin,frame(record))
+        self.assertTrue(reports.ready())
+        ledger = core.Retirement()
+        scope = types.SimpleNamespace(ex=lambda busy: None,cleanup=lambda: self.fail('remove'))
+        role = types.SimpleNamespace(verify_adoption=lambda pid: True,observe=lambda: False)
+        stream = types.SimpleNamespace(live=True,step=lambda budget:
+            [('role',frame(self.record(True)))])
+        coord = types.SimpleNamespace(pid=123,kill_and_wait=lambda seconds: -9)
+        children = types.SimpleNamespace(require_no_children=lambda: None)
+        proof = fixture.RealProof(core,children,scope,stream,reports,coord,role,ledger)
+        with contextlib.redirect_stdout(output), self.assertRaises(fixture.RouteObservationFailure):
+            fixture.prove_survival(proof,ledger)
+        self.assertTrue(ledger.uncertain)
+        self.assertFalse(reports.ready())
+        # Later mocked exact reaps/ECHILD/endpoint success use the SAME ledger.
+        ledger.reap('role',0,0)
+        ledger.empty('post',errno.ECHILD)
+        ledger.endpoint_absent = True
+        ledger.empty('final',errno.ECHILD)
+        later = Operations()
+        with self.assertRaisesRegex(RuntimeError,'ineligible'):
+            fixture.check(ledger.eligible(),'sticky survivor cleanup ineligible')
+            later.remove()
+        self.assertNotIn('remove',later.calls)
+        self.assertFalse(later.removed)
+        self.assertNotIn('CASE_PASS',output.getvalue())
+        self.assertNotIn('REMOVED_REFERENCE',output.getvalue())
+
+    def test_information_after_spawn_never_supplies_ack_or_correlation(self):
+        reports=fixture.BarrierRecords(core,'reader')
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            reports.observe('coordinator',frame(dict(stage='spawned',pid=200,server_pid=201,dev=1,ino=2)))
+            reports.observe('role',frame(self.record()))
+        self.assertIn('KNOWN_REFERENCE_SPAWN=',output.getvalue())
+        self.assertFalse(reports.barrier.ack)
+        self.assertFalse(reports.barrier.coordinator)
+        self.assertFalse(reports.ready())
+
+    def test_duplicate_phase_is_sticky_and_finite(self):
+        reports=fixture.BarrierRecords(core,'reader')
+        with contextlib.redirect_stdout(io.StringIO()):
+            reports.observe('role',frame(self.record()))
+            with self.assertRaises(RuntimeError):reports.observe('role',frame(self.record()))
+        self.assertTrue(reports.routes.failed)
+        self.assertFalse(reports.ready())
+        self.assertEqual(len(reports.routes.seen),1)
+
+    def test_wrong_origin_query_and_field_type_refused(self):
+        for field,value in [('query_uid',True),('query_uid',302),
+                            ('actual_proxy_target_path','MATCHED'),('native_exception','EACCES')]:
+            reports=fixture.BarrierRecords(core,'reader');record=self.record();record[field]=value
+            with self.assertRaises(RuntimeError):reports.observe('role',frame(record))
+            self.assertFalse(reports.ready())
+        with self.assertRaises(RuntimeError):
+            fixture.BarrierRecords(core,'reader').observe('server',frame(self.record()))
+
+    def test_metadata_mismatch_never_claims_failed_rpc_errno(self):
+        reports=fixture.BarrierRecords(core,'reader');record=self.record()
+        record['metadata'].update(attempted=True,result=-1,errno=13)
+        with self.assertRaises(RuntimeError):reports.observe('role',frame(record))
+        self.assertFalse(reports.ready())
+
+    def test_hex_control_bytes_and_length_limit(self):
+        record=self.record();record['own_name'].update(hex='ff001b0a',sample_bytes=4)
+        reports=fixture.BarrierRecords(core,'reader')
+        with contextlib.redirect_stdout(io.StringIO()) as output:
+            reports.observe('role',frame(record))
+        self.assertNotIn('\x1b',output.getvalue())
+        self.assertFalse(reports.ready())
+        record=self.record();record['path'].update(hex='00'*513,sample_bytes=513)
+        with self.assertRaises(RuntimeError):
+            fixture.BarrierRecords(core,'reader').observe('role',frame(record))
+
+    def test_lifetime_server_counts_remain_after_services_empty(self):
+        record=self.record();record.update(mode='reader-server',phase='server-terminal',
+            native_stage='reference-server-loop',query_kind='stub-source-query',query_uid=0,
+            actual_proxy_target_path='NOT_APPLICABLE',
+            server_counts=dict(created=1,rejected=2,services=0,cancel=0,other=0))
+        reports=fixture.BarrierRecords(core,'reader')
+        with contextlib.redirect_stdout(io.StringIO()):reports.observe('server',frame(record))
+        self.assertFalse(reports.ready())
+        self.assertIsNone(reports.barrier)
+
+
+    def server_listen(self):
+        record=self.record();expected=record['path']['expected']
+        record.update(mode='reader-server',phase='server-listen',native_stage='reference-server-listen',
+            query_kind='stub-source-query',query_uid=0,actual_proxy_target_path='NOT_APPLICABLE',
+            server_counts=dict(created=0,rejected=0,services=0,cancel=0,other=0))
+        record['path'].update(api_status=0,complete=True,expected_match=True,
+                              hex=expected.encode().hex(),sample_bytes=len(expected))
+        record['metadata'].update(attempted=True,result=0,errno=0,dev=1,ino=2,uid=0,gid=0,
+                                  mode=stat.S_IFSOCK | 0o777)
+        return record
+
+    def test_server_creation_prerequisite_adds_no_barrier_authority(self):
+        reports=fixture.BarrierRecords(core,'reader')
+        with contextlib.redirect_stdout(io.StringIO()):
+            reports.observe('server',frame(self.server_listen()))
+        self.assertFalse(reports.ready())
+        self.assertIsNone(reports.barrier)
+
+    def test_bad_server_socket_permissions_poison_before_ready(self):
+        for field,value in [('mode',stat.S_IFSOCK | 0o700),('mode',stat.S_IFREG | 0o777),
+                            ('uid',301),('gid',10212)]:
+            reports=fixture.BarrierRecords(core,'reader');record=self.server_listen()
+            record['metadata'][field]=value
+            with self.assertRaisesRegex(RuntimeError,'creation prerequisite'):
+                reports.observe('server',frame(record))
+            self.assertTrue(reports.routes.failed)
+            self.assertFalse(reports.ready())
+
+    def test_creation_error_cannot_be_restored_by_later_barrier_frames(self):
+        reports,spawned,ack,correlated=BarrierReports().records('reader')
+        record=self.server_listen();record['metadata']['mode']=stat.S_IFSOCK | 0o700
+        with self.assertRaises(RuntimeError):reports.observe('server',frame(record))
+        with contextlib.redirect_stdout(io.StringIO()):
+            for origin,value in [('coordinator',spawned),('role',ack),('coordinator',correlated)]:
+                reports.observe(origin,frame(value))
+        self.assertTrue(reports.barrier.ready())
+        self.assertFalse(reports.ready())
 
 
 class BarrierReports(unittest.TestCase):

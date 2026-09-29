@@ -68,3 +68,12 @@ TARGET_LINK_OPTIONS(capmgr-leased-bootstrap-fault-image-fixture PRIVATE
 TARGET_LINK_LIBRARIES(capmgr-leased-bootstrap-fault-image-fixture PRIVATE
   capmgr-adapters
 )
+
+ADD_EXECUTABLE(capmgr-reference-route-tests
+  "${PROJECT_SOURCE_DIR}/test/unit/read_policy_route_observation_test.cc"
+  "${PROJECT_SOURCE_DIR}/test/unit/read_policy_socket_creation_test.cc"
+)
+TARGET_LINK_LIBRARIES(capmgr-reference-route-tests PRIVATE
+  GTest::gtest_main
+  nlohmann_json::nlohmann_json
+)

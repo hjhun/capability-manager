@@ -70,11 +70,13 @@
       SET(CAPMGR_REFERENCE_MODULE_SOURCES
         "${PROJECT_SOURCE_DIR}/test/integration/read_policy_reference_native.cc"
       )
+      PKG_CHECK_MODULES(CAPMGR_REFERENCE_AUL REQUIRED IMPORTED_TARGET aul)
       ADD_LIBRARY(capmgr-reference-native-fixture SHARED EXCLUDE_FROM_ALL
         ${CAPMGR_REFERENCE_MODULE_SOURCES}
       )
       TARGET_LINK_LIBRARIES(capmgr-reference-native-fixture PRIVATE
         capmgr-tidl-transport
+        PkgConfig::CAPMGR_REFERENCE_AUL
         nlohmann_json::nlohmann_json
         PkgConfig::GLIB
       )
