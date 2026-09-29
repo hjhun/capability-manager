@@ -5813,3 +5813,175 @@ record actual commit/push/remote equality, then separately apply the accepted
 LAUNCH-SESSION-r2 four code/build overrides and append-merge its contract/evidence
 into current documents. Actual-tree host checks and a frozen native target/method
 remain required; no session native test or privileged workload is approved.
+
+### LAUNCH-SESSION-r1 isolated local source/host candidate (review pending)
+
+Accepted development contract49c4b61635a4ae068e9c08bec9e2f727047e1968f5bf0de873ef01cfa058f63d
+implemented in a separate six-path candidate outside the working tree while
+P06 socket-r2 native/root method review proceeds. Exact RunCli diff only requests
+SETSID instead of SETPGROUP, removes setpgroup and adds its scoped comment; no
+new post-fork C++/signal handler, product hook, public header or cleanup refactor.
+Driver wrappers remain uninstalled/test-only. CMake retains target/sibling/root
+outputs and TIMEOUT8: replace obsolete group fault with init fault, add fixed
+invalid-executable/spawn/timeout/cancel/two notifier-failure cases,14 total.
+
+Fresh isolated host tree uses reviewed historical source212/socket-r2 plus these
+four code/build overrides, optional native transport/module OFF. Final driver
+build-r6 return0; registered verbose tests-r6 actual14/14 no skips PASS0.20s.
+Normal PID1118529=PGID=SID differs from parent1118525, exact normal reap0. Fixed
+timeout1118542 and cancel1118545 each show same owned SID/PGID, actual kill negative
+PID/SIGKILL return0 before exact leader reap signal9; application entry remains
+NOT_PROVED for spawn-return readiness. Parent state/eight defaults/high-FD/flags/
+ECHILD are source-enforced assertions, not extra syscall traces. Cancel helper
+JOINED with positivePID1, two error cases JOINED with positivePID0; actual spawn
+ENOENT2/ENOEXEC8 and injected EIO5 are distinct. Source method does not claim a
+measured kernel setsid failure. Existing Cli/Rpc focused9/9 PASS2195ms, including
+the separate actual-descendant fixture regression. Final full hostcheck-r4
+CTest29/29 PASS11.68s; no optional module/AUL/root workload selected.
+
+Historical driver11/12 passes and hostcheck-r1 26/26 remain earlier candidates.
+Adding notifier error cases initially omitted their driver allowlist: tests-r4
+failed2 before Run/spawn; hostcheck-r2 failed2/29. Logs preserved; corrected fixed
+allowlist rebuilt/reran as r5, then final finite notifier report/comment rebuilt
+r6 before this final evidence. No failed evidence rewritten as pass.
+
+Frozen six-path candidate is not the current worktree/index or a published/native
+result. Actual worktree remains accepted signal baseline and P06 route/socket WIP;
+index empty/main remote38ce9ba unchanged. Source originals captured immediately
+before candidate freeze, including current P06 administrative prefix; no P06
+code/native212 mutation. Source acceptance, controlled application/final actual-
+tree checks, exact native compile/provider/ordinary method and publication ordering
+remain pending. No worker/NamespaceInit/remount/root/policy/install/production gate.
+
+Initial unsubmitted local session-r1 freeze misstated parent SID1118524; actual
+verbose normal record is1118525. Revision r2 corrects only that administrative
+number and records this correction, preserving r1 bytes/hash; code/tests unchanged.
+
+### P06 published checkpoint / LAUNCH-SESSION-r2 controlled application
+
+Reviewed P06 fourteen-path private checkpoint committed and pushed as
+37e3dc4ecf9c2d3c75a26ee745b634bdcac776fa; actual remote main equals that commit.
+Index/complete212-file map matched reviewed scope plus permitted append-only
+final disposition, and the worktree was clean before session application.
+Accepted runtime08 d55cb3346194b4cee920ce8c9bea04387f3e50a3cf3c92e0b90a191ae37869d7
+and committed administrative08 cf49afb39ec290e88739321216203a1cb8368b9a8b56a5f700e3ad04a6c533fa
+remain preserved. No session code was included in that publication.
+
+Reviewer accepted exact isolated LAUNCH-SESSION-r2 six-path local source/host
+candidate manifest af7227229fe893faa33caeed2bfef7b37ca0fab096ac90a1a5cf6fc5956c2334
+and archive8709c3ca82deb4e1d71391bf1b15e38055da3219fb90c0c31136075ad81ee2de.
+Controlled actual-tree application copied only its exact four code/build files,
+then appended its accepted contract/evidence suffixes to current P06 documents;
+newer P06 chronology was not replaced with older isolated candidate snapshots.
+Original session pending statements above are historical; source/host candidate
+is ACCEPTED, while actual-tree checks/native compile/runtime/publication remain
+separate pending gates. P06 source/native212/root results are unchanged.
+
+### LAUNCH-SESSION actual-tree host selection (r3 review pending)
+
+After accepted P06 publication37e3dc4, controlled application retained exact
+accepted session four code/build hashes and appended only accepted document
+suffixes. Actual host build-style driver rebuild return0, verbose fixed14/14
+no skips PASS0.20s, then full check29/29 PASS12.16s. Captured actual CTest JSON
+contains exactly29 registrations and fixed14 with original root-build cwd/
+TIMEOUT8. This is affected rebuild/reconfiguration of the existing host tree,
+not a fresh independent build or optional platform/module/runtime proof.
+Published P06 implementation and all three earlier retained scopes are unchanged.
+
+Separate native preparation uses historical accepted socket212 archive plus
+exact isolated session6 overrides; documents there are historical candidate
+snapshots, not this current administrative tree. Fresh target compilation/audit
+only is in progress, with existing private official headers SDK4 unchanged and
+a prefix-only pc for the new protected build. No driver/CLI/invalid executable/
+CTest or privileged fixture is invoked by compilation; native tests remain
+NOT_RUN/unapproved until exact artifacts/provider/generated-invalid-file method
+review. Native source/preparation outcomes will be recorded separately.
+
+### LAUNCH-SESSION-r3 application accepted / targeted native preparation
+
+Reviewer accepted exact actual-tree6 manifest0a44141db92da0a9289c74f05a4300667057e92f61a5bbe5e09031ccef915527
+and administrative08 3abd36114a87550c180dec25d92e7e5c6c9b6fc64246232450b0b0024852af8b.
+Four code/build files plus07 equal accepted isolated r2; newer P06 publication
+chronology is preserved in08. Actual host14/29 remains affected-build evidence.
+
+Fresh protected launch-session-r2 native target compile/audit: historical socket212
+with exact isolated session6 overrides, archive77514e5360355e557ac22d06396d76a9f8c1cd4f1f619e25d2fa46a04529b847,
+manifest6db0671344bbe3e0caf95719cf0ad28822749cbbee53718f35881fddf2c40df1.
+Native administrative source documents are the older isolated candidate snapshots,
+not the newer actual-tree08 selection. Fresh configure with platform optionsON,
+O1/j1 target closure compiled runner/driver/CLI/adapters/catalog. Actual C++20
+compile and wrapper link commands printed; driver63c568e9c966cea34d93b2e89dd9ec1a563a39645de806fcb478760e73917c76
+and CLI91b7377f2648a02e623bd17c81fac1dff4b4e6830b9032c0bbf35f0e782fe821
+hashed. Clean ldd-r/no RPATH/RUNPATH, six resolved standard/SQLite providers pinned.
+POSIX_SPAWN_SETSID compiles without fallback; runtime semantics remain NOT_RUN.
+No TIDL generation/module target or full native build/check was selected.
+
+Private SDK official headers4 unchanged; pc changes only protected include prefix
+to launch-session-r2, same installed AUL pin, no library copy/install/LD path.
+SDK5 is configure-only metadata; selected ordinary driver closure does not invoke
+AUL/platform module. Existing generated invalid-worker-image is exact0700/root/
+singlelink/26 bytes/hash1f9c66a9af66d0ee9c034df3a45fa25cd5ff1cf6f297dd165766b91ce8651cd2,
+read without invocation. Source212/JSON53/SDK/AUL and provider hashes rechecked;
+compile/audit remote0/transport0, no test/driver/CLI/invalid-image execution.
+
+Prepared ordinary native method-r1 pins images2 plus that fixed invalid file,
+providers6 and SDK5 before/after, exact registered14/root cwd/TIMEOUT8. FIRST
+clean env-i absolute Python-I-B/source-only protected verifier, installed120s/
+owner150s, fixed verbose CTest14/no-tests-error/stop-on-failure. Read-only native
+preflight-r1 prints full provenance and exits before watchdog/tests, remote0/
+transport0. Native14 remains NOT_RUN/unapproved until separate method verdict.
+No arbitrary-descendant/unknown-wait/watchdog absence, root worker/NamespaceInit/
+remount/policy/module/RPC/operational DB/package/install/production gate follows.
+All P06 earlier retained scopes remain untouched.
+
+### LAUNCH-SESSION-r2 approved native method / measured14 result
+
+Reviewer accepted scoped fresh target compile/audit and preparation08
+d58467c03769b1cb1c2c54663021076e666c40fd5fadf3006de2e4e9c83592d2,
+then exact ordinary-method-r1 pre-execution separately. Owner immediately
+rechecked method3/outer-plan2 before the fixed invocation. Complete native-tests-r1
+SHA d41d2483fdfab0f3f9a2bdc90a113f5a3e9b6037aaccbcb1c5974c5e2e3bc35f
+prints FIRST clean env-i absolute Python-I-B, installed120s/owner150s, transferred
+method/protected source-only verifier and immediate pre/post212/JSON53/SDK5/
+images2/invalid1/providers6/interpreter/watchdog/ns/ext4/no-cache checks. Fixed
+registered14/14 no skips PASS0.20s, NATIVE_SESSION_CTEST_RETURN0,
+NATIVE_SESSION14_ONLY_PASS, remote0/transport0. No timeout/retained marker.
+
+Actual normal child3334707=PGID=SID differs from parent3334703, normal owned reap0.
+Timeout3334720 and cancellation3334723 each show PID=PGID=SID at real spawn return
+with application entry NOT_PROVED, negative-PID SIGKILL return0 before exact
+leader signal9 reap. Cancellation notifier joins positive1; its exec/injected
+spawn failure cases join positive0/0. Actual ENOENT2/ENOEXEC8 remain distinct
+from injected parent-call EIO5 with no real spawn. Parent IGN/NOCLDWAIT and four
+attribute faults show zero spawn. Parent full signal/SID/PGID preservation, empty
+child mask/eight defaults/high-FD exclusion/exact attributes/final ECHILD are
+source-enforced driver assertions, not additional raw syscall traces. Owner log
+audit JSON parses these records only; it is not another native execution.
+
+Measured native SETSID supports this fixed ordinary RunCli route without fallback.
+It does not recertify arbitrary/escaping descendants, unknown waits, abrupt owner/
+watchdog containment, worker/NamespaceInit/remount/module/RPC/policy/operationalDB/
+package/install/product authority. No kernel setsid failure was injected or observed.
+Earlier isolated host failures/correction hashes and all P06 historical FAILs/
+retained scopes remain preserved. Final exact6 publication review is pending;
+index remains empty and P06 published implementation is unchanged.
+
+### LAUNCH-SESSION final scoped native/publication ACCEPTED
+
+Reviewer w1:pA accepted fixed native14 complete log/method3/outer-plan2 and exact
+actual6 publication tree212 from HEAD37e3dc4; index empty. Accepted08
+a4c7a61afd61a4c1ec6bf8c96b0941ff73ec8568b1db7490f7e4d6b21c85ade2
+and accepted07 01a053dabca5e07f378bedb2f06882f7f8ff383e925f2fcd4263a394b5075822
+are preserved before this final status append. Historical pending/NOT_RUN
+paragraphs above describe earlier candidate/pre-execution states; later exact
+native SETSID14 evidence is now ACCEPTED for the fixed ordinary RunCli route.
+No further native/root run is requested; all earlier host failures/hashes and
+P06 retained scopes remain preserved. Broad descendant/watchdog/worker/namespace/
+remount/policy/install/product limits are unchanged.
+
+Next: publish only these reviewed6 paths and record actual commit/push/remote
+equality. Continue the accepted P06 same-subject/object development contract
+with a separate pure fixed eight-rule plan/schema checkpoint before durable
+journal/real Authorize-Confirm/catalog integration. No policy/runtime execution
+or original different-subject/direct-read-subset acceptance follows from that
+development direction.

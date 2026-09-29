@@ -27,8 +27,9 @@ ADD_EXECUTABLE(capmgr-c-consumer c_consumer.c)
 TARGET_LINK_LIBRARIES(capmgr-c-consumer PRIVATE capmgr)
 ADD_TEST(NAME capmgr-c-consumer COMMAND capmgr-c-consumer)
 ADD_TEST(NAME capmgr-adapters COMMAND capmgr-adapter-tests)
-FOREACH(SIGNAL_CASE normal ignored-parent nocldwait-parent exec-failure
-    fault-mask fault-defaults fault-flags fault-group)
+FOREACH(SIGNAL_CASE normal ignored-parent nocldwait-parent exec-failure invalid-executable
+    fault-mask fault-defaults fault-flags fault-init fault-spawn timeout cancel
+    cancel-exec-failure cancel-spawn-failure)
   ADD_TEST(NAME "capmgr-runner-signal-${SIGNAL_CASE}"
     COMMAND capmgr-runner-signal-driver "${SIGNAL_CASE}"
   )

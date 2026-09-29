@@ -29,7 +29,8 @@ TARGET_LINK_OPTIONS(capmgr-runner-signal-driver PRIVATE
   "-Wl,--wrap=posix_spawnattr_setsigmask"
   "-Wl,--wrap=posix_spawnattr_setsigdefault"
   "-Wl,--wrap=posix_spawnattr_setflags"
-  "-Wl,--wrap=posix_spawnattr_setpgroup"
+  "-Wl,--wrap=posix_spawnattr_init"
+  "-Wl,--wrap=kill"
 )
 ADD_DEPENDENCIES(capmgr-runner-signal-driver capmgr-cli-fixture)
 

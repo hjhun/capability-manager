@@ -1374,3 +1374,47 @@ reap is completed ownership but remains elapsed-budget failure; no retry/signal
 or scope removal follows. Test-TU clock/wait cases exercise expiry before retry,
 late positive completion and on-time success without launching a child. These
 are classification tests, not preemptible scheduling or target runtime evidence.
+
+
+## LAUNCH-SESSION private RunCli boundary (source candidate r1)
+
+RunCli requests POSIX_SPAWN_SETSID with existing SETSIGMASK/SETSIGDEF, removes
+SETPGROUP and the group setter, and fails setup/exec without inherited-session
+or fork fallback. Platform declaration/implementation support remains a native
+compile/runtime prerequisite. Parent SIGCHLD/no-auto-reap guard, exclusive waiter/
+stable nonreaping disposition premises, empty child mask/eight requested defaults,
+fixed stdio/closefrom3 and group-kill-before-leader-reap remain unchanged. Worker
+spawn/NamespaceInit/CLI job routes retain their separate reviewed topology.
+
+Isolated driver verifies actual attribute flags include SETSID/exclude SETPGROUP,
+actual reply PID=PGID=SID with different parent SID, and parent full signal state/
+SID/PGID unchanged. Positive atomic PID publication follows successful real spawn
+return; cancellation helper uses that synchronized event, not a sleep/application
+entry handshake. Its absolute3s notification budget is classification, not
+preemptible scheduling; stop/join happens on normal return and jthread unwinding.
+Explicit exec-error/injected spawn-error cases verify joined helper with no positive
+PID. Injected EIO is parent-call evidence, not an observed kernel setsid failure.
+
+Fixed ordinary single-leader hang cases do not fork/change their initial group.
+Actual negative-PID SIGKILL succeeds before exact leader signal9 reap; result cause
+remains timeout/cancelled and final ECHILD is required. High inheritable FD sentinel
+is absent in normal child's reply. Attr-init/mask/default/flags faults and parent
+IGN/NOCLDWAIT reject without spawn, while actual missing/invalid executable return
+ENOENT/ENOEXEC under the exclusive empty-boundary premise. The invalid executable
+is existing fixed configure-generated root invalid-worker-image text, not a new
+installed target, privileged worker or fallback shell. Future native method must
+pin that file as well as CLI/driver code/provider closure before invocation.
+
+Prior CLI actual-descendant/subreaper regression remains separate closed-topology
+evidence; these initial-session tests do not certify arbitrary descendants,
+escaping groups, unknown waits or abrupt owner loss. Separate CLI groups already
+lay outside the outer build watchdog group; new SID cannot make its exit child
+absence proof. No production containment/namespace/remount/policy authority follows
+from SID/PGID/PID. No public ABI/JSON method/install/package behavior is changed.
+Native support/tests, actual-tree application and publication are separate gates.
+
+LAUNCH-SESSION final status: the source-candidate/native-pending wording above
+is historical. Reviewed actual-tree application, affected host29 and fixed
+ordinary native14 are ACCEPTED. Native PID=PGID=SID/group-before-leader-reap
+evidence closes this fixed RunCli session increment only; all stated broader
+containment, worker/namespace/remount/product authority limits remain open.

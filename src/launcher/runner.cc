@@ -171,10 +171,11 @@ RunResult RunCli(const std::string& executable, const Request& request,
     if (sigaddset(&defaults, signal) != 0) setup |= EINVAL;
   setup |= posix_spawnattr_setsigmask(&attributes, &mask);
   setup |= posix_spawnattr_setsigdefault(&attributes, &defaults);
-  setup |= posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETPGROUP |
+  // A new session also makes the exact child its group leader. Do not combine
+  // SETPGROUP or retry an unsupported SETSID using inherited-session/fork paths.
+  setup |= posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETSID |
                                                      POSIX_SPAWN_SETSIGMASK |
                                                      POSIX_SPAWN_SETSIGDEF);
-  setup |= posix_spawnattr_setpgroup(&attributes, 0);
   char option[] = "--json";
   char lang[] = "LANG=C";
   char path[] = "PATH=/usr/bin:/bin";
