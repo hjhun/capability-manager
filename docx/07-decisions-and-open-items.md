@@ -1241,3 +1241,33 @@ unchanged WriteRecord implementation: a private fixture-only writer-function
 parameter selects atomic publication only in ReferenceFactory. This changes the
 shared fixture constructor/call plumbing, not generated policy, body validation,
 reply or old record semantics; r1 exact reconstruction is preserved historically.
+
+## LAUNCH-SIGNAL — Private RunCli signal inheritance boundary (r1)
+
+P04/R10/R11/R12 follow-up from the user-directed local Launchpad source review.
+RunCli rejects a parent SIGCHLD disposition of SIG_IGN or SA_NOCLDWAIT before
+allocating its pipes/spawning; child attributes cannot repair parent auto-reaping.
+An exclusive waiter and stable process-wide dispositions remain caller premises,
+including any installed handler not reaping this leader. The library never changes
+the parent's signal mask/dispositions to make a launch succeed.
+
+The spawned CLI has an explicitly empty mask and exactly eight requested default
+dispositions: CHLD/PIPE/TERM/INT/HUP/ALRM/USR1/USR2. This is not a blanket reset of
+all signals. Checked signal/group attributes and existing fixed stdio/closefrom3
+mapping precede spawn. SETPGROUP still establishes PGID=returned PID; SID stays
+inherited. Group cleanup still precedes exact leader reap. No setsid/new-session
+claim, worker/NamespaceInit contract change, remount authority or product activation.
+A separately reviewed session route remains a required follow-up.
+
+An uninstalled ordinary isolated driver changes only its own mask/dispositions;
+no unit-test process mutation. It checks full parent state across normal launch,
+exec failure, four attribute faults and IGN/NOCLDWAIT refusal before any spawn.
+Test-only wrappers record positive PID and actual exact waitpid status; the normal
+case correlates child-reported PID/PPID/PGID/SID and empty-mask/eight-default values,
+plus an intentionally inheritable high-FD sentinel's absence. The fixed eight
+CTest cases have bounded failure time; timeout/driver death is failure with unknown
+descendant state, not absence or automatic scope-cleanup proof. No temporary linked
+scope or external automatic cleanup exists in this driver. Existing RunCli
+cancellation/group-child tests remain separate evidence. Host/native/installed
+results and successful authentication/job lifetime/production authority stay
+separate gates.

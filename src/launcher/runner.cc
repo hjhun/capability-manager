@@ -1,18 +1,36 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/runner.hh"
+
 #include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
 #include <spawn.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <array>
 #include <cerrno>
 #include <cstring>
 #include <limits>
 #include <utility>
+
 namespace capmgr {
 namespace {
+
 class Fd {
  public:
   Fd() = default;
@@ -35,6 +53,7 @@ class Fd {
  private:
   int value_ = -1;
 };
+
 RunResult Failure(const Request& request, const char* reason,
                   int exit_code = -1, int signal = 0) {
   Json response = {
@@ -47,16 +66,19 @@ RunResult Failure(const Request& request, const char* reason,
          {{"cause", reason}, {"exitCode", exit_code}, {"signal", signal}}}}}};
   return {response.dump(), exit_code, signal, false};
 }
+
 bool ValidId(const Json& id) {
   if (id.is_string()) return !id.get_ref<const std::string&>().empty();
   if (!id.is_number_integer()) return false;
   return !id.is_number_unsigned() ||
          id.get<uint64_t>() <= static_cast<uint64_t>(INT64_MAX);
 }
+
 bool SameId(const Json& a, const Json& b) {
   if (a.is_string() != b.is_string()) return false;
   return a == b;
 }
+
 bool ValidResponse(const Json& json, const Json& id) {
   if (!json.is_object() || json.value("jsonrpc", Json()) != "2.0" ||
       !json.contains("id") || !ValidId(json["id"]) || !SameId(json["id"], id) ||
@@ -71,7 +93,9 @@ bool ValidResponse(const Json& json, const Json& id) {
   }
   return true;
 }
-}
+
+}  // namespace
+
 Request ParseRequest(const std::string& text) {
   if (text.size() > 64 * 1024)
     throw Error(ErrorCode::kLimit, "Request exceeds 64 KiB");
@@ -87,6 +111,7 @@ Request ParseRequest(const std::string& text) {
     throw Error(ErrorCode::kInvalid, "Invalid tools/call request");
   return {json["id"], json["params"]["name"].get<std::string>(), text};
 }
+
 RunResult RunCli(const std::string& executable, const Request& request,
                  const std::atomic<bool>& cancelled, RunLimits limits) {
   if (executable.empty() || executable[0] != '/' ||
@@ -97,6 +122,14 @@ RunResult RunCli(const std::string& executable, const Request& request,
   if (limits.timeout.count() <= 0 || limits.output_bytes > 1024 * 1024)
     return Failure(request, "invalid limits");
   if (cancelled.load()) return Failure(request, "cancelled");
+  // The parent must retain a waitable leader until group cleanup. Child spawn
+  // attributes cannot repair parent auto-reaping; the caller owns this process
+  // disposition and must provide an exclusive waiter without concurrent changes.
+  struct sigaction child_action{};
+  if (sigaction(SIGCHLD, nullptr, &child_action) != 0 ||
+      child_action.sa_handler == SIG_IGN ||
+      (child_action.sa_flags & SA_NOCLDWAIT) != 0)
+    return Failure(request, "unsupported parent SIGCHLD");
   std::array<Fd, 2> readers, writers;
   for (size_t i = 0; i < 2; ++i) {
     int pair[2];
@@ -131,7 +164,16 @@ RunResult RunCli(const std::string& executable, const Request& request,
                                               STDOUT_FILENO + i);
   // glibc >= 2.34 on the verified host and Tizen target closes unrelated FDs.
   setup |= posix_spawn_file_actions_addclosefrom_np(&actions, 3);
-  setup |= posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETPGROUP);
+  sigset_t mask{}, defaults{};
+  if (sigemptyset(&mask) != 0 || sigemptyset(&defaults) != 0) setup |= EINVAL;
+  for (int signal :
+       {SIGCHLD, SIGPIPE, SIGTERM, SIGINT, SIGHUP, SIGALRM, SIGUSR1, SIGUSR2})
+    if (sigaddset(&defaults, signal) != 0) setup |= EINVAL;
+  setup |= posix_spawnattr_setsigmask(&attributes, &mask);
+  setup |= posix_spawnattr_setsigdefault(&attributes, &defaults);
+  setup |= posix_spawnattr_setflags(&attributes, POSIX_SPAWN_SETPGROUP |
+                                                     POSIX_SPAWN_SETSIGMASK |
+                                                     POSIX_SPAWN_SETSIGDEF);
   setup |= posix_spawnattr_setpgroup(&attributes, 0);
   char option[] = "--json";
   char lang[] = "LANG=C";
@@ -236,4 +278,5 @@ RunResult RunCli(const std::string& executable, const Request& request,
     return Failure(request, "conflicting responses", exit_code, signal);
   return {output[present[0] ? 0 : 1], exit_code, signal, true};
 }
-}
+
+}  // namespace capmgr

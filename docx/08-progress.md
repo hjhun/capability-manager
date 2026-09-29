@@ -5026,3 +5026,157 @@ check-r6 diagnostic CTest14/14 PASS. No C++ source, entry, policy, FD, context,
 loader, image or CMake behavior changes in this revision. New runtime remains
 NOT_RUN/unapproved until exact revised frozen method review. No existing retained
 scope is cleaned, and source revision cannot reopen the original full-r2 FAIL.
+
+
+### Survivor-r3 local accepted; native diagnostic source/method prepared
+
+Independent reviewer ACCEPTED the exact20-file local source/host diagnostic
+amendment, preserving accepted08 SHAa39372e9de4b085744ff2f91dcdd621f1550273e866606d297b859940ca72b62.
+No native rerun/publication follows from that source disposition. The original
+root-r1 FAIL, separate server-only pass and retained reader iCNk4Q remain intact.
+No refused-frame contents or native-stage/Cynara cause are inferred retrospectively.
+
+Native preparation-r3 creates only a new protected source tree, with source202
+archive6758a7ab93bc0c8cdb6a4397a805fd170555de1b6b892fca449a82c8fd7c8b07
+and manifest3ab766bca31f8439b18984f43a366dbdd40be2b79e917f0bb663c2434f582e2c.
+The exact union remains baseline49 + mechanical133 + survivor20. Only supervisor
+Python/test Python/historical08 differ from original native build-r1; all199
+remaining members including every C/C++/CMake compiled input match. No compilation
+or image copying occurs. All six original protected r2 images and53 providers
+are checked. The reused launcher retains its compiled r2 module path; that exact
+path/module digest and trusted ancestry are explicitly pinned, not described as
+a new r3 module or fresh compilation. No retained scope is accessed or removed.
+Preparation log records remote0/transport0 and explicit no test/image/module/role.
+
+NONPOLICY-METHOD-r3 selects only the three exact Python modules49 tests, installed
+60s/owner90s. The original unchanged C++ hold6/publication3 evidence remains
+separate. FIRST clean env-i absolute Python-I-B/source-only checked verifier,
+transferred method metadata/digests and pre/post new/old source202/archive pins,
+JSON53/reused images6/providers53/interpreter/watchdog/namespace/ext4/no-cache
+checks remain. Read-only nonpolicy-preflight-r3 PASS remote0/transport0 explicitly
+exits before watchdog/test/role invocation. Native49 remains NOT_RUN/unapproved
+until the separate exact method disposition. Full diagnostic root rerun requires
+its own later method review; no external cleanup, context/policy/FD repair,
+real journal/CLI/SQL/StageB/production/package/installed result is authorized.
+
+STYLE-02 isolated8-file build-layout local/host checkpoint is independently
+ACCEPTED. It remains outside the actual repository while the frozen P06 source
+union is prepared. Applying it later explicitly supersedes the two survivor
+CMake paths in a new declared union, followed by actual-tree compatibility checks
+and separate native optional/REQUIRE evidence. The old survivor manifests are
+historical exact snapshots, not claims about future changed CMake bytes.
+
+
+### Survivor-r3 exact native Python49 PASS; diagnostic root method pending
+
+Independent reviewer ACCEPTED NONPOLICY-METHOD-r3 pre-execution only. After exact
+method3/3 and outer/plan2/2 recheck, native-nonpolicy-tests-r3.log records the
+approved FIRST clean env-i absolute Python-I-B, installed60s/owner90s, transferred
+checks and immediate pre/post new/old source202/JSON53/reused r2 images6/providers53/
+provenance checks. Exactly49 Python tests PASS with no skips in0.158s, native
+Python return0, ORDINARY_DIAGNOSTIC_PYTHON49_ONLY_PASS, remote0/transport0. No
+C++ launcher/module/own-context/RPC image is invoked. Ordinary real fake-image
+child/pipe/TEST-lock assertions and mocked orchestrator/diagnostic faults stay
+separate. Original unchanged native C++9 evidence remains historical accepted
+r2 evidence; this is not a new54/58 or full CTest claim. Final native49 review is
+pending; original full root FAIL and retained reader remain unaffected.
+
+Diagnostic ROOT-METHOD-r2 separately freezes supervisor r3/source202 in the new
+protected source root and explicitly selects original unchanged r2 launcher and
+its compiled r2 module path. No C++ rebuild/copy or behavior/context/policy change.
+Fixed server then reader cases, installed120s/owner150s, exact barriers/ownership/
+reap/absence/pinned cleanup and stop-on-first-failure remain. Fresh read-only
+root-preflight-r2 records transferred metadata/hash and complete preflight PASS
+remote0/transport0, explicit no watchdog/test/image/role invocation. Full root
+r3 runtime remains NOT_RUN/unapproved pending separate exact method review. The
+new bounded refusal can reveal a future refused prefix without accepting it or
+retrospectively establishing the old frame/stage. Retained iCNk4Q remains untouched.
+
+After independent layout source acceptance, only its eight frozen CMake paths
+were applied to the actual tree. The two overlapping survivor CMake entries are
+explicitly superseded in the working tree; accepted survivor archives/source202
+and device trees remain historical exact snapshots. Actual-tree before/after
+semantic capture matches67 targets and14 CTest commands/env/cwd/order. Actual
+host check is in progress; no native optional/REQUIRE/package result is inferred.
+
+
+### Survivor-r3 diagnostic root-method-r2 overall FAIL; reported client stage
+
+Independent reviewer ACCEPTED native Python49 evidence and separately exact
+ROOT-METHOD-r2 pre-execution. Preserve accepted08
+SHA458842b8eaa3a77da2b91bf299e7037d50e477ccbee87dbb6650a47c221fa27e.
+Owner rechecked root method3/3 and outer/plan2/2 immediately before invocation.
+Native-root-tests-r2.log prints approved clean startup120s/150s, transferred
+checks, pre/post source202/JSON53/reused images6/providers53/provenance PASS.
+ROOT_SURVIVOR_RETURN1, remote1/transport0; no timeout/full fixture PASS.
+
+Server wnES7j again separately reaches barrier, actual known coordinator reap-9,
+exact adopted nonexit before/after independent EX contention, actual adopted
+normal reap0, EX available, pinned removal before server CASE_PASS. Source-enforced
+zero-activity/drain/reference/context/absence conditions remain distinct from
+printed markers. This second server pass does not establish a passing reader.
+
+Reader B29oJu is explicitly RETAINED before reader barrier or CASE_PASS. The new
+bounded refusal reports mode reader/origin role/original129 bytes/truncatedFalse,
+with an escaped prefix containing REAL_GATE_NOT_PROVED role=system301-platform
+stage=client-connect native=InvalidIOException specific_Cynara_decision=NOT_OBSERVED.
+This is the actual refused frame's reported native stage/exception, not an
+identified underlying syscall/errno, authenticated positive or Cynara denial.
+The prefix predicate correctly remains rejecting; no ACK/body/teardown/reader
+survival/cleanup proof is inferred. Neither new B29oJu nor old iCNk4Q is externally
+accessed/removed/signalled or repaired. Original r2 full failure/server-only result
+and original hashes/logs remain preserved. Next: independent failure evidence
+review and local routing/source investigation; any changed source/method or
+further invocation needs separate frozen review. No policy/SQL/real journal/
+recovery/StageB/product/package/installed authority follows.
+
+STYLE layout actual-tree check completed CTest14/14 PASS11.82s, with final target67/
+CTest14 semantics equal to before application. Separate native layout source207
+freezes baseline48 + mechanical133 + survivor18 + layout8, explicitly superseding
+three existing CMake members and adding five; archive08 stays the historical r3
+snapshot, current admin08 separate. Native layout compile/configuration and final
+style/publication/package evidence remain pending, with no root workload implied.
+
+### LAUNCH-SIGNAL-r1 isolated implementation/host evidence (review pending)
+
+Owner w1:pJ, reviewer w1:pA; P04/R10/R11/R12, accepted Launchpad route-map-r1.
+Separate behavior scope: runner.cc, cli_fixture.cc, new isolated signal driver,
+test parent/fixture CMake and additive07/08 contract/evidence. No runner.hh change,
+no member/lifetime/catalog/style133 changes; declared layout8 bytes are historical
+snapshots and the two test CMake paths now additionally carry this separate behavior.
+Frozen style native207 excludes these new signal bytes and remains independent.
+
+Parent unsupported SIGCHLD/no-auto-reap refusal is before pipes/spawn; child empty
+mask/eight defaults/group attributes are checked without changing parent state.
+Original SID-inherited/PGID=PID behavior remains. Dedicated ordinary driver uses
+only its own signal setup, test-target-only spawn/attribute/wait wrappers, no policy
+hook; child fixture reports actual tuple/signals/high-FD metadata. Four attribute
+faults and parent IGN/NOCLDWAIT require zero spawn calls plus final ECHILD. Normal
+requires correlated positive PID/actual exact waitpid normal0 and observed child
+mask/defaults/PGID/SID, before final ECHILD. Exec failure retains full parent state.
+
+Direct host driver initial/r2 compilations PASS; isolated-r1 eight cases PASS;
+existing Cli/Rpc focused9/9 PASS. The CMake-owned driver adds eight ordinary tests,
+so final check-r2 CTest22/22 PASS11.48s (existing14 +8), not a changed native check.
+A final source-presentation-only pass and matching build/check are recorded in
+later final evidence, rather than claiming older binary bytes are those edits.
+Full Apache notices/readable include/namespace boundaries apply to these behavior
+files excluded from mechanical133; no style baseline is silently rewritten.
+Local source review, native compile/test and publication remain pending. No root
+workload/worker image/NamespaceInit/remount/policy/service/package/install or setsid
+result follows. Parent stable disposition/exclusive waiter and trusted executable
+selection remain explicit premises.
+
+
+### LAUNCH-SIGNAL-r1 final frozen host bytes
+
+Final source-presentation/check-r3 CTest22/22 PASS11.34s. After the final explicit
+string_view include, the CMake-owned driver rebuilt and registered8 verbose cases
+PASS with no skips in0.02s. Normal prints PID1074447/PGID1074447/SID1074393,
+SID_INHERITED=true and exact OWNED_CLI_REAP_PID1074447 STATUS0. These are host
+observations, not native or production authority. Both unsupported parents and
+all four attribute faults print SPAWN_CALLS0; exec failure prints1 with final
+source-enforced ECHILD. Full parent-state preservation/high-sentinel absence remain
+source assertions. This is a seven-file local source/host review request; source
+acceptance/native/package/publication pending, no new root workload. Source207
+style native compilation proceeds independently from frozen pre-signal bytes.

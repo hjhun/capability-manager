@@ -18,6 +18,21 @@ ADD_EXECUTABLE(capmgr-cli-fixture
   "${PROJECT_SOURCE_DIR}/test/fixtures/cli_fixture.cc"
 )
 TARGET_LINK_LIBRARIES(capmgr-cli-fixture PRIVATE nlohmann_json::nlohmann_json)
+
+ADD_EXECUTABLE(capmgr-runner-signal-driver
+  "${PROJECT_SOURCE_DIR}/test/fixtures/runner_signal_driver.cc"
+)
+TARGET_LINK_LIBRARIES(capmgr-runner-signal-driver PRIVATE capmgr-adapters)
+TARGET_LINK_OPTIONS(capmgr-runner-signal-driver PRIVATE
+  "-Wl,--wrap=posix_spawn"
+  "-Wl,--wrap=waitpid"
+  "-Wl,--wrap=posix_spawnattr_setsigmask"
+  "-Wl,--wrap=posix_spawnattr_setsigdefault"
+  "-Wl,--wrap=posix_spawnattr_setflags"
+  "-Wl,--wrap=posix_spawnattr_setpgroup"
+)
+ADD_DEPENDENCIES(capmgr-runner-signal-driver capmgr-cli-fixture)
+
 ADD_EXECUTABLE(capmgr-bootstrap-image-fixture
   "${PROJECT_SOURCE_DIR}/test/fixtures/bootstrap_image.cc"
 )

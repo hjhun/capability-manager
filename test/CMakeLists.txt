@@ -26,6 +26,16 @@ ADD_EXECUTABLE(capmgr-c-consumer c_consumer.c)
 TARGET_LINK_LIBRARIES(capmgr-c-consumer PRIVATE capmgr)
 ADD_TEST(NAME capmgr-c-consumer COMMAND capmgr-c-consumer)
 ADD_TEST(NAME capmgr-adapters COMMAND capmgr-adapter-tests)
+FOREACH(SIGNAL_CASE normal ignored-parent nocldwait-parent exec-failure
+    fault-mask fault-defaults fault-flags fault-group)
+  ADD_TEST(NAME "capmgr-runner-signal-${SIGNAL_CASE}"
+    COMMAND capmgr-runner-signal-driver "${SIGNAL_CASE}"
+  )
+  SET_TESTS_PROPERTIES("capmgr-runner-signal-${SIGNAL_CASE}" PROPERTIES
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+    TIMEOUT 8
+  )
+ENDFOREACH()
 ADD_TEST(NAME capmgr-peer COMMAND capmgr-peer-tests)
 IF(CAPMGR_REQUIRE_CYNARA)
   SET_TESTS_PROPERTIES(capmgr-peer PROPERTIES
@@ -68,6 +78,7 @@ ADD_CUSTOM_TARGET(check
     capmgr-unit-tests
     capmgr-c-consumer
     capmgr-adapter-tests
+    capmgr-runner-signal-driver
     capmgr-peer-tests
     capmgr-catalog-benchmark
     capmgr-package-tool
