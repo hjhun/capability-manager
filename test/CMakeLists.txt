@@ -25,6 +25,28 @@ ADD_DEPENDENCIES(capmgr-code-image-tests
 )
 ADD_TEST(NAME capmgr-code-image COMMAND capmgr-code-image-tests)
 
+# Pure deadline/topology checks: no role, Drop, module or root invocation.
+ADD_EXECUTABLE(capmgr-survivor-hold-tests
+  unit/read_policy_survivor_hold_test.cc
+)
+TARGET_LINK_LIBRARIES(capmgr-survivor-hold-tests PRIVATE GTest::gtest_main)
+ADD_TEST(NAME capmgr-survivor-hold COMMAND capmgr-survivor-hold-tests)
+
+# Publication pauses/faults interpose only this ordinary executable.
+ADD_EXECUTABLE(capmgr-survivor-publication-tests
+  unit/read_policy_survivor_publication_test.cc
+)
+TARGET_LINK_LIBRARIES(capmgr-survivor-publication-tests PRIVATE
+  GTest::gtest_main
+  Threads::Threads
+)
+TARGET_LINK_OPTIONS(capmgr-survivor-publication-tests PRIVATE
+  -Wl,--wrap=open
+  -Wl,--wrap=write
+  -Wl,--wrap=renameat2
+)
+ADD_TEST(NAME capmgr-survivor-publication COMMAND capmgr-survivor-publication-tests)
+
 ADD_EXECUTABLE(capmgr-read-policy-context-tests unit/read_policy_context_test.cc)
 TARGET_LINK_LIBRARIES(capmgr-read-policy-context-tests PRIVATE
   GTest::gtest_main
@@ -341,6 +363,8 @@ ADD_CUSTOM_TARGET(check
   COMMAND "${CMAKE_CTEST_COMMAND}" --output-on-failure --no-tests=error
   WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
   DEPENDS
+    capmgr-survivor-hold-tests
+    capmgr-survivor-publication-tests
     capmgr-leased-bootstrap-path-tests
     capmgr-code-image-tests
     capmgr-read-policy-context-tests

@@ -48,15 +48,19 @@ inline bool MatchesRecoveryReference(const struct stat& held,
 class RecoveryReference final {
  public:
   static constexpr int kDescriptor = 4;
-  explicit RecoveryReference(const struct stat& expected)
+  enum class State { kInherited, kMarked };
+  explicit RecoveryReference(const struct stat& expected,
+                             State state = State::kInherited)
       : expected_(expected) {
-    Validate(false);
+    Validate(state == State::kMarked);
   }
   ~RecoveryReference() = default;  // Deliberately does not close FD4.
   RecoveryReference(const RecoveryReference&) = delete;
   RecoveryReference& operator=(const RecoveryReference&) = delete;
   RecoveryReference(RecoveryReference&&) = delete;
   RecoveryReference& operator=(RecoveryReference&&) = delete;
+  // Immutable trusted setup metadata only, not a holder/lock authority getter.
+  const struct stat& Identity() const { return expected_; }
   void MarkCloexec() const {
     Validate(false);
     if (fcntl(kDescriptor, F_SETFD, FD_CLOEXEC))

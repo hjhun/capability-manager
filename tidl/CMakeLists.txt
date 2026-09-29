@@ -116,6 +116,44 @@ IF(CAPMGR_BUILD_TIDL_TRANSPORT)
           VERBATIM
         )
       ENDFOREACH()
+      # Separate inert-reference survivor images: explicit build, never installed
+      # or selected by CTest/check. Existing real-policy modes stay unchanged.
+      SET(CAPMGR_REFERENCE_MODULE_SOURCES
+        "${PROJECT_SOURCE_DIR}/test/integration/read_policy_reference_native.cc"
+      )
+      ADD_LIBRARY(capmgr-reference-native-fixture SHARED EXCLUDE_FROM_ALL
+        ${CAPMGR_REFERENCE_MODULE_SOURCES}
+      )
+      TARGET_LINK_LIBRARIES(capmgr-reference-native-fixture PRIVATE
+        capmgr-tidl-transport
+        nlohmann_json::nlohmann_json
+        PkgConfig::GLIB
+      )
+      TARGET_COMPILE_OPTIONS(capmgr-reference-native-fixture PRIVATE
+        -Wno-unused-parameter
+      )
+      SET(CAPMGR_REFERENCE_LAUNCHER_SOURCES
+        "${PROJECT_SOURCE_DIR}/test/integration/read_policy_reference_module_probe.cc"
+      )
+      ADD_EXECUTABLE(capmgr-reference-module-probe EXCLUDE_FROM_ALL
+        ${CAPMGR_REFERENCE_LAUNCHER_SOURCES}
+      )
+      TARGET_LINK_LIBRARIES(capmgr-reference-module-probe PRIVATE
+        nlohmann_json::nlohmann_json
+        Threads::Threads
+        ${CMAKE_DL_LIBS}
+      )
+      TARGET_COMPILE_DEFINITIONS(capmgr-reference-module-probe PRIVATE
+        CAPMGR_REFERENCE_NATIVE_IMAGE="$<TARGET_FILE:capmgr-reference-native-fixture>"
+      )
+      ADD_DEPENDENCIES(capmgr-reference-module-probe capmgr-reference-native-fixture)
+      FOREACH(CAPMGR_REFERENCE_TARGET
+          capmgr-reference-native-fixture capmgr-reference-module-probe)
+        ADD_CUSTOM_COMMAND(TARGET ${CAPMGR_REFERENCE_TARGET} POST_BUILD
+          COMMAND chmod 0755 $<TARGET_FILE:${CAPMGR_REFERENCE_TARGET}>
+          VERBATIM
+        )
+      ENDFOREACH()
       ADD_DEPENDENCIES(check capmgr-read-policy-tidl-probe)
     ENDIF()
   ENDIF()

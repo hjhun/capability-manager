@@ -20,10 +20,15 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include <stdexcept>
 #include <string>
+#include <cstdint>
+
+#include "read_policy_recovery_reference.hh"
 
 namespace capmgr::fixture::realpolicy {
+
 // Takes ownership of an already trusted, pinned code descriptor. The caller
 // validates root ownership, exact mode, ACL/caps and fixed path BEFORE transfer.
 // This does not establish trust in the dependency closure or loader settings.
@@ -82,10 +87,40 @@ class CodeImage {
         int (*)(const char*, const char*, const char*, const char*) noexcept;
     return reinterpret_cast<Entry>(symbol)(kind, root, endpoint, role);
   }
+  template <typename BeforeLoad>
+  int InvokeReference(const RecoveryReference& reference,
+                      BeforeLoad&& before_load, const char* kind,
+                      const char* root, const char* endpoint) {
+    if (fd_ != 3) throw std::runtime_error("fixed reference code slot");
+    Validate();
+    reference.Validate();
+    before_load(fd_);
+    Validate();
+    reference.Validate();
+    void* module = dlopen("/proc/self/fd/3", RTLD_NOW | RTLD_LOCAL);
+    if (!module) throw std::runtime_error("fixed reference module unavailable");
+    // Keep successful mappings through every later error and kernel exit.
+    dlerror();
+    auto symbol = dlsym(module, "CapmgrReferenceModuleFixture");
+    const char* error = dlerror();
+    if (!symbol || error)
+      throw std::runtime_error("fixed reference entry missing");
+    reference.Validate();
+    const int owned = fd_;
+    fd_ = -1;
+    if (close(owned))
+      throw std::runtime_error("reference code close before entry");
+    using Entry = int (*)(const char*, const char*, const char*, uint64_t,
+                          uint64_t) noexcept;
+    const auto& identity = reference.Identity();
+    return reinterpret_cast<Entry>(symbol)(kind, root, endpoint,
+                                           identity.st_dev, identity.st_ino);
+  }
 
  private:
   int fd_ = -1;
   struct stat identity_{};
 };
-}
+}  // namespace capmgr::fixture::realpolicy
+
 #endif  // CAPABILITY_MANAGER_TEST_FIXTURES_READ_POLICY_CODE_IMAGE_HH_

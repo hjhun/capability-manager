@@ -1163,3 +1163,81 @@ root methods require separate exact-source/dependency/provenance safety review.
 No job, clone/mount, NamespaceInit/CLI nondelegation, live invalidation, executable
 authority, old-job absence/crash maintenance, policy or production activation is
 established by this source proposal or its host compilation.
+
+### Inert reference/module survivor fixture (source proposal r1)
+
+P06-READ-REFERENCE-MODULE-SURVIVOR implements only the accepted design-r2
+c9331552fe993ad697b3d71247d7292580471252826a9989525990161fc221f0.
+The minimal build-only launcher has a separate fixed C entry and exact stdio/FD4
+initial table. Stable spawn sources start at5; mappings establish0..2 and4,
+explicitly close3 and every unwanted high FD. Owned code3 opens while privileged;
+the fixed System301/GID301/sole supplementary10212 context is fully checked
+before dlopen and again before client registration. Root User::Shell servers
+never drop credentials. The immutable expected reference identity comes from
+trusted coordinator setup; metadata is not proof of flock ownership or liveness.
+FD4 is borrowed and never duplicated, closed, unlocked or converted by the
+launcher/module. MarkCloexec failure may leave that flag set but retains4. Owned
+code3 closes before entry; successfully loaded mappings never dlclose, including
+error paths. External exact digests, trusted dependency closure/loader and stable
+no-hostile-root/no-update premises remain mandatory future method checks.
+
+The existing real Cancel support moves to a private fixture header. Its original
+entry and10/20 outcomes stay separate. The reader survivor requires provisional
+actual -6 and checked proxy/listener/context/registration teardown, reference and
+own-context revalidation, then an independent HOLD_ACK while still alive. Only
+its later actual owned normal reap0 supplies the dedicated final outcome. The
+coordinator independently checks the actual server body against its retained
+spawn PID, raw UID/GID/label/token and cancel1/other0. Reader-case server drain,
+normal reap and endpoint absence precede coordinator loss. Server-only readiness
+requires Listen plus zero service/created/rejected/cancel/other activity; counts
+persist after disconnected services disappear and are checked again at drain.
+
+The supervisor creates fixed nonblocking IPC before fork and retains role output
+read ends through final role exit. The linked inert root600 TEST reference is
+created and SH-acquired only by the coordinator after fork; the supervisor and
+unrelated role never receive SH. Both independent role ACK and coordinator record
+are required before SIGKILL. Post-ACK control HUP does not shorten the fixed hold.
+One-sampled positive poll remainders cannot become an infinite negative timeout;
+the GLib server timer is a deadline opportunity, not hard wall-clock reclamation.
+Timer sources are destroyed before callback owners/context. Supervisor budgets
+classify late/blocked completion as failure; bytes already written are not undone.
+
+Under the explicit closed ordinary-SIGCHLD/default retention/exclusive waiter/
+prepared subreaper premises, exact coordinator reap-9 precedes P_PID adoption and
+nonexit, independent neutral EX contention, a second owned nonexit observation,
+then actual normal adopted reap0. Post-known-reap and final P_ALL ECHILD barriers,
+endpoint absence and independent EX success precede complete pinned inventory
+cleanup. No arbitrary P_ALL result grants signal/reap authority. Any core,
+spawn/adoption/wait/deadline/output/absence/cleanup failure permanently forbids
+scope removal even after later known cleanup or empty observations. Reports/ACK,
+EOF, coordinator death and watchdog exit are not child-absence proof. Scope
+unwinding reports retention and never automatically deletes it.
+
+Both native images are EXCLUDE_FROM_ALL, uninstalled and absent from CTest/check.
+Ordinary tests cover pure hold/topology, injected orchestration/source loading,
+and independently execd fake-image pipe/FD/SH mechanics. They do not execute
+context Drop, native module/RPC, adopted module survivor or actual policy journal.
+Native target compilation, dependency/preflight evidence, non-policy native tests
+and root survivor invocation each remain separately reviewed gates. No SQL,
+Authorize/Confirm/catalog grant, real journal/recovery CLI/load2/global policy,
+Stage B, production, installedRelease15 or arbitrary native TLS behavior proof
+follows. The original different-subject/direct-read gate remains BLOCKED.
+
+Survivor source revision r2 corrects the r1 synchronization findings. A reader
+server stop request is distinct from actual service drain: its timer continues
+dispatching until stop AND empty services, or reports failure at the original
+absolute deadline. Hold activity/error and expired reader drain never become
+success; the pure decision helper is used by that timer. Timer source ordering
+remains unchanged.
+
+The new fixture publishes ready/body only after a complete bounded temporary
+`.next` write, mode/fsync/checked close and atomic RENAME_NOREPLACE to the final
+name. Final names remain single-link throughout publication; unexpected prior
+finals reject without overwrite. Pending records remain evidence on failure and
+are included in the fixed inventory; no failed publication triggers automatic
+scope deletion. Coordinator waits boundedly for the final name only and rechecks
+its budget after read/decode. The original real-policy mode still defaults to its
+unchanged WriteRecord implementation: a private fixture-only writer-function
+parameter selects atomic publication only in ReferenceFactory. This changes the
+shared fixture constructor/call plumbing, not generated policy, body validation,
+reply or old record semantics; r1 exact reconstruction is preserved historically.

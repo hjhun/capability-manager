@@ -4711,3 +4711,318 @@ reference4/module/adoption/timer integration remains separate development/review
 Original different-subject/direct-read matrix and all production/PATH/physical/
 ARM gates remain open. No service/policy/install/RPM change; installedRelease15
 unchanged. No overall completion signal is inferred.
+
+## P04 no-START publication and STYLE-02 development sequencing
+
+Published only the accepted nine-path RootStartup-r3 checkpoint as
+07780c7d7e920e4212e224f811685d3a4e58da6c. Owner push succeeded and actual
+refs/heads/main query equalled that full commit, with local/remote ahead-behind0/0.
+Outside-project proof: worker-owner-root-publication-r1.json and the publication
+manifest. InstalledRelease15 and other gates remain unchanged.
+
+STYLE-02 scope-r1 is independently ACCEPTED for development sequencing only:
+new WIP presentation first, separate global skill, mechanical C/C++ presentation,
+concrete component-build map and package visuals. No broad existing-file moves or
+mechanical rewrite has run in this checkpoint. Global skill exact2 independently
+ACCEPTED: SKILL.md f5b57149e2fd413815c6c65e87876ac8070b63543f5a5d9b37441c59a606e0e2;
+build-packaging.md3073a7b82e273168c6c68b750f1018bc168b0a668c235ed31fd0d42f0666fe92.
+Skill-creator quick_validate PASS; source notices/spacing/component/resource
+syntax guidance preserves project authority and all deployment exclusions.
+No manifest/service/socket placeholders or Watcher policy/workflow were added.
+CMake3.20 test-property directory ownership, fixed outputs/private variants/
+optional generation dependencies and token/include/literal proof remain explicit
+requirements for later STYLE-02 implementation.
+
+## P06-READ-REFERENCE-MODULE-SURVIVOR-r1 local implementation (review pending)
+
+Owner w1:pJ, reviewer w1:pA; phaseP06, R01/R11/R14 private lifetime/authorization
+fixture, baseline07780c7. Accepted design-r2 and temporary core-r2 hashes remain
+preserved in07/history. New separate fixed reference4/code3 delayed-load launcher
+and native entry implement registered-zero-activity server and post-real-Cancel
+reader holds. Supervisor has no SH; separate fixed pipe copies, independent
+ACK/correlation barrier, exact adoption/nonexit/normal reap, sticky proof loss,
+post/final ECHILD and pinned inert cleanup are source proposal, NOT runtime claims.
+No current native/root invocation is authorized or performed.
+
+Accepted core helper cf1dc5ba64836a022919cb368a829a5fe8292cbd974ee9965bb07f1ca7ec481a
+is copied byte-for-byte into the repository; its ordinary20 tests only change
+the source lookup path. Existing actual default/generated Cancel implementation
+moves to private read_policy_native_support.hh, retaining original C entry10/20.
+Reconstruction removes only the new guard, relative context include and
+maybe_unused Server annotation for the second TU; phase2-spliced raw tokens,
+including directive/literal spellings and include order, match all2159 original
+tokens. Proof read-reference-module-native-reconstruction-r1.json. Initial proof
+script rejected multiline whitespace dump formatting before comparison; the
+corrected parser reads complete raw-token records. This was a diagnostic-harness
+failure, not native compilation or product failure. Full Apache source notices,
+readable include/declaration/namespace spacing apply to new WIP; no identifier or
+lifecycle changes are hidden in that reconstruction.
+
+Host Python focused-r1/r2 35/35 and source-loader-expanded-r3 38/38 PASS; host-r4 39/39 PASS; check-r2 FAIL12/13 because the new slot3 test assumed the
+full-discovery interpreter had a free FD3 (actual owned lock5). No unknown parent
+FD was closed. The final isolated driver starts with close_fds, uses a proven
+inheritable linked3, requires exact rejected child reap before success-only _exit,
+and keeps a nested uncertainty latch on timeout/nonzero. Two no-launch injection
+cases prove no rmtree; test-only reset follows mocked subprocess only. Final
+host-r5 41/41 PASS, then final host-r6 42/42 (core20 + mapping8 +
+orchestration/reports/source14) including sticky known-wait timeout coverage, no
+skips. That additional no-child fault test uses a TEST-only reset.
+Actual fake-image exec checks stdio/borrowed4, nonblocking opposite pipe writers,
+non-CLOEXEC high/slot3 causal close omission, independent EX exclusion after parent
+SH close and actual normal known child reap/release. Fault cases inject no root
+module: each causal phase failure, later known/empty proof after uncertainty,
+ambiguous fork/pipe allocation, wrong body types/PID, separate barriers, output
+errors, atime-only load versus stable-field/digest rejection before compile.
+These are host ordinary/fake evidence, not module/TLS/surviving-role runtime.
+Hold/topology C++4/4 PASS. Minimal launcher g++20 -Wall/-Wextra/-Werror syntax
+check with a fixed never-loaded placeholder module path PASS; command did not
+link/run platform code. Host check-r1 CTest13/13 PASS preceded the slot3 addition. Check-r2 failure is
+preserved above; Check-r3 13/13 PASS; final check-r4 13/13 PASS covers the additional sticky
+wait case against the frozen final tests. Both final focused42 and check exits0. Optional TIDL/Cynara OFF means neither
+new native module nor launcher target is compiled by that host check. Native
+compile/dependency audit, actual reference entry/loading, root server/reader
+coordinator-loss and context/SH lifetime remain NOT_RUN/unapproved.
+
+New native targets are explicit-build-only EXCLUDE_FROM_ALL and uninstalled;
+existing target modes/check dependencies and output paths remain. Only the pure
+hold test adds a CTest name; ordinary Python tests enter existing discovery.
+No policy/journal/recovery CLI/SQL/Authorize/Confirm, package/install/StageB,
+production activation, original different-subject/direct-read or ARM claim.
+Next: frozen source/host review, then separately reviewed exact native artifacts
+and non-policy/root methods. Launchpad session/signal/FD/namespace reference map
+and separate STYLE-02 mechanical/layout work continue independently, without
+mixing those lifecycle/build changes into this freeze.
+
+### Survivor-r1 review findings and revised r2 local evidence (pending)
+
+Reviewer verified original frozen18/18/archive and returned CHANGES_REQUESTED:
+stop could quit before queued disconnect, and final-path existence did not prove
+WriteRecord completion. R1 remains historical source/host evidence, not accepted
+runtime. R2 uses the pure drain decision in the actual GLib timer: stop with live
+services continues, actual empty completes before the unchanged budget, deadline
+and errors fail. Six hold/topology tests include deterministic stop-before-empty
+and late/error cases; no sleep-dependent native success is inferred.
+
+New ready/body publisher completes `.next` write/mode/fsync/close before atomic
+RENAME_NOREPLACE. Ordinary wrapper tests pause actual writes after creation and
+after two bytes, proving only pending exists until release; completed final is
+single-link600. Rename failure retains completed pending with no final; prior
+final is never overwritten. Wrappers are ONLY on this ordinary test executable;
+new native image has no hook. Initial host publication build-r1 FAIL -Werror
+ambiguous else around EXPECT_EQ was corrected with explicit braces; build-r2
+and tests-r2 3/3 PASS. No native compiler/runtime result from this host correction.
+Coordinator tests additionally exercise empty/partial pending opportunities,
+bounded failed publication and final read/decode crossing its deadline. Final
+Python focused host-r7 45/45 PASS, no skips. Native/full survivor stays NOT_RUN.
+
+Shared private Service now has one writer-function parameter defaulting exactly
+to legacy WriteRecord; ReferenceFactory alone selects the new atomic publisher.
+This declared constructor/field/call seam is an r2 source change requiring review;
+it is not claimed to be byte-identical original support. After normalizing only
+that seam plus earlier declared extraction changes, reconstruction retains all
+2159 original ordered preprocessing/directive/include/literal tokens. Old entry,
+policy/body checks, normal factory, Client10/20 and old WriteRecord behavior stay
+unchanged. Proof native-reconstruction-r2.json is distinct from r1 proof.
+
+STYLE-02 mechanical133 is disjoint, token-equivalent local WIP under its own
+review scope; current host checks include both work cohorts. This is not an
+isolated native source/package build. Survivor-r2 only adds its two publication
+paths/tests and declared source/docs changes; no sessions/signals/remount or
+broad style bytes enter its manifest. Global skill remains separately accepted.
+
+Final r2 combined host check-r5-style-mechanical CTest14/14 PASS: original13 plus
+ordinary publication test registration. It recompiles mechanically changed
+project code and selects final survivor tests; it does not compile/run the
+optional platform module. Final minimal launcher syntax-r3 exit0 is printed with
+its exact argv and never-loaded placeholder; real native compilation remains
+NOT_RUN. The mechanical cohort is separately token-verified and excluded from
+the survivor manifest. No source-only verdict has been self-converted to native,
+root safety, runtime, package or publication acceptance.
+
+
+### Survivor-r2 local acceptance and fresh native target preparation
+
+P06-READ-REFERENCE-MODULE-SURVIVOR-r2 local source/host ACCEPTED by the
+independent reviewer against manifest20/20 SHA7a4d088e4ef64d55f27f486516f00a072c58cef0c17fa0a13ac9077a47efbcd6.
+The two r1 drain/publication findings are closed for source only. Preserve accepted
+07 SHA02a52977f0750396a15d6ebcf336fe9c2ea40a8adf9160d1ca4f0c11ca5821b8 and
+08 SHA28f8c6d8604a2b8d7ca345966fa99a261c9d93c9c1f0845e5880a3fa312f2dd5;
+this administrative evidence follows those frozen bytes. No final native/runtime
+publication acceptance is inferred from that verdict.
+
+STYLE-02 mechanical-r1 was separately accepted for local source/host scope:
+exact133 files and captured baseline07780c7 originals, phase2-spliced Clang tokens,
+original literal/directive/include order and nonempty lines match after only
+notice/namespace-comment normalization. __LINE__ shifts only C-consumer failure
+diagnostics. Full Apache notices retain genuine SPDX/attribution; no renames,
+member/lifecycle/guard changes. Initial formatter handling of the C SPDX comment
+failed, all captured originals were restored and the corrected script completed;
+that is a script failure, not a product test failure. Combined host CTest14/14,
+testing-OFF configure/build/zero-test map, temporary host DESTDIR/public header,
+capability-manager.pc Name0.1.0, exactly12 versioned exports/SONAME0 are separately
+reviewed host evidence. No native133/full-check/RPM/install/publication gate follows.
+Global two-file skill remains independently accepted unchanged. The concrete
+STYLE-02 build-layout map-r1 is accepted for development compatibility only; no
+layout changes were applied during this native preparation.
+
+Native compile-only archive202 is an explicit disjoint union: unchanged baseline
+07780c7/49 + accepted mechanical133 + accepted survivor20. Every actual byte was
+checked against its cohort or git-show baseline before archive creation. Archive
+SHA38832632a20fc8e5fb7ece0ba1dbd722ebacaf34a3251a126aedde716e980cc7,
+manifestSHAbde3acc0e131c1489235b820e43fdc3b469d61717e9fa1ed55e3d548842ab6a6.
+Its archived08 remains the accepted original; this later append is not silently
+substituted into the native source. Runner signal/session work is excluded.
+
+read-reference-module-native-build-r1.log records rechecked emulator Linux4.4.35
+x86_64, free326340KiB before preparation, new protected read-reference-module-r2
+scope, FIRST clean env-i absolute Python-I-B, transferred3 hashes/metadata and
+installed1800s/owner1830s compile-only bounds. Fresh native configure with all
+platform requirements ON, GCC14.2/SQLite3.50.2, O1/parallel1 builds the generated
+platform/transport prerequisites, new and original native modules/minimal
+launchers and the two ordinary helper images. Six images freshly compiled, not
+copied/direct-build artifacts. source202/JSON53 match before/after, remote0 and
+transport0; no test or root fixture invocation occurred.
+
+ELF audit: all six images have no RPATH/RUNPATH and clean ldd-r, 53 resolved trusted
+provider hashes retained. Both minimal launcher startup closures are standard
+runtime/loader only; platform constructors remain confined to the modules. Both
+modules propagate PRIVATE JSON/PIC and link actual default Cynara/socket symbols;
+generated existing IDs0..9/Confirm10 are checked. Fixed C entry symbols remain.
+renameat2 linkage is present, but native RENAME_NOREPLACE behavior is NOT_RUN.
+This target subset is not a whole native check, package build or runtime proof.
+
+Fresh CMake artifact hashes:
+- capmgr-read-policy-tidl-probe: SHA2d60928aa92d096d2bb893bf60cfdf4c01b760d491125f00ea97fd5c35f89ece
+- capmgr-reference-module-probe: SHA513b1b4421cb7fa1806d6a81c28c67963b69099f8d66939549c69733e8599aee
+- capmgr-survivor-hold-tests: SHA16b45830b090415acfec473130191a501124652bd244ebd2114c5b8fb1637824
+- capmgr-survivor-publication-tests: SHA08757f574bd0f41a689c987b3af9f0b5336b63de190696a39023d5a24889b00b
+- libcapmgr-read-policy-native-fixture.so: SHAea564dda268bba447481fde0f0d50c6096b10db5892105783ca38fa6ad6f16c4
+- libcapmgr-reference-native-fixture.so: SHA5f41125b47c88bf7c41e566d8573e5bffb6ef306830ce2afb56d007bf5f713cb
+
+Frozen ordinary-method-r1 selects only six pure C++ hold/drain tests, three own
+file-publication tests and the exact three Python modules/45 cases (total54).
+C++ module/launcher pins are checked but not invoked. Read-only preflight-r1
+verifies transferred method metadata/hash and source202/JSON53/images6/providers53,
+resolved named paths/interpreter/watchdog/protected ancestry/initial namespaces/
+ext4/no-cache. Initial read-only preflight-r1 FAILED on the Cynara socket provider
+hash: the outside generator globally replaced source-count digits after inserting
+provider literals, corrupting one hash containing189. Transport0 had no remote
+sentinel and did not establish preflight success. A preliminary owner progress-r1
+note/request incorrectly called it0/0; it was immediately retracted, retained and
+corrected here. No watchdog/test was invoked. Method-r2 restores the exact digest;
+AST comparison checks all six image and53 provider literals against native build
+artifacts. Fresh read-only preflight-r2 PASS/remote0/transport0 explicitly exits
+before watchdog/tests. Verifier now prints remote1 on a preflight exception.
+All r1 scripts/logs and the preliminary progress-r1 hash6f09180f03c0ea32045a41d4831272c653bc4ffb2e79625cb35dc6e4b7542650
+remain evidence, not accepted execution. Native54 is NOT_RUN pending separate
+exact method-r2 safety review. Root survivor,
+old/new actual module modes/runtime, policy/SQL/real journal recovery/StageB,
+production/install/ARM remain separate unapproved gates. No external automatic
+cleanup on timeout or lost ownership. Next: exact native build/audit and bounded
+ordinary-method review; continue disjoint STYLE-02 layout and LAUNCH-SIGNAL work
+under their development contracts without changing this frozen archive.
+
+
+### Survivor-r2 ordinary native54 result (pending independent final review)
+
+Reviewer accepted exact NONPOLICY-METHOD-r2 pre-execution only after its corrected
+read-only preflight. read-reference-module-native-nonpolicy-tests-r2.log prints
+the exact FIRST clean short verifier/installed60s/owner90s invocation, transferred
+method2 metadata/hash checks and immediate pre/post source202/JSON53/images6/
+providers53/interpreter/watchdog/protected ancestry/initial namespace/ext4/no-cache
+checks. Hold6/6 and publication3/3 PASS, no skips; each binary return0. Python exact
+three selected modules45/45 PASS, no skips in0.159s, return0. Total54 is distinct
+from host CTest14 or a full native check. ORDINARY_SURVIVOR54_ONLY_PASS, remote0/
+transport0; no retained/timeout/failure marker. No C++ launcher/module is invoked.
+
+The native publication experiment now measures target RENAME_NOREPLACE support:
+actual paused-empty/partial writes leave only pending until checked publication;
+failed publication retains its own pending file, and existing final is not
+replaced. Test-only wrappers never enter the native module. Source-enforced fake
+image exact-table/known reap and inherited TEST-SH/independent EX assertions are
+ordinary child/reference evidence; mocked coordinator/adoption/source-loader
+faults remain fake evidence. No actual module/context/RPC/coordinator-loss or
+native TLS/kernel-exit inference from these54. Original read-only r1 FAIL and
+retracted preliminary report remain preserved. Final ordinary native/publication
+review pending; full root survivor remains NOT_RUN/unapproved and its exact
+method is prepared separately without invocation. Continue the isolated CMake
+layout compatibility work and disjoint signal handling development.
+
+
+### Survivor-r2 ordinary54 accepted; separate root method prepared
+
+Independent reviewer ACCEPTED the exact local source plus targeted ordinary54
+native evidence/current08 only. Preserve accepted progress-r3
+SHA7a977217b7c53da43540e3c944bb2cdc1c08ac11bd44fdded8d53415d8eb4eb4
+and original source/07/08/method/build hashes. This supersedes ordinary-only
+pending status; it does not accept full root runtime/publication, full native
+check or STYLE-02 final native/package gate.
+
+ROOT-METHOD-r1 freezes the same source202/launcher/module/provider pins, the
+unchanged accepted preflight and a separate fixed runner/verifier/outer/plan.
+Read-only root-preflight-r1 performs protected transferred checks and full
+preflight PASS remote0/transport0, explicitly before watchdog/source/image entry.
+No full root experiment was executed. Proposed invocation is only the fixed
+supervisor --run plus exact launcher: sequential registered-server and post-RPC
+reader inert TEST reference experiments, installed120s/owner150s. The root plan
+keeps independent ACK/correlation versus final reap, no-SH supervisor, reader-case
+server retirement before coordinator loss, P_PID adoption/nonexit, sticky proof
+and ECHILD/pinned cleanup conditions. No original old-mode runtime is inferred.
+Full root survivor remains NOT_RUN/unapproved pending that separate exact method
+review. No real journal/recovery/policy/SQL/Authorize/Confirm/StageB/install or
+production authority. The isolated STYLE-02 layout source is independent; this
+accepted native archive and actual repository source cohorts remain unchanged.
+
+
+### Survivor-r2 full-root-r1 measured FAIL; server phase separate pass
+
+Independent reviewer accepted exact ROOT-METHOD-r1 pre-execution only. The owner
+rechecked method3/3 and outer/plan2/2 before invoking it. Actual root-tests-r1.log
+prints approved FIRST clean env-i absolute Python-I-B, installed120s/owner150s,
+transferred method checks and immediate source202/JSON53/images6/providers53/
+provenance checks before/after. Overall ROOT_SURVIVOR_RETURN1, remote1/transport0;
+no full fixture PASS or timeout. This is FAIL, not publication acceptance.
+
+Server scope iWXvoL separately reaches SURVIVOR_BARRIER_READY=server, actual known
+coordinator reap-9, exact adopted nonexit before and after neutral EX contention,
+actual normal adopted reap0, then independent EX availability. Checked
+REMOVED_REFERENCE_SURVIVOR_SCOPE precedes server CASE_PASS. Zero-activity Listen/
+drain, reference retention/context/table and both empty barriers are source-
+enforced assertions, not separately printed raw syscall details.
+
+Reader scope iCNk4Q is explicitly RETAINED. Its unexpected-native-diagnostic error
+occurs before reader barrier, coordinator-loss proof or reader CASE_PASS. The
+rejected frame bytes are not printed by this source, so this log alone does not
+identify the native failure stage/exception or a Cynara decision. Known-child
+cleanup is the source's scoped failure handling; no printed blanket absence or
+full cleanup proof is inferred. Sticky failure retains the inert scope/inventory;
+no external removal, image/context/FD/policy repair or automatic recovery follows.
+The overall failure does not invalidate the completed server phase's removal.
+
+Next: bounded diagnostic refusal reporting/host regression as a narrow frozen
+source revision, then separate revised native/method review before another run.
+No rerun is approved by this failure. Original source20/ordinary54/build/method
+hashes and accepted administrative progress-r4 remain preserved. The new layout
+host work remains isolated and does not enter source202. Real journal/CLI/policy/
+SQL/StageB/production/install/ARM gates remain open.
+
+
+### Survivor-r3 bounded refusal observability (local review pending)
+
+Reviewer confirmed full-root-r1 overall FAIL, server-only passing evidence and
+retained reader scope. The diagnostic-classification rejection alone does not
+identify a native stage. R3 changes only that refused diagnostic's error detail:
+fixed mode/origin, original byte length, repr of at most256 bytes and explicit
+truncation. No strict UTF-8 decode/raw controls on refusal. The original exact
+origin/prefix acceptance predicate, required independent reports, sticky ownership
+and cleanup gates remain unchanged. A REAL_GATE_NOT_PROVED candidate is still
+refused, never an authorization positive or a specific Cynara verdict.
+
+Four deterministic negative cases cover unsupported diagnostic, wrong-origin
+known prefix, invalid UTF-8/control bytes and bounded truncation. They establish
+no barrier/authorization progress and preserve escaped source bytes as data.
+Focused host-r8 actual49/49 PASS with no skips (previous45 + four); final host
+check-r6 diagnostic CTest14/14 PASS. No C++ source, entry, policy, FD, context,
+loader, image or CMake behavior changes in this revision. New runtime remains
+NOT_RUN/unapproved until exact revised frozen method review. No existing retained
+scope is cleaned, and source revision cannot reopen the original full-r2 FAIL.
