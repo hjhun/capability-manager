@@ -5180,3 +5180,390 @@ source-enforced ECHILD. Full parent-state preservation/high-sentinel absence rem
 source assertions. This is a seven-file local source/host review request; source
 acceptance/native/package/publication pending, no new root workload. Source207
 style native compilation proceeds independently from frozen pre-signal bytes.
+
+
+### LAUNCH-SIGNAL-r1 local source accepted; STYLE native audit correction
+
+Independent reviewer ACCEPTED the exact seven-file LAUNCH-SIGNAL-r1 local
+source/host checkpoint, manifest e0abf3ab622762923edd054182fb73edadece978a05e1f5d1a9343824bfd4afc.
+Native signal compilation/test/publication remains pending; the eight defaults and
+inherited SID do not establish setsid or recertify broader RunCli containment.
+Preserve the source archive and host observations as historical exact evidence.
+
+STYLE layout source207 native-build-r1 freshly configured the protected tree with
+platform transport and both REQUIRE options ON, compiled default ALL plus fixed
+optional fixture targets at O1/-j1, and printed eleven image hashes. The subsequent
+outside-project audit unconditionally rejected the C consumer's intentional build
+RUNPATH. Preserve the complete run as FAIL, remote1/transport0, not compiler or
+runtime failure. The owner wrapper's later artifacts pull also failed because the
+artifact file was not created; transport0 alone was not a remote success sentinel.
+
+Separate native-audit-r2 reuses those exact eleven compiled images without a
+rebuild, source207 unchanged. Only the C consumer may have its exact sole protected
+build RUNPATH; both SONAME symlinks and actual ldd-r build-library resolution are
+checked, with the library digest pinned before audit. Every other inspected image
+retains no RPATH/RUNPATH. Audit-r2 checks protected source207/JSON53 and all eleven
+image pins before inspection, resolved provider metadata/hashes, generated method
+IDs, actual default Cynara/socket/entry symbols and both minimal launcher closures.
+ABI12/SONAME0 passes. Final source207/JSON53 checks and audit-only marker pass,
+remote0/transport0; no test/consumer/launcher/module/root fixture is invoked.
+This is fresh compilation followed by corrected audit evidence, not a second
+fresh build, full native CTest, package or installed result. Exact ordinary native
+method and final STYLE mechanical/layout/publication review remain separate.
+
+P06 routing engineering direction prefers an unchanged-image separately bounded
+read-only dlog collector, conditional on usable pinned CLI/provider inputs. No
+collector or further root fixture is invoked by that direction. Failed reader
+frames did not externally emit an exact attached-reader PID; endpoint/time and
+library-reported PID can provide diagnostic correlation only. Retained iCNk4Q and
+B29oJu remain untouched. Original connect errno must not be inferred from an errno
+logged after library sleep/fcntl. A separately frozen collector/fixture method
+requires explicit pre-execution review.
+
+
+### LAUNCH-SIGNAL native target compile/audit and exact method preparation
+
+Independent reviewer ACCEPTED STYLE source207 scoped compile/audit-r2 evidence
+and administrative08 SHA850fcf11588ef52768eac4798918dca4bde949a346c561c34597e588c522b8d0,
+not native tests or final publication. That hash and both native audit failures
+remain historical. Separate signal native source208 is exactly baseline46 +
+mechanical133 + survivor16 + layout6 + signal7; historical signal source08 is frozen,
+current admin08 separate. Only the signal driver/CLI fixture target closure was
+freshly compiled with O1/-j1 in its new protected tree, not default ALL/platform
+modules or full native22. Build-r1 FAIL remote1/transport0 occurs in copied artifact
+serialization after compilation/audit: it expected an unselected TIDL generated
+directory. It is not a compiler/runtime failure or evidence TIDL was generated.
+Audit-r2 reuses the exact two images without rebuilding, checks source208/JSON53,
+protected images2/providers6, no RPATH/RUNPATH/clean ldd-r and final source checks,
+remote0/transport0. Generated scope is explicitly empty/unselected.
+
+Frozen native-method-r1 selects only the eight registered isolated signal cases,
+FIRST clean env-i absolute Python-I-B/protected source-only verifier, installed60s/
+owner90s, pre/post source208/archive/JSON53/images2/providers6/interpreter/watchdog/
+initial namespaces/ext4/no-cache and exact registration/command/cwd/TIMEOUT checks.
+Read-only native-preflight-r1 PASS remote0/transport0 explicitly invokes no driver
+or CLI. Actual native eight-case execution remains NOT_RUN/unapproved until its
+separate method disposition. No setsid, root worker, namespace/remount, context
+Drop/module/RPC/policy/package or broader RunCli containment conclusion follows.
+
+### P06 dlog candidate preparation measured refusal; collector remains unavailable
+
+Independent reviewer ACCEPTED exact DLOG-CANDIDATE-INVENTORY-r3 preparation-only
+method after provenance/budget correction and host pure8/8. R1/R2 remain preserved
+and unrun. Owner rechecked all four frozen hashes, then only the approved fixed
+standalone inventory ran under installed30s/owner60s with clean isolated startup.
+Transferred source and pinned interpreter/watchdog/initial namespace/ext4 checks
+pass. Candidate /usr/bin/dlogutil metadata reports UID/GID1901, mode0750 and a
+security.capability xattr; the unchanged trusted-root/no-cap code predicate rejects
+before candidate data read or ELF dependency walk. CAPMGR_REMOTE_EXIT1 and
+TRANSPORT_EXIT0, no timeout. Preserve complete native-inventory-r3 log as FAIL;
+this is a measured candidate prerequisite refusal, not usable-collector PASS.
+No collector/help/flags/log reads/config changes or fixture rerun was executed.
+No ownership/capability repair, substitute binary or package action is authorized.
+Retained iCNk4Q/B29oJu remain untouched; client IO branch/errno/Cynara remains
+unidentified. Next diagnostic direction is the separately reviewed new-only own
+API-path/socket/lifetime observation fallback; no implementation/runtime acceptance
+is inferred from this preparation failure.
+
+
+### LAUNCH-SIGNAL-r1 exact ordinary native8 measured PASS (final review pending)
+
+Independent reviewer ACCEPTED source208 target compilation/corrected audit and
+exact native-method-r1 execution safety. Preserve accepted08
+SHA71263a3d62e3faff7ca1ac777dd6cb964cd6ebe5c1a10f1fe3f2ee5bb78b7175.
+Owner rechecked frozen method3/3 and outer/plan2/2 immediately, then only the fixed
+registered eight ordinary cases ran. Native-tests-r1 prints FIRST clean startup,
+installed60s/owner90s, transferred method checks and immediate pre/post source208/
+JSON53/images2/providers6/interpreter/watchdog/ns/ext4/no-cache/registration8 PASS.
+CTest8/8 with zero skips/failures in0.02s, NATIVE_SIGNAL_CTEST_RETURN0,
+NATIVE_SIGNAL8_ONLY_PASS, remote0/transport0; no timeout/retained result.
+Normal reports actual PID3299278=PGID3299278, SID3299274 inherited and exact
+OWNED_CLI_REAP_PID3299278 STATUS0. Parent IGN/NOCLDWAIT and four attribute fault
+cases report SPAWN_CALLS0; exec failure reports1. Full parent mask/disposition
+preservation, child empty mask/eight defaults/high sentinel absence and final
+ECHILD are source-enforced assertions, not additional raw syscall traces.
+No setsid/session topology, root fixture, Drop/module/RPC/policy or broader RunCli
+containment is re-certified. Host22 remains separate from selected native8.
+
+Reviewer noted native-inputs-r1.json inherited source_count202 while count/files
+and actual archive/method correctly208. Preserve original JSON
+SHAbe11897f5cb53af89722a20c04a38fe1351e60c6630965a6939c6bb4828a17dd.
+Versioned native-inputs-r2.json corrects only source_count to208 plus an explicit
+correction note, SHA202e82e62c23f338249fdab9ea96194284aece767be38357c18fb55109e5a232.
+No source/archive/image/method change or rerun follows. Exact runtime/admin
+publication review remains pending; no checkpoint is staged/published yet.
+
+
+### LAUNCH-SIGNAL-r1 final scoped review ACCEPTED; publication ordering pending
+
+Independent reviewer ACCEPTED the exact seven-path signal checkpoint and native8
+evidence, preserving accepted08 SHA6fa233259b97f61cd5c6e4c82e8849a7bda9a04a9930106921b73d9ca0ae3964.
+This is not setsid/session, broader RunCli containment or a production gate.
+No checkpoint is staged/published yet: shared CMake/docs require a coherent reviewed
+mechanical/layout/P06 baseline; publishing a broken intermediate tree is excluded.
+Native-inputs-r2 count correction and prior build/audit failures remain historical.
+
+### P06 REFERENCE-ROUTE-OBSERVATION-r1 local diagnostic implementation (review pending)
+
+Owner w1:pJ, reviewer w1:pA; P06/R13 private diagnostic, exact eleven paths.
+Accepted development design SHAab305f5262e03a40c5a35c03b2cf3b17ed9f1f636c4e30ae36354d8f181bad27.
+New-only module reports finite bounded own-name/fixed AUL path/lstat snapshots:
+server Listen/terminal lifetime counters, independent client rawUID301 preconnect/
+native-failure query with actual proxy target/path NOT_OBSERVED. Entire literal and
+sun_path length must match before lstat; API status and immediately saved lstat
+errno never identify a failed RPC syscall. No mutating target-UID diagnostic call,
+alternate pathname inspection or new connection. Arbitrary bytes are bounded hex;
+all returned strings freed and observation exceptions contained with failed state.
+Original stage/native exception are saved before observer/teardown. The default-null
+shared Client seam is reversed in reconstruction-r2 to recover exact accepted
+old support SHA2681cd395a17e8224e0df945a92a444ca034e3fb8a5938f857ad65f78aee50a2,
+including current formatted bytes; old Client10/20/C-entry/policy route unchanged
+apart from that explicitly declared fixture-only seam.
+
+Supervisor validates fixed origin/mode/phase/type/hex/cardinality schemas (one per
+phase, at most four); informational/error frames confer no ACK/body/readiness or
+ownership authority and never reset budgets. Known spawn diagnostic prints only
+after the existing attached-record report; wait/adoption proof is unchanged. Existing
+unsupported REAL_GATE_NOT_PROVED rejection and sticky failure remain. Reference
+native module adds a required PRIVATE imported AUL dependency; it is optional on
+this host and remains NOT_COMPILED/NOT_RUN here.
+
+Host helper6/6 PASS (helper-r2), Python56/56 PASS (host-python-r2), final combined
+CTest23/23 PASS11.54s (host-check-r2), all exit0. These include separately reviewed
+style/layout/signal/P06 cohorts, not isolated native evidence. Initial target build
+before reconfigure failed with No rule to make target; target-build-r1 is preserved,
+then configure-r1 and target-build-r2/r3 succeed. Earlier host-check-r1 PASS preceded
+the final schema/presentation tightening and is not substituted for final r2.
+Pure C++ tests cover bounded/null/overlong/arbitrary-byte strings, no inspection on
+bad literal/length, saved lstat errno and metadata-only reporting. Seven new Python
+cases cover information/error without barrier/ledger progress, repeated/wrong-origin/
+wrong-type/independent-query violations and lifetime counters after service removal.
+They use fake/injected data, not actual AUL/path/context/RPC observations.
+
+The eleven-file freeze explicitly supersedes current shared test/CMakeLists.txt,
+test/fixtures/CMakeLists.txt and tidl/fixtures.cmake layout/signal paths plus changed
+survivor supervisor/test/module/shared support and administrative docs. Prior frozen
+survivor20/style/signal archives remain historical unchanged, not current-unchanged
+claims. Mechanical133 remains exact. No native compile, actual AUL/provider linking,
+module/root diagnostic rerun or final publication accepted yet. Both overall root
+FAIL logs/server-only passes and retained reader scopes iCNk4Q/B29oJu stay preserved
+and untouched. No policy/context/FD repair, collector, real journal/recovery, SQL,
+Authorize/Confirm/StageB/install/production authority follows.
+
+
+### P06 REFERENCE-ROUTE-OBSERVATION-r2 supervisor error-latch correction (review pending)
+
+Preserve r1 manifest66be1b77b0b0b0d5327894ce8abda331927353e2d9fc235f0bc172521071d605,
+archive328d51f4bcafe04ccceb60549bdb4c61bc8ed4574f7cfbac1e39bc1295f93414
+and original08 SHA36f674534726bebc3832918df1d7517829b55b2ac9f2b4646ef05b96d90ac28a.
+Independent review CHANGES_REQUESTED: valid observation-error frames were validated
+but did not poison supervisor readiness/retirement. R2 preserves the validated
+bounded error diagnostic then raises RouteObservationFailure through existing
+experiment/RealProof exception handling; RouteRecords failure is permanent. Tests
+feed a valid error before spawn followed by all valid proof frames (raw barrier
+inputs valid but supervisor readiness stays false), and error after readiness in
+actual RealProof output drain. The SAME retirement ledger remains uncertain after
+later mocked exact reap/ECHILD/endpoint success, with zero remove/no CASE_PASS.
+Ordinary informational frames still grant no proof. Native timer additionally
+rechecks its original reader-server deadline after terminal observation, without
+changing the intentionally different server-hold expiry rule; this optional native
+branch remains uncompiled/unexecuted on host. Six pure helper tests cover text/
+lstat helpers, not actual AUL allocation/status/module entry.
+
+Final host-python-r6 actual58/58 PASS0.233s; host-check-r4 CTest23/23 PASS11.48s,
+exit0. Preserve host-check-r3 FAIL: an owner command mistakenly executed an edit
+generator in place of unittest, duplicating the validator; frozen r1 source was
+restored and the narrow correction reapplied. Empty host-python-r3 is not a test
+result. Host-python-r4 initially failed in the new test by replaying an already
+recorded coordinator reap; corrected test applies only later missing proofs to
+the SAME ledger, with final r6 passing. Earlier helper6/6 remains unchanged.
+No source/native/root acceptance or rerun inferred; frozen r2 requested separately.
+Old Client reconstruction-r2 still applies because shared support is unchanged.
+Retained iCNk4Q/B29oJu untouched and prior full FAILs preserved.
+
+
+### P06 route-observation-r2 local source ACCEPTED; native preparation next
+
+Independent reviewer ACCEPTED frozen11 manifestc478885e37e063312d536156534de773fdc85271c7faebe084c25c628a69b902
+and archive89b2574af440bedc09eb32233eeb7b0577a698a50ccb894272302f979a741ff2,
+local source/host only. Preserve accepted08
+SHA2c39d8b73e1d24ee63e6bf69c22fe2132b16c4b5ad7afd2fbf77e852448fcf80.
+Native compile/provider audit and bounded ordinary method precede any new root
+diagnostic request. Retained scopes/FAILs unchanged; no runtime or publication
+acceptance inferred. New source union will explicitly declare source208 plus
+two new helper/test files and eleven reviewed overrides (210 total), separate
+from the unchanged source207 STYLE device tree.
+
+### STYLE-02 ordinary-method-r2 preparation (execution NOT_RUN/pending review)
+
+Accepted source207 compile/audit remains unchanged. Preparation noticed ordinary
+unit/adapters exec sibling capmgr-sqlite-lock-probe, absent from the previous
+eleven-image artifact list. Additional read-only probe-audit-r3 checks existing
+root0700/noACL/no-cap code digest9af692bffa451e15ace1368d9f5cf950f57f6c0b3cb3484ff7c3a3297e9a6d32,
+no RPATH/RUNPATH, clean ldd-r and standard closure against existing provider pins.
+PASS remote0/transport0 with no test/image execution/rebuild. Artifact-r3 adds
+only this image/closure to r2, giving images12/providers56. Probe-audit-r1 failed
+transport1 (service name too long; no remote result); r2 reached code-metadata
+assertion and failed because its expected0755 was overstrict for actual owned
+umask077 root0700. No chmod/permission repair: r3 checks actual0700; prior failures
+remain FAIL, not retroactive PASS.
+
+Frozen ordinary-method-r2 selects registered unit/C-consumer/adapters3 only with
+--no-tests=error/verbose and real metadata required; expected unique123+201 Google
+Tests plus consumer, direct C repeat and12 CAPMGR_0 exports. BEFORE/AFTER checks
+include source207/JSON53/images12/providers56, both spawned sibling images and
+project library, SONAME chain/exact sole build RUNPATH/C-consumer resolution,
+interpreter/watchdog/initialns/ext4/no-cache/exact registration/cwd. FIRST clean
+env-i absolute Python-I-B/source-only protected verifier, installed180s/owner210s.
+Read-only ordinary-preflight-r2 PASS remote0/transport0 explicitly invokes no test
+or consumer/module. Initial preflight-r1 FAIL remote1/transport0 rejected the
+root-managed hardlinked system readelf tool; r2 allows regular hardlinks only for
+four trusted nonwritable system audit tools, retaining singlelink on all project
+source/images/methods. No test invocation yet; separate pre-execution review pending.
+No full native14/23, optional module/root fixture/policy/operational DB/package
+or installed claim; signal/route WIP not copied into this source207 tree.
+
+
+### STYLE-02 exact ordinary native3 measured PASS (final review pending)
+
+Independent reviewer ACCEPTED exact ordinary-method-r2 safety (method3/outer-plan2),
+then owner rechecked all hashes immediately before the fixed invocation. Complete
+ordinary-tests-r2 log prints FIRST clean env-i absolute Python-I-B/source verifier,
+installed180s/owner210s, transferred2 and pre/post source207/JSON53/images12/
+providers56/project-library-resolution/provenance/exact registration checks.
+Actual selected CTest3/3 PASS5.67s, unit123/123 + adapters201/201 =324 unique
+GoogleTests, plus C consumer; no skips/failures. Direct C repeated exit0, exactly12
+capmgr_@@CAPMGR_0 exports, STYLE_ORDINARY_CTEST3_ONLY_PASS/remote0/transport0.
+Real metadata User::Shell with USER_METADATA_XATTR=UNSUPPORTED is recorded; injected
+labels are not actual worker-policy authorization. Owned probe/reap/lock assertions
+remain source-enforced evidence, not new syscall traces. No full native14/23 or
+optional module/launcher/root fixture was selected. Prior build-r1 FAIL, audit-r2
+reuse, probe audit and readelf hardlink method failures are preserved unchanged.
+Final scoped native/admin/publication review requested separately; no staging yet.
+
+### P06 route-r2 native configure prerequisite FAIL; private SDK proposal pending
+
+Exact source210 archive5502389a3615ccc498df85225d35178d863dbe35fb9cd1186e76d6356510623b
+manifestb8583e4a270a3ed9e52db4bd40b493fd6e2e720f77806e4626f8b6e82bb18741
+is source208 frozen union plus accepted route-r2 eleven overrides/two new files.
+Fresh protected read-reference-route-r1 compile-only attempt validates source210/
+JSON53 then fails CMake REQUIRED pkg-config aul at configure, before C++ compilation
+or image creation. Native-build-r1 remote1/transport0, no timeout/test/module/role
+invocation. Local source acceptance unchanged, no compiled/runtime PASS.
+Read-only checks show AUL RPM0.83.17-1 and pinned runtime provider present, while
+/usr/include/aul, development libaul.so and aul.pc are absent. Private SDK proposal
+SDK5 freezes four unmodified official00ea297ff05c7dd6ca360b3cc4239504fbd24e40 headers
+plus explicit diagnostic-only pkg-config metadata requiring bundle and the absolute
+installed libaul.so.0.83.17 pin. No library copy/substitution/installation or system
+SDK repair; original source/version is not exact installed binary provenance.
+Compile-only retry/method prerequisite review pending. Retained scopes untouched.
+
+
+### P06 route-r2 exact targeted native compile/audit-r2 (review pending)
+
+Independent reviewer ACCEPTED only the private SDK5 compile prerequisite, official
+headers00ea297 and diagnostic metadata, no test/runtime. Fresh protected
+read-reference-route-r2 verifies exact source210/JSON53/SDK5 and installed AUL pin
+before configure with build-process-local PKG_CONFIG_PATH. Targeted O1/j1 freshly
+compiles new reference launcher/module, old real-policy launcher/module, hold,
+publication and route helper; no default ALL or image invocation. Native-build-r2
+remote0/transport0. Seven image hashes,53 provider closures, clean ldd-r/no RPATH/
+RUNPATH, real generated IDs/default Cynara/socket/entry/PIC/minimal launcher checks
+pass. Printed compile_commands binds new observer to protected SDK include/aul;
+old module is freshly compiled without that include and retains default-null seam.
+Actual link command contains absolute pinned libaul.so.0.83.17; new module ELF
+DT_NEEDED explicitly libaul.so.0, resolving to pinned installed runtime provider.
+No assumed equivalence to the missing official pc. SDK headers/manifest/library
+and source/JSON pins checked again afterward. Complete native-build-r1 configure
+FAIL remains distinct, not retroactive PASS. No module entry/AUL API execution/
+Drop/NSS/context/RPC/root survivor test occurred.
+
+New frozen ordinary-method-r1 selects ONLY C++ RouteObservation helper6 plus exact
+three Python core/spawn/supervisor modules58, total64/no skips. Current source
+210/archive/JSON53/SDK5/images7/providers53/protected ancestry/interpreter/watchdog/
+initialns/ext4/no-cache pre/post, FIRST clean absolute Python-I-B/source-only
+protected verifier, installed60s/owner90s and fresh logs. Read-only native-ordinary-
+preflight-r1 PASS remote0/transport0 explicitly no test/module/role invocation.
+The exact ordinary route requires separate pre-execution disposition and remains
+NOT_RUN/unapproved now. No new root diagnostic request until its prerequisites;
+retained iCNk4Q/B29oJu untouched and both original full-root FAILs preserved.
+
+STYLE native3/admin review is ACCEPTED separately, preserving progress-r7
+SHAcd786017fa652db3f47b3c09c1bc0d36a46c0698520e56bd4050f787b01dd9af.
+It does not waive native full/package checks or approve an unstaged index.
+Prospective sequential source trees and intermediate checks are being prepared
+for explicit review before mechanical/survivor SOURCE/layout/signal publication;
+new route11 remains separate. No staging or commit/push yet.
+
+
+### P06 route-r2 exact ordinary native64 measured PASS (final review pending)
+
+Independent reviewer ACCEPTED scoped targeted compile/audit and ordinary-method-r1
+only. Owner rechecked method3 and outer/plan2 hashes before invocation. Complete
+native-ordinary-tests-r1 log prints FIRST clean env-i absolute Python-I-B checked
+source verifier, installed60s/owner90s, transferred2 and immediate pre/post
+source210/JSON53/SDK5/images7/providers53/provenance/no-cache checks. Actual
+RouteObservation6/6 and exact three Python modules58/58 in0.143s PASS without skips;
+both command returns0, ORDINARY_ROUTE_HELPER6_PYTHON58_ONLY_PASS, remote0/transport0.
+Helper text/lstat cases are ordinary injected metadata evidence; fake-image own-child
+reference/mapping assertions and mocked orchestration/adoption/route-error cases
+remain distinct from native platform module/AUL/Drop/RPC evidence. No launcher or
+module entry, role/context/NSS query, SQL or policy operation was selected.
+Preserved accepted preparation08 SHAfd804b6c6fe951defefb39dde2779df3332d0400dec79dab8f7b3fbf5cf74b5f
+before this append. Earlier configure FAIL and both full survivor FAILs/retained
+iCNk4Q and B29oJu remain unchanged. Final ordinary evidence review is requested;
+new root diagnostic invocation remains NOT_RUN/unapproved pending its exact method.
+
+Prospective publication series host checks now PASS in four filesystem-only trees:
+mechanical133 CTest12/12; frozen survivor-r3 SOURCE20 CTest14/14; layout8 CTest14/14;
+signal7 CTest22/22. Each tree starts from published07780c7 plus explicit ordered
+frozen overrides, with original overlapping CMake/docs preserved in its tree map.
+No index/staging/commit/device mutation is implied by those checks. Source-only
+survivor publication requires explicit disposition preserving overall root FAIL,
+server-only evidence and retained readers; route11 is excluded from this series.
+Native STYLE3 acceptance remains scoped, not full native/package waiver.
+
+
+### P06 route-r2 ROOT-METHOD-r1 frozen read-only preflight (execution pending)
+
+New exact root method3/outer-plan2 binds accepted source210/SDK5 and freshly compiled
+route launcher8ece8582...9bc9/module dce96ddc...c2e59. Delta from previously approved
+survivor-root-r2 method is only protected root/source-preflight/image/hash/log
+binding; sequential server then reader, marker ordering and sticky cleanup proof
+remain unchanged. FIRST clean env-i absolute Python-I-B/source-only checked verifier,
+installed120s/owner150s, immediate pre/post checks and fresh exclusive logs. Exact
+read-only root-preflight-r1 validates transferred2/source210/JSON53/SDK5/images7/
+providers53/provenance/no-cache and prints NO_TEST_OR_MODULE_OR_ROLE_INVOKED,
+remote0/transport0. It exits before watchdog/role/module invocation; no root result.
+Ordinary64 final evidence review and separate exact root safety review are pending.
+Retained iCNk4Q/B29oJu untouched; no cleanup/repair or policy expansion.
+
+
+### Prospective publication series administrative boundary (review pending)
+
+Four exact filesystem-only source trees based on published07780c7 use frozen
+mechanical133 -> survivor-r3 SOURCE20 -> layout8 -> signal7 overrides. The original
+versions of overlapping CMake/contracts are selected, not current route11 WIP.
+Each prospective tree passed its ordinary host check12/14/14/22; its complete
+path/hash/mode and CTest command/env/cwd maps are frozen separately. Source-only
+survivor publication is explicitly requested with overall root FAIL, two retained
+readers and scoped server-only evidence preserved; it is not runtime acceptance.
+Final admin candidate07 is signal7's exact contract plus this boundary bookkeeping,
+so route11 development clauses are excluded. Candidate08 retains all chronology
+and accurately records route11 as separate accepted source/build/ordinary evidence
+with root-method review pending; route implementation is not part of these four
+source commits. No native full/package waiver, staged index or publication result
+is inferred. Exact final disposition/commit/push/remote evidence follows separately.
+
+
+### Ordered source publication disposition ACCEPTED
+
+Independent reviewer ACCEPTED the four exact sequential source trees and this
+admin-only candidate, preserving07 SHA9836d3c1318c975d054c04e3460321ba6d88d4f32bdfdf1450462c79bfffd2b6
+and08 SHA70d5bc87563deb1771bbac6b68a708011a53ab1a3488f952783efa6f8a8a2f25
+before this permitted status append. Survivor-r3 publication is SOURCE-ONLY,
+explicitly overall runtime FAIL with server-only evidence and retained readers.
+Host checks12/14/14/22 were sequential reconfigure/affected rebuilds in one reused
+build directory, not four fresh native builds. Route11/session/spec changes are
+excluded from the four source commits. Actual owner commit/push/ref checks follow
+separately; historical pending paragraphs retain their chronological meaning.

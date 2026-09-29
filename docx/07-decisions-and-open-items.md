@@ -1271,3 +1271,15 @@ scope or external automatic cleanup exists in this driver. Existing RunCli
 cancellation/group-child tests remain separate evidence. Host/native/installed
 results and successful authentication/job lifetime/production authority stay
 separate gates.
+
+
+## Checkpoint publication boundary
+
+Mechanical source presentation, source-only survivor diagnostics, build layout
+and signal inheritance are separate private checkpoints. The survivor's overall
+full-runtime result remains FAIL with independently scoped server-only evidence;
+retained reader scopes are not cleaned or relabeled as passing. Native STYLE
+selected CTest3 and LAUNCH-SIGNAL8 evidence remain their exact targeted scopes.
+The next route-observation and session changes are excluded from these source
+checkpoints until their own reviewed publication. Namespace, policy, packaging
+activation and installedRelease15 gates remain unchanged.
