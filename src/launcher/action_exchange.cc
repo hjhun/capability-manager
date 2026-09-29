@@ -1,14 +1,32 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/action_exchange.hh"
+
 #include <algorithm>
 #include <set>
 #include <string_view>
 
 namespace capmgr {
+
 namespace {
+
 void Require(bool condition, const char* reason) {
   if (!condition) throw Error(ErrorCode::kInvalid, reason);
 }
+
 Json Parse(const std::string& text, size_t limit) {
   if (text.size() > limit)
     throw Error(ErrorCode::kLimit, "Action envelope exceeds limit");
@@ -35,12 +53,14 @@ Json Parse(const std::string& text, size_t limit) {
 struct Span {
   size_t begin, end;
 };
+
 size_t Space(const std::string& text, size_t pos) {
   while (pos < text.size() &&
          std::string_view(" \t\r\n").find(text[pos]) != std::string_view::npos)
     ++pos;
   return pos;
 }
+
 size_t StringEnd(const std::string& text, size_t pos) {
   ++pos;
   while (pos < text.size()) {
@@ -49,8 +69,10 @@ size_t StringEnd(const std::string& text, size_t pos) {
     else if (text[pos++] == '"')
       return pos;
   }
+
   throw Error(ErrorCode::kInvalid, "Invalid JSON string boundary");
 }
+
 size_t ValueEnd(const std::string& text, size_t pos) {
   if (text.at(pos) == '"') return StringEnd(text, pos);
   if (text[pos] == '{' || text[pos] == '[') {
@@ -68,11 +90,13 @@ size_t ValueEnd(const std::string& text, size_t pos) {
     } while (depth && pos < text.size());
     return pos;
   }
+
   while (pos < text.size() && std::string_view(",]} \t\r\n").find(text[pos]) ==
                                   std::string_view::npos)
     ++pos;
   return pos;
 }
+
 Span Member(const std::string& text, size_t object, const char* name) {
   size_t pos = Space(text, object) + 1;
   for (;;) {
@@ -89,6 +113,7 @@ Span Member(const std::string& text, size_t object, const char* name) {
     ++pos;
   }
 }
+
 std::string Rewrite(std::string text,
                     std::vector<std::pair<Span, std::string>> changes,
                     size_t limit) {
@@ -101,7 +126,8 @@ std::string Rewrite(std::string text,
     throw Error(ErrorCode::kLimit, "Mapped Action envelope exceeds limit");
   return text;
 }
-}
+}  // namespace
+
 ActionExchange::ActionExchange(const Entry& entry, const Request& request,
                                int native_id, bool subscription_api_available)
     : native_id_(native_id),
@@ -133,6 +159,7 @@ ActionExchange::ActionExchange(const Entry& entry, const Request& request,
   if (native_request_.size() > 64 * 1024)
     throw Error(ErrorCode::kLimit, "Mapped Action request exceeds limit");
 }
+
 ActionFrame ActionExchange::Accept(int callback_id, const std::string& text) {
   Require(state_ != State::kComplete, "Action exchange already completed");
   Require(callback_id == native_id_, "Action callback ID mismatch");
@@ -178,9 +205,10 @@ ActionFrame ActionExchange::Accept(int callback_id, const std::string& text) {
       complete = !streaming;
     }
   }
+
   auto mapped = Rewrite(text, {{Member(text, 0, "id"), original_id_.dump()}},
                         1024 * 1024);
   state_ = complete ? State::kComplete : State::kStreaming;
   return {std::move(mapped), event, complete};
 }
-}
+}  // namespace capmgr

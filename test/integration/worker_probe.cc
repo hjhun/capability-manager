@@ -1,30 +1,54 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Explicit root fixture. No service, policy, mounted host tree or operational DB
 // is changed. Runs NamespaceInit with fixed app_fw/System fixture context.
 #include "launcher/worker_loop.hh"
 #include "catalog/catalog.hh"
+
 #include <array>
+
 #include <fcntl.h>
+
 #include <filesystem>
 #include <iostream>
+
 #include <pwd.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 using namespace capmgr;
+
 namespace {
+
 void Require(bool yes, const char* message) {
   if (!yes) throw std::runtime_error(message);
 }
+
 class OwnedScope {
  public:
   OwnedScope() {
     Require(mkdtemp(path_) != nullptr, "owned scope");
     std::cout << "OWNED_SCOPE=" << path_ << "\n" << std::flush;
   }
+
   ~OwnedScope() {
     if (!attempted_) Cleanup();
   }
+
   bool Cleanup(bool inject_failure = false) noexcept {
     attempted_ = true;
     std::error_code error;
@@ -44,12 +68,14 @@ class OwnedScope {
     std::cout << "REMOVED_SCOPE=" << path_ << "\n";
     return true;
   }
+
   const char* Path() const { return path_; }
 
  private:
   char path_[64] = "/opt/usr/capmgr-worker-fixture-XXXXXX";
   bool attempted_ = false;
 };
+
 struct Pipe {
   int fd[2]{-1, -1};
   Pipe() { Require(pipe2(fd, O_CLOEXEC | O_NONBLOCK) == 0, "pipe"); }
@@ -57,11 +83,13 @@ struct Pipe {
     for (int f : fd)
       if (f >= 0) close(f);
   }
+
   void Send(const std::vector<uint8_t>& b) {
     Require(write(fd[1], b.data(), b.size()) == static_cast<ssize_t>(b.size()),
             "send");
   }
 };
+
 WorkerRegistry FixtureCatalog(const std::string& path) {
   // Fixture-only independent catalog read BEFORE any active child. Production
   // snapshot provenance/invalidation is an explicit integration gate.
@@ -70,11 +98,13 @@ WorkerRegistry FixtureCatalog(const std::string& path) {
   Require(e.kind == Kind::kCli, "CLI registration");
   return WorkerRegistry({{e.id, e.executable}});
 }
+
 uint64_t Get(const uint8_t* p, size_t n) {
   uint64_t v = 0;
   for (size_t i = 0; i < n; ++i) v |= static_cast<uint64_t>(p[i]) << (8 * i);
   return v;
 }
+
 int Workload(const char* value) {
   auto request = Json::parse(value);
   auto mode =
@@ -90,6 +120,7 @@ int Workload(const char* value) {
           static_cast<ssize_t>(bytes.size()))
         return 42;
   }
+
   if (mode == "setsid") {
     pid_t child = fork();
     if (child < 0) return 43;
@@ -106,6 +137,7 @@ int Workload(const char* value) {
   std::cerr << "fixture-diagnostic" << std::flush;
   return 0;
 }
+
 void Run(const std::string& db, const char* mode, WorkerFailure expected,
          bool cancel = false, bool stall = false) {
   Pipe regular, priority, reply;
@@ -197,9 +229,11 @@ void Run(const std::string& db, const char* mode, WorkerFailure expected,
     close(anchor);
     throw;
   }
+
   close(anchor);
 }
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   if (argc == 3 && std::string(argv[1]) == "--json") return Workload(argv[2]);
   if (argc != 2 || (std::string(argv[1]) != "--run-root-fixture" &&

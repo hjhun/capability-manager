@@ -23,13 +23,18 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
+
 #include <sys/stat.h>
 #include <sys/xattr.h>
+
 #include <cerrno>
+
 namespace capmgr::fixture {
+
 inline void Require(bool ok, const char* why) {
   if (!ok) throw std::runtime_error(why);
 }
+
 inline void PlatformNamespaces() {
   for (const char* kind : {"mnt", "pid"}) {
     struct stat self{}, initial{};
@@ -39,6 +44,7 @@ inline void PlatformNamespaces() {
             "fixture requires platform PID1 namespaces");
   }
 }
+
 inline void NoAcl(const std::string& path) {
   for (const char* name :
        {"system.posix_acl_access", "system.posix_acl_default"}) {
@@ -48,6 +54,7 @@ inline void NoAcl(const std::string& path) {
             "fixture ACL unsupported or check failed");
   }
 }
+
 inline void TrustedPath(const std::string& path, bool executable = false) {
   PlatformNamespaces();
   std::filesystem::path name(path);
@@ -59,6 +66,7 @@ inline void TrustedPath(const std::string& path, bool executable = false) {
     current /= component;
     paths.push_back(current.string());
   }
+
   for (size_t i = 0; i < paths.size(); ++i) {
     struct stat info{};
     bool leaf = executable && i + 1 == paths.size();
@@ -70,6 +78,7 @@ inline void TrustedPath(const std::string& path, bool executable = false) {
             "unsafe fixture path ownership/type/mode");
     NoAcl(paths[i]);
   }
+
   std::ifstream mountinfo("/proc/self/mountinfo");
   Require(mountinfo.good(), "fixture mountinfo");
   size_t longest = 0;
@@ -93,10 +102,11 @@ inline void TrustedPath(const std::string& path, bool executable = false) {
       }
     }
   }
+
   Require(!mountinfo.bad() && longest && filesystem == "ext4" &&
               source.starts_with("/dev/"),
           "fixture requires platform local ext4 mount");
 }
-}
+}  // namespace capmgr::fixture
 
 #endif  // CAPABILITY_MANAGER_TEST_INTEGRATION_TRUSTED_FIXTURE_HH_

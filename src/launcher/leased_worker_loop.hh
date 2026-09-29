@@ -22,6 +22,7 @@
 #include <optional>
 
 namespace capmgr {
+
 // Private fixed-image owner, never exposed to IPC. Production admission remains
 // gated on executable authority, revision invalidation and crash maintenance.
 // The same physically closed snapshot/lease remains inseparable from this loop.
@@ -78,6 +79,7 @@ class LeasedWorkerLoop final {
   std::optional<LeasedWorkerCatalogSnapshot> snapshot_;
   std::unique_ptr<WorkerLoop> loop_;
 };
+
 }  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_LEASED_WORKER_LOOP_HH_

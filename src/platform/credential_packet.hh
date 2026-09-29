@@ -17,8 +17,11 @@
 #define CAPABILITY_MANAGER_PLATFORM_CREDENTIAL_PACKET_HH_
 
 #include "platform/peer.hh"
+
 #include <string>
+
 namespace capmgr {
+
 // Disabled with NOT_SUPPORTED while Peer has no verified live-task API.
 // The retained decoder is not reachable through connection credentials alone.
 // Listener must enable SO_PASSCRED and SO_PASSSEC before accepting connections.
@@ -28,6 +31,6 @@ namespace capmgr {
 // current-label validation/race strategy remains a production authorization gate.
 // This is a transport check, not ticket, privilege or mount authorization.
 std::string ReceiveCredentialPacket(const Peer& peer);
-}
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_PLATFORM_CREDENTIAL_PACKET_HH_

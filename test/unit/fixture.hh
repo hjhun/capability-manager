@@ -17,10 +17,14 @@
 #define CAPABILITY_MANAGER_TEST_UNIT_FIXTURE_HH_
 
 #include <gtest/gtest.h>
+
 #include <filesystem>
 #include <atomic>
+
 #include <unistd.h>
+
 #include "catalog/catalog.hh"
+
 class CatalogTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -30,6 +34,7 @@ class CatalogTest : public testing::Test {
     root_ = dir;
     path_ = root_ + "/catalog.db";
   }
+
   void TearDown() override { std::filesystem::remove_all(root_); }
   capmgr::Entry Make(std::string key = "search", std::string owner = "pkg.one",
                      capmgr::Kind kind = capmgr::Kind::kSkill,
@@ -45,6 +50,7 @@ class CatalogTest : public testing::Test {
     e.detail = capmgr::Json::object();
     return e;
   }
+
   void Publish(capmgr::Catalog& db, const std::string& owner,
                const std::vector<capmgr::Entry>& entries) {
     auto operation = "fixture-" + std::to_string(sequence_.fetch_add(1));

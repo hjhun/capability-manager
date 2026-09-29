@@ -1,6 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "amd-module/action_import.hh"
+
 using namespace capmgr;
 class ImportTest : public CatalogTest {
  protected:
@@ -48,6 +63,7 @@ class ImportTest : public CatalogTest {
   }
   std::string source_;
 };
+
 TEST_F(ImportTest, SnapshotProjectsEntitiesAndAllRegisteredProviders) {
   auto entries = ReadActionSnapshot(source_);
   ASSERT_EQ(entries.size(), 1u);
@@ -62,6 +78,7 @@ TEST_F(ImportTest, SnapshotProjectsEntitiesAndAllRegisteredProviders) {
   EXPECT_EQ(detail["providerAppIds"].size(), 2u);
   EXPECT_EQ(detail["defaultProviderAppId"], "app.default");
 }
+
 TEST_F(ImportTest,
        NotificationObservesCommittedCatalogAndFtsAndNoopResyncReplaysRevision) {
   Catalog cap(path_, Database::Access::kWriter);
@@ -76,6 +93,7 @@ TEST_F(ImportTest,
   EXPECT_FALSE(SynchronizeActions(cap, source_, changed));
   EXPECT_EQ(callbacks, 2);
 }
+
 TEST_F(ImportTest,
        MissingEntityFailsWithoutReplacingPreviouslyPublishedGeneration) {
   Catalog cap(path_, Database::Access::kWriter);
@@ -84,10 +102,12 @@ TEST_F(ImportTest,
     Database writer(source_, Database::Access::kWriter);
     writer.Exec("DELETE FROM entity WHERE entity_name='Media.Base'");
   }
+
   EXPECT_THROW(SynchronizeActions(cap, source_, {}), Error);
   EXPECT_EQ(cap.Revision(), 1u);
   EXPECT_EQ(cap.Get("action:Media.Find")["entities"].size(), 2u);
 }
+
 TEST_F(ImportTest, BoxedEntityClosureIncludesDerivedAndNestedReferences) {
   std::map<std::string, Json> entities;
   entities["E.Base"] = {{"typeName", "E.Base"},
@@ -105,6 +125,7 @@ TEST_F(ImportTest, BoxedEntityClosureIncludesDerivedAndNestedReferences) {
        {{"type", "object"}, {"properties", {{"box", {{"base", "E.Base"}}}}}}}};
   EXPECT_EQ(EntityClosure(action, entities).size(), 3u);
 }
+
 TEST_F(ImportTest, AtomicActionOnlyPublicationRejectsParserKindsAndRollsBack) {
   Catalog cap(path_, Database::Access::kWriter);
   auto entries = ReadActionSnapshot(source_);
@@ -130,6 +151,7 @@ TEST_F(ImportTest,
     writer.Exec(
         "UPDATE action SET json_str=json_remove(json_str,'$.outputSchema')");
   }
+
   Catalog cap(path_, Database::Access::kWriter);
   ASSERT_TRUE(SynchronizeActions(cap, source_, {}));
   EXPECT_FALSE(cap.Get("action:Media.Find").contains("outputSchema"));
@@ -138,9 +160,11 @@ TEST_F(ImportTest,
     writer.Exec(
         "UPDATE action SET json_str=json_set(json_str,'$.outputSchema',17)");
   }
+
   EXPECT_THROW(SynchronizeActions(cap, source_, {}), Error);
   EXPECT_EQ(cap.Revision(), 1u);
 }
+
 TEST_F(ImportTest,
        FailedNotificationReplaysCommittedRevisionWithoutRepublishing) {
   Catalog cap(path_, Database::Access::kWriter);

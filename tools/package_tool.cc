@@ -1,14 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "pkgmgr-plugin/parser.hh"
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include <array>
 #include <cerrno>
 #include <iostream>
 #include <set>
 
 namespace {
+
 using namespace capmgr;
 struct File {
   int fd;
@@ -16,9 +33,11 @@ struct File {
     if (fd >= 0) close(fd);
   }
 };
+
 void Require(bool condition, const char* message) {
   if (!condition) throw Error(ErrorCode::kInvalid, message);
 }
+
 std::string Text(const Json& value, const char* field) {
   Require(value.contains(field) && value[field].is_string(),
           "Missing string field");
@@ -28,6 +47,7 @@ std::string Text(const Json& value, const char* field) {
           "Empty, oversized or NUL string");
   return result;
 }
+
 void Fields(const Json& value, std::initializer_list<const char*> allowed) {
   Require(value.is_object(), "Expected object");
   for (const auto& item : value.items()) {
@@ -37,6 +57,7 @@ void Fields(const Json& value, std::initializer_list<const char*> allowed) {
     Require(found, "Unknown manifest field");
   }
 }
+
 Json ReadManifest(const char* path) {
   File file{open(path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK)};
   struct stat st{};
@@ -71,6 +92,7 @@ Json ReadManifest(const char* path) {
   Require(!manifest.is_discarded(), "Invalid manifest JSON");
   return manifest;
 }
+
 Json Stage(const std::string& db, const char* path) {
   auto manifest = ReadManifest(path);
   Fields(manifest,
@@ -115,12 +137,14 @@ Json Stage(const std::string& db, const char* path) {
     // Validate every descriptor before bootstrapping or opening a writer DB.
     entries = ParsePackage(root, owner, metadata);
   }
+
   Catalog catalog(db, Database::Access::kWriter);
   catalog.Stage(operation, owner, entries);
   return {{"operation", operation},
           {"state", "pending"},
           {"revision", catalog.Revision()}};
 }
+
 Json Status(Catalog& catalog, const std::string& operation) {
   Statement pending(catalog.database().handle(),
                     "SELECT owner FROM pending WHERE operation=?");
@@ -133,6 +157,7 @@ Json Status(Catalog& catalog, const std::string& operation) {
             {"owner", pending.Text(0)},
             {"revision", catalog.Revision()}};
   }
+
   Statement done(catalog.database().handle(),
                  "SELECT success FROM completed WHERE operation=?");
   done.Bind(1, operation);
@@ -144,7 +169,8 @@ Json Status(Catalog& catalog, const std::string& operation) {
           {"state", done.Integer(0) ? "success" : "failure"},
           {"revision", catalog.Revision()}};
 }
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   // No default DB, environment override, service connection or production mode.
   if (argc < 5 || std::string(argv[1]) != "--offline" ||

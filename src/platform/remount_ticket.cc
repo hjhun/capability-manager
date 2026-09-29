@@ -1,12 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "platform/remount_ticket.hh"
 #include "platform/credential_packet.hh"
 #include "common/error.hh"
+
 #include <array>
 #include <cerrno>
+
 #include <sys/random.h>
+
 namespace capmgr {
+
 namespace {
+
 std::string RandomTicket() {
   std::array<unsigned char, 32> bytes{};
   size_t offset = 0;
@@ -26,6 +45,7 @@ std::string RandomTicket() {
   }
   return ticket;
 }
+
 void ValidateDestination(const std::string& path) {
   if (path.empty() || path[0] != '/' || path.size() > 4095 ||
       path.find('\0') != std::string::npos || path == "/")
@@ -39,13 +59,16 @@ void ValidateDestination(const std::string& path) {
     if (end == std::string::npos) break;
     start = end + 1;
   }
+
   if (path.back() == '/')
     throw Error(ErrorCode::kInvalid, "Trailing destination separator");
 }
-}
+}  // namespace
+
 RemountTickets::RemountTickets(Clock clock) : clock_(std::move(clock)) {
   if (!clock_) throw Error(ErrorCode::kInvalid, "Missing ticket clock");
 }
+
 void RemountTickets::Prune(Time now) {
   for (auto it = tickets_.begin(); it != tickets_.end();) {
     if (now >= it->second.expires ||
@@ -55,6 +78,7 @@ void RemountTickets::Prune(Time now) {
       ++it;
   }
 }
+
 std::string RemountTickets::Issue(std::shared_ptr<Peer> peer,
                                   const std::string& destination) {
   ValidateDestination(destination);
@@ -73,6 +97,7 @@ std::string RemountTickets::Issue(std::shared_ptr<Peer> peer,
   if (!inserted) throw Error(ErrorCode::kIo, "Ticket entropy collision");
   return it->first;
 }
+
 RemountRequest RemountTickets::Consume(const Peer& packet_peer) {
   auto token = ReceiveCredentialPacket(packet_peer);
   if (token.size() != 64 ||
@@ -89,6 +114,7 @@ RemountRequest RemountTickets::Consume(const Peer& packet_peer) {
   tickets_.erase(found);
   return request;
 }
+
 void RemountTickets::Revoke(const Peer& peer) {
   std::lock_guard lock(mutex_);
   for (auto it = tickets_.begin(); it != tickets_.end();) {
@@ -98,4 +124,4 @@ void RemountTickets::Revoke(const Peer& peer) {
       ++it;
   }
 }
-}
+}  // namespace capmgr

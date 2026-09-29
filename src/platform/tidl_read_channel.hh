@@ -17,7 +17,9 @@
 #define CAPABILITY_MANAGER_PLATFORM_TIDL_READ_CHANNEL_HH_
 
 #include "api/read_admission.hh"
+
 namespace capmgr {
+
 // Private create-only transport. endpoint is trusted image/fixture configuration,
 // never a C-client argument. Own/use/destroy on one creating thread. No context
 // iteration, reconnect, callbacks to application code, or production selection.
@@ -34,6 +36,7 @@ class TidlReadChannel final : public CatalogAdmissionChannel {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_PLATFORM_TIDL_READ_CHANNEL_HH_

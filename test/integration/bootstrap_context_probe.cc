@@ -1,21 +1,41 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Fork-only root fixture: no namespace setup, workload, mount or policy writes.
 #include "launcher/worker_bootstrap.hh"
 #include "launcher/worker_loop.hh"
 #include "../fixtures/bootstrap_policy.hh"
 #include "trusted_fixture.hh"
+
 #include <atomic>
 #include <thread>
 #include <iostream>
+
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 using namespace capmgr;
+
 namespace {
+
 void Check(bool ok, const char* why) {
   if (!ok) throw std::runtime_error(why);
 }
+
 int Child(const std::string& mode, const std::array<int, 6>& sources) {
   try {
     for (int i = 0; i < 3; ++i) {
@@ -116,6 +136,7 @@ int Child(const std::string& mode, const std::array<int, 6>& sources) {
     return 62;
   }
 }
+
 void Run(const std::string& mode) {
   int pipes[4][2];
   for (auto& p : pipes) Check(!pipe2(p, O_CLOEXEC), "pipe");
@@ -128,6 +149,7 @@ void Run(const std::string& mode) {
     sources[i] = fcntl(original[i], F_DUPFD_CLOEXEC, 9);
     Check(sources[i] >= 9, "source duplication");
   }
+
   OwnedChildren owned(1);
   auto token = owned.Reserve();
   pid_t child = fork();
@@ -153,6 +175,7 @@ void Run(const std::string& mode) {
     }
     usleep(1000);
   }
+
   if (!exited) {
     status = owned.StopAndWait(token, std::chrono::seconds(5));
     if (status.state != ChildState::Complete) {
@@ -162,6 +185,7 @@ void Run(const std::string& mode) {
     owned.Release(token);
     throw std::runtime_error("context fixture deadline");
   }
+
   owned.Release(token);
   char diagnostic[512]{};
   int flags = fcntl(pipes[3][0], F_GETFL);
@@ -176,7 +200,8 @@ void Run(const std::string& mode) {
   Check(status.exit_code == 0 && !status.signal, "context child verdict");
   std::cout << "CONTEXT_CASE_PASS mode=" << mode << std::endl;
 }
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   if ((argc != 2 && argc != 3) || std::string(argv[1]) != "--run-root-fixture")
     return 2;

@@ -1,15 +1,34 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_result.hh"
+
 #include <set>
 #include <string_view>
 #include <type_traits>
+
 namespace capmgr {
+
 namespace {
+
 static_assert(std::is_nothrow_move_constructible_v<RunResult>);
 constexpr size_t kLimit = 1024 * 1024;
 void Require(bool ok, const char* why) {
   if (!ok) throw Error(ErrorCode::kInvalid, why);
 }
+
 Json Parse(const std::string& text, size_t limit, int maximum_depth = 128) {
   Require(text.size() <= limit, "Worker JSON limit");
   std::vector<std::set<std::string>> keys;
@@ -28,11 +47,13 @@ Json Parse(const std::string& text, size_t limit, int maximum_depth = 128) {
   Require(!json.is_discarded() && json.is_object(), "Malformed worker JSON");
   return json;
 }
+
 bool Integer(const Json& value) {
   return value.is_number_integer() &&
          (!value.is_number_unsigned() ||
           value.get<uint64_t>() <= uint64_t{INT64_MAX});
 }
+
 void Envelope(const Json& value, const Json& id) {
   Require(
       value.value("jsonrpc", Json()) == "2.0" && value.contains("id") &&
@@ -89,6 +110,7 @@ Json Comparison(const std::string& text) {
   Require(index == numbers.size(), "Worker numeric comparison mismatch");
   return tree;
 }
+
 const char* Cause(WorkerFailure failure) {
   switch (failure) {
     case WorkerFailure::None:
@@ -116,6 +138,7 @@ const char* Cause(WorkerFailure failure) {
   }
   return "worker protocol";
 }
+
 RunResult Failure(const Request& request, const WorkerEvent& event,
                   const char* cause) {
   Json json = {{"jsonrpc", "2.0"},
@@ -131,7 +154,8 @@ RunResult Failure(const Request& request, const WorkerEvent& event,
                    {"systemError", event.error}}}}}};
   return {json.dump(), event.code, event.signal, false};
 }
-}
+}  // namespace
+
 WorkerResult::WorkerResult(uint64_t client_token, const std::string& text,
                            WorkerResultOperations* operations)
     : operations_(operations), client_token_(client_token) {
@@ -142,17 +166,21 @@ WorkerResult::WorkerResult(uint64_t client_token, const std::string& text,
               request_.capability_id.size() > 4,
           "Worker result requires CLI request");
 }
+
 bool WorkerResult::Bind(uint64_t token) noexcept {
   if (!token || worker_token_ || complete_ || uncertain_) return false;
   worker_token_ = token;
   return true;
 }
+
 bool WorkerResult::NeedsCancellation() const noexcept {
   return failure_ && !complete_ && !uncertain_ && !terminal_pending_;
 }
+
 void WorkerResult::LoseSession() noexcept {
   if (!complete_ && !terminal_pending_) uncertain_ = true;
 }
+
 std::optional<RunResult> WorkerResult::Accept(const WorkerEvent& event) {
   Require(worker_token_ && event.token == worker_token_ && !complete_ &&
               !uncertain_ && !terminal_pending_,
@@ -173,11 +201,13 @@ std::optional<RunResult> WorkerResult::Accept(const WorkerEvent& event) {
     }
     return std::nullopt;
   }
+
   Require(event.kind == WorkerReplyKind::Complete, "Unexpected worker event");
   terminal_ = event;
   terminal_pending_ = true;
   return RetryTerminal();
 }
+
 RunResult WorkerResult::RetryTerminal() {
   Require(terminal_pending_ && !complete_ && !uncertain_,
           "No pending worker terminal");
@@ -186,6 +216,7 @@ RunResult WorkerResult::RetryTerminal() {
   terminal_pending_ = false;
   return result;
 }
+
 RunResult WorkerResult::BuildTerminal() {
   const auto& event = terminal_;
   auto fail = [&](const char* cause) {
@@ -217,7 +248,8 @@ RunResult WorkerResult::BuildTerminal() {
   } catch (const std::out_of_range&) {
     return fail("response comparison");
   }
+
   return RunResult{std::move(streams_[present[0] ? 0 : 1]), event.code,
                    event.signal, true};
 }
-}
+}  // namespace capmgr

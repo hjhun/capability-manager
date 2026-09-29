@@ -18,13 +18,16 @@
 
 #include "launcher/worker_session.hh"
 #include "launcher/runner.hh"
+
 namespace capmgr {
+
 enum class WorkerResultBuildStage { Parse, Compare, Failure };
 // Trusted test-only fault seam, never selected by IPC; must outlive collector.
 struct WorkerResultOperations {
   virtual ~WorkerResultOperations() = default;
   virtual void BeforeBuild(WorkerResultBuildStage) {}
 };
+
 // Private collector, not an ExecutionBackend or cleanup coordinator. Construct
 // before admission; under coordinator serialization Start exactly Original(),
 // Bind the returned worker token, then permit Step. Bind allocates nothing.
@@ -75,6 +78,7 @@ class WorkerResult {
   const char* failure_ = nullptr;
   bool complete_ = false, uncertain_ = false, terminal_pending_ = false;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_RESULT_HH_

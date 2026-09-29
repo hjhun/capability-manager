@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_catalog_lease.hh"
 
 #include <fcntl.h>
@@ -13,7 +27,9 @@
 #include "catalog/catalog.hh"
 
 namespace capmgr {
+
 namespace {
+
 [[noreturn]] void SqlFailure(sqlite3* db, int code) {
   const int primary = code & 255;
   throw Error(primary == SQLITE_BUSY || primary == SQLITE_LOCKED
@@ -21,9 +37,11 @@ namespace {
                   : ErrorCode::kDatabase,
               db ? sqlite3_errmsg(db) : sqlite3_errstr(code));
 }
+
 void Require(bool ok, const char* message) {
   if (!ok) throw Error(ErrorCode::kPermission, message);
 }
+
 void BorrowedDirectory(int source) {
   // Reject a caller-owned SQLite data FD WITHOUT duplication or close.
   struct stat info{};
@@ -42,6 +60,7 @@ struct Connection {
   void Check() const {
     Require(creator == getpid(), "Inherited worker catalog reader");
   }
+
   void CleanupCheck() const noexcept {
     if (creator != getpid()) std::terminate();
   }
@@ -49,15 +68,18 @@ struct Connection {
     Check();
     SqlFailure(db, rc);
   }
+
   ~Connection() {
     CleanupCheck();
     if (db && sqlite3_close(db) != SQLITE_OK) std::terminate();
   }
+
   void Exec(const char* sql) {
     Check();
     const int rc = sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
     if (rc != SQLITE_OK) Fail(rc);
   }
+
   void Close() {
     Check();
     if (!db) return;
@@ -66,6 +88,7 @@ struct Connection {
     db = nullptr;
   }
 };
+
 class Query final {
  public:
   Query(Connection& connection, const char* sql) : connection_(connection) {
@@ -79,10 +102,12 @@ class Query final {
       connection_.Fail(rc);
     }
   }
+
   ~Query() {
     connection_.CleanupCheck();
     sqlite3_finalize(query_);
   }
+
   Query(const Query&) = delete;
   Query& operator=(const Query&) = delete;
   bool Next() {
@@ -92,14 +117,17 @@ class Query final {
     if (rc == SQLITE_DONE) return false;
     connection_.Fail(rc);
   }
+
   int Type(int column) const {
     connection_.Check();
     return sqlite3_column_type(query_, column);
   }
+
   int64_t Integer(int column) const {
     connection_.Check();
     return sqlite3_column_int64(query_, column);
   }
+
   std::string Text(int column) const {
     connection_.Check();
     const auto* bytes = sqlite3_column_text(query_, column);
@@ -113,11 +141,13 @@ class Query final {
   Connection& connection_;
   sqlite3_stmt* query_ = nullptr;
 };
+
 class ReadTransaction final {
  public:
   explicit ReadTransaction(Connection& connection) : connection_(connection) {
     connection_.Exec("BEGIN");
   }
+
   ~ReadTransaction() {
     connection_.CleanupCheck();
     if (!committed_) {
@@ -129,6 +159,7 @@ class ReadTransaction final {
       connection_.rollback_failed = rc != SQLITE_OK;
     }
   }
+
   void Commit() {
     connection_.Exec("COMMIT");
     committed_ = true;
@@ -138,6 +169,7 @@ class ReadTransaction final {
   Connection& connection_;
   bool committed_ = false;
 };
+
 }  // namespace
 
 struct WorkerCatalogReader::Impl {
@@ -164,6 +196,7 @@ struct WorkerCatalogReader::Impl {
     connection.Exec("PRAGMA query_only=ON; PRAGMA cache_size=-1024;");
     ValidateOpen();
   }
+
   void ValidateOpen() {
     connection.Check();
     lease->Check();
@@ -178,6 +211,7 @@ struct WorkerCatalogReader::Impl {
             "Worker catalog requires existing WAL");
     lease->Check();
   }
+
   void Read() {
     ReadTransaction read(connection);
     uint64_t revision = 0;
@@ -238,6 +272,7 @@ LeasedWorkerCatalogSnapshot::LeasedWorkerCatalogSnapshot(
     : snapshot_(std::move(snapshot)), lease_(std::move(lease)) {
   static_assert(std::is_nothrow_move_constructible_v<WorkerCatalogSnapshot>);
 }
+
 LeasedWorkerCatalogSnapshot::LeasedWorkerCatalogSnapshot(
     LeasedWorkerCatalogSnapshot&&) noexcept = default;
 LeasedWorkerCatalogSnapshot::~LeasedWorkerCatalogSnapshot() = default;

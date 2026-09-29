@@ -1,29 +1,52 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/broker_journal.hh"
 #include "common/error.hh"
+
 #include <algorithm>
 #include <array>
 #include <cerrno>
+
 #include <fcntl.h>
+
 #include <limits>
 #include <set>
+
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <nlohmann/json.hpp>
+
 namespace capmgr {
+
 namespace {
+
 using Json = nlohmann::json;
 class LinuxOperations final : public JournalOperations {
  public:
   ssize_t Write(int fd, const void* data, size_t size) noexcept override {
     return write(fd, data, size);
   }
+
   int Sync(int fd) noexcept override { return fsync(fd); }
   int Replace(int directory) noexcept override {
     return renameat(directory, "state.next", directory, "state.json");
   }
 };
+
 [[noreturn]] void Invalid() {
   throw Error(ErrorCode::kDatabase,
               "Broker recovery state requires external reconciliation");
@@ -32,22 +55,26 @@ class LinuxOperations final : public JournalOperations {
   throw Error(ErrorCode::kIo,
               "Broker recovery storage failed; admission closed");
 }
+
 struct Fd {
   int value;
   ~Fd() {
     if (value >= 0) close(value);
   }
 };
+
 void File(int fd, uid_t owner) {
   struct stat info{};
   if (fstat(fd, &info) || !S_ISREG(info.st_mode) || info.st_uid != owner ||
       (info.st_mode & 07777) != 0600 || info.st_nlink != 1)
     Invalid();
 }
+
 uint64_t Number(const Json& value) {
   if (!value.is_number_unsigned()) Invalid();
   return value.get<uint64_t>();
 }
+
 Json Read(int directory, uid_t owner) {
   Fd file{openat(directory, "state.json", O_RDONLY | O_CLOEXEC | O_NOFOLLOW)};
   if (file.value < 0) Invalid();
@@ -81,6 +108,7 @@ Json Read(int directory, uid_t owner) {
   } catch (const Json::exception&) {
     Invalid();
   }
+
   if (duplicate || !result.is_object() || result.size() != 5 ||
       !result.contains("version") || !result.contains("generation") ||
       !result.contains("next") || !result.contains("state") ||
@@ -88,11 +116,13 @@ Json Read(int directory, uid_t owner) {
     Invalid();
   return result;
 }
-}
+}  // namespace
+
 JournalOperations& LinuxJournalOperations() {
   static LinuxOperations operations;
   return operations;
 }
+
 BrokerJournal::BrokerJournal(int trusted_directory, uid_t owner,
                              JournalOperations& operations)
     : operations_(operations) {
@@ -137,10 +167,12 @@ BrokerJournal::BrokerJournal(int trusted_directory, uid_t owner,
     throw;
   }
 }
+
 BrokerJournal::~BrokerJournal() {
   if (lock_ >= 0) close(lock_);
   if (directory_ >= 0) close(directory_);
 }
+
 void BrokerJournal::Persist(const std::string& state, uint64_t generation,
                             uint64_t next, const std::vector<uint64_t>& jobs) {
   // Any failure poisons admission. A partial state.next is preserved as explicit
@@ -165,6 +197,7 @@ void BrokerJournal::Persist(const std::string& state, uint64_t generation,
     if (count <= 0) Io();
     offset += static_cast<size_t>(count);
   }
+
   if (operations_.Sync(next_file.value) || operations_.Replace(directory_) ||
       operations_.Sync(directory_))
     Io();
@@ -174,23 +207,28 @@ void BrokerJournal::Persist(const std::string& state, uint64_t generation,
   jobs_ = jobs;
   blocked_ = state == "uncertain";
 }
+
 bool BrokerJournal::Blocked() const {
   std::lock_guard lock(mutex_);
   return blocked_;
 }
+
 uint64_t BrokerJournal::Generation() const {
   std::lock_guard lock(mutex_);
   return generation_;
 }
+
 std::vector<uint64_t> BrokerJournal::Reservations() const {
   std::lock_guard lock(mutex_);
   return jobs_;
 }
+
 void BrokerJournal::RequireActive() const {
   if (blocked_ || state_ != "active")
     throw Error(ErrorCode::kBusy,
                 "Broker recovery proof required before admission");
 }
+
 uint64_t BrokerJournal::BeginGeneration() {
   std::lock_guard lock(mutex_);
   if (blocked_ || state_ != "clean" ||
@@ -199,6 +237,7 @@ uint64_t BrokerJournal::BeginGeneration() {
   Persist("active", generation_ + 1, next_, {});
   return generation_;
 }
+
 uint64_t BrokerJournal::Reserve() {
   std::lock_guard lock(mutex_);
   RequireActive();
@@ -212,6 +251,7 @@ uint64_t BrokerJournal::Reserve() {
           token == std::numeric_limits<uint64_t>::max() ? 0 : token + 1, jobs);
   return token;
 }
+
 void BrokerJournal::ConfirmJobGone(uint64_t token) {
   std::lock_guard lock(mutex_);
   RequireActive();
@@ -222,11 +262,13 @@ void BrokerJournal::ConfirmJobGone(uint64_t token) {
   jobs.erase(found);
   Persist("active", generation_, next_, jobs);
 }
+
 void BrokerJournal::MarkUncertain() {
   std::lock_guard lock(mutex_);
   if (blocked_) return;
   Persist("uncertain", generation_, next_, jobs_);
 }
+
 void BrokerJournal::ConfirmNormalWorkerExit() {
   std::lock_guard lock(mutex_);
   RequireActive();
@@ -234,4 +276,4 @@ void BrokerJournal::ConfirmNormalWorkerExit() {
     throw Error(ErrorCode::kBusy, "Broker jobs still reserved");
   Persist("clean", generation_, next_, {});
 }
-}
+}  // namespace capmgr

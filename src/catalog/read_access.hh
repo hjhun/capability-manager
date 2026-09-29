@@ -17,7 +17,9 @@
 #define CAPABILITY_MANAGER_CATALOG_READ_ACCESS_HH_
 
 #include "catalog/database.hh"
+
 namespace capmgr {
+
 // Private admission lifetime. Must outlive SQLite, including failed destroy
 // retries. Destruction only closes owned descriptors; no IPC/join/fsync.
 class ReadAccess {
@@ -27,6 +29,7 @@ class ReadAccess {
   virtual void Check() = 0;
   virtual void Opened(Database&) = 0;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_CATALOG_READ_ACCESS_HH_

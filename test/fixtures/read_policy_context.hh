@@ -25,6 +25,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <nlohmann/json.hpp>
+
 #include <array>
 #include <charconv>
 #include <cstring>
@@ -37,19 +38,23 @@
 #include "read_policy_recovery_reference.hh"
 
 namespace capmgr::fixture::realpolicy {
+
 using Json = nlohmann::json;
 inline void Check(bool okay, const char* why) {
   if (!okay) throw std::runtime_error(why);
 }
+
 inline std::string Self() {
   return std::filesystem::read_symlink("/proc/self/exe").string();
 }
+
 struct FixedRole {
   const char* name;
   uid_t uid;
   const char* label;
   bool platform_group = false;
 };
+
 constexpr std::array<FixedRole, 3> kRoles{{{"system301", 301, "System"},
                                            {"shell301", 301, "User::Shell"},
                                            {"shell1", 1, "User::Shell"}}};
@@ -65,15 +70,18 @@ inline const FixedRole& Role(const std::string& name,
     if (name == role.name) return role;
   throw std::runtime_error("unknown fixed role");
 }
+
 inline bool ExactGroups(bool platform_group, std::span<const gid_t> groups) {
   return platform_group ? groups.size() == 1 && groups.front() == kPlatformGroup
                         : groups.empty();
 }
+
 inline void RequirePlatformGroup(const char* name, gid_t gid) {
   Check(name && std::string_view(name) == "priv_platform" &&
             gid == kPlatformGroup,
         "fixed priv_platform group unavailable/mismatched");
 }
+
 inline void PlatformGroupPreflight() {
   // Resolve only in the never-drop trusted coordinator BEFORE scope/spawn.
   // This does not change the image group database or pick a fallback group.
@@ -86,6 +94,7 @@ inline void PlatformGroupPreflight() {
         "fixed priv_platform group lookup");
   RequirePlatformGroup(found->gr_name, found->gr_gid);
 }
+
 inline std::string TaskLabel();
 inline void VerifyContext(const std::string& label, uid_t uid,
                           bool platform_group = false) {
@@ -115,9 +124,11 @@ inline void VerifyContext(const std::string& label, uid_t uid,
               prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_IS_SET, cap, 0, 0) == 0,
           "retained bounding/ambient capability");
   }
+
   Check(prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) == 1 && TaskLabel() == label,
         "context label/NNP");
 }
+
 inline std::string TaskLabel() {
   std::ifstream file("/proc/self/attr/current", std::ios::binary);
   Check(static_cast<bool>(file), "own task label open");
@@ -127,6 +138,7 @@ inline std::string TaskLabel() {
   Check(!text.empty() && text.size() <= 255, "own task label bytes");
   return text;
 }
+
 inline void Drop(const std::string& label, uid_t uid,
                  bool platform_group = false) {
   // Own-task fixture context only, never peer credential authority.
@@ -143,6 +155,7 @@ inline void Drop(const std::string& label, uid_t uid,
     Check(present >= 0 && prctl(PR_CAPBSET_DROP, cap, 0, 0, 0) == 0,
           "bounding capability drop");
   }
+
   Check(prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_CLEAR_ALL, 0, 0, 0) == 0,
         "ambient capability clear");
   const gid_t group = kPlatformGroup;
@@ -158,6 +171,7 @@ inline void Drop(const std::string& label, uid_t uid,
   Check(prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == 0, "no new privileges");
   VerifyContext(label, uid, platform_group);
 }
+
 inline void OwnInitialTable(const char*& stage, int code_fd = -1,
                             const RecoveryReference* reference = nullptr) {
   if (reference) {
@@ -268,6 +282,6 @@ inline void OwnInitialTable(const char*& stage, int code_fd = -1,
   }
 }
 
-}
+}  // namespace capmgr::fixture::realpolicy
 
 #endif  // CAPABILITY_MANAGER_TEST_FIXTURES_READ_POLICY_CONTEXT_HH_

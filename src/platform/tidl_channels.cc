@@ -1,14 +1,33 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "platform/tidl_channels.hh"
+
 #include <sys/stat.h>
+
 namespace capmgr {
+
 namespace {
+
 bool SameSocket(int left, int right) {
   struct stat a{}, b{};
   return fstat(left, &a) == 0 && fstat(right, &b) == 0 && S_ISSOCK(a.st_mode) &&
          S_ISSOCK(b.st_mode) && a.st_dev == b.st_dev && a.st_ino == b.st_ino;
 }
-}
+}  // namespace
+
 TidlChannels::TidlChannels(std::shared_ptr<ConnectionPolicy> policy)
     : policy_(std::move(policy)) {}
 bool TidlChannels::CheckCallbackExtension(int fd, pid_t pid, uid_t owner_uid,
@@ -17,12 +36,14 @@ bool TidlChannels::CheckCallbackExtension(int fd, pid_t pid, uid_t owner_uid,
   return fd >= 0 && pid > 0 && cached_fd == fd && cached_pid == pid &&
          cached_owner_uid == owner_uid;
 }
+
 void TidlChannels::Authorize(const Peer& peer) {
   if (policy_)
     RequirePlatformPrivilege(peer, *policy_);
   else
     RequirePlatformPrivilege(peer);
 }
+
 bool TidlChannels::BindChannels(int main_fd, int callback_fd) noexcept {
   try {
     std::lock_guard lock(mutex_);
@@ -38,6 +59,7 @@ bool TidlChannels::BindChannels(int main_fd, int callback_fd) noexcept {
     return false;
   }
 }
+
 bool TidlChannels::ValidateChannels(int main_fd, int callback_fd) noexcept {
   try {
     std::lock_guard lock(mutex_);
@@ -56,8 +78,9 @@ bool TidlChannels::ValidateChannels(int main_fd, int callback_fd) noexcept {
     return false;
   }
 }
+
 std::shared_ptr<Peer> TidlChannels::MainPrincipal() const {
   std::lock_guard lock(mutex_);
   return main_;
 }
-}
+}  // namespace capmgr

@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Explicit root development-image fixture. No global policy or production DB.
 #include "trusted_fixture.hh"
 #include "api/client.hh"
@@ -7,6 +21,7 @@
 #include "catalog/catalog.hh"
 #include "launcher/owned_children.hh"
 #include "capability_manager_proxy.h"
+
 #include <rpc-port-internal.h>
 #include <fcntl.h>
 #include <spawn.h>
@@ -14,23 +29,29 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include <iostream>
 #include <fstream>
 #include <set>
 #include <thread>
+
 extern char** environ;
 using namespace capmgr;
 using namespace std::chrono_literals;
 using Stub = rpc_port::capability_manager_stub::stub::CapabilityManager;
 using Proxy = rpc_port::capability_manager_proxy::proxy::CapabilityManager;
+
 namespace {
+
 const char* stage = "startup";
 void Check(bool ok, const char* message) {
   if (!ok) throw std::runtime_error(message);
 }
+
 std::string Self() {
   return std::filesystem::read_symlink("/proc/self/exe").string();
 }
+
 struct Scope {
   char path[64] = "/opt/usr/capmgr-read-fixture-XXXXXX";
   int anchor = -1;
@@ -47,6 +68,7 @@ struct Scope {
       throw std::runtime_error("scope anchor");
     }
   }
+
   ~Scope() {
     if (!attempted) {
       try {
@@ -56,6 +78,7 @@ struct Scope {
     }
     if (anchor >= 0) close(anchor);
   }
+
   void Cleanup() {
     if (attempted) return;
     attempted = true;
@@ -79,6 +102,7 @@ struct Scope {
     }
   }
 };
+
 std::string Label(const std::string& path) {
   int fd = open(path.c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
   Check(fd >= 0, "label open");
@@ -92,6 +116,7 @@ std::string Label(const std::string& path) {
     throw;
   }
 }
+
 ReadLeasePolicy Policy(const std::string& root) {
   fixture::TrustedPath(root);
   auto dir = root + "/catalog", lock = root + "/lease";
@@ -108,6 +133,7 @@ ReadLeasePolicy Policy(const std::string& root) {
           Label(dir + "/catalog.db"),
           Label(lock)};
 }
+
 void Initialize(const std::string& root) {
   Check(!mkdir((root + "/catalog").c_str(), 0700), "catalog directory");
   int fd = open((root + "/lease").c_str(),
@@ -134,17 +160,20 @@ void Initialize(const std::string& root) {
     Check(!chmod((root + "/catalog/catalog.db" + suffix).c_str(), 0600),
           "catalog mode");
 }
+
 struct Context {
   GMainContext* value = g_main_context_new();
   Context() {
     Check(value, "private context");
     g_main_context_push_thread_default(value);
   }
+
   ~Context() {
     g_main_context_pop_thread_default(value);
     g_main_context_unref(value);
   }
 };
+
 struct Listener : Proxy::IEventListener {
   bool connected = false;
   int calls = 0;
@@ -152,20 +181,24 @@ struct Listener : Proxy::IEventListener {
     connected = true;
     ++calls;
   }
+
   void OnDisconnected() override {
     connected = false;
     ++calls;
   }
+
   void OnRejected() override {
     connected = false;
     ++calls;
   }
 };
+
 size_t Fds() {
   return static_cast<size_t>(
       std::distance(std::filesystem::directory_iterator("/proc/self/fd"),
                     std::filesystem::directory_iterator{}));
 }
+
 void DropReplyTo(pid_t pid) {
   // Fixture-only: shut down connected socket objects in THIS server that belong
   // to this verified fixture client, including the split reply half. No foreign
@@ -181,6 +214,7 @@ void DropReplyTo(pid_t pid) {
       shutdown(fd, SHUT_RDWR);
   }
 }
+
 struct Registration {
   bool active = false;
   explicit Registration(const std::string& endpoint) {
@@ -188,15 +222,18 @@ struct Registration {
           "process registration");
     active = true;
   }
+
   ~Registration() {
     if (active && rpc_port_deregister_proc_info())
       std::cerr << "PROC_DEREGISTER_FAILED\n";
   }
+
   void Close() {
     Check(!rpc_port_deregister_proc_info(), "process deregistration");
     active = false;
   }
 };
+
 class Service : public TidlReadService {
  public:
   Service(std::string sender, std::string instance, ReadLeasePolicy policy,
@@ -217,6 +254,7 @@ class Service : public TidlReadService {
     }
     return result;
   }
+
   int ConfirmCatalog(std::string nonce) override {
     int result = TidlReadService::ConfirmCatalog(std::move(nonce));
     if (mode_ == "lost-reply" && result == 0) {
@@ -230,6 +268,7 @@ class Service : public TidlReadService {
   std::shared_ptr<CatalogGrantBudget> budget_;
   std::string mode_;
 };
+
 class Factory : public Stub::ServiceBase::Factory {
  public:
   Factory(ReadLeasePolicy policy, std::string mode)
@@ -246,6 +285,7 @@ class Factory : public Stub::ServiceBase::Factory {
   ReadLeasePolicy policy_;
   std::string mode_;
 };
+
 int Server(const std::string& root, const std::string& endpoint,
            const std::string& mode) {
   stage = "server register";
@@ -288,10 +328,12 @@ int Server(const std::string& root, const std::string& endpoint,
           "service/timer/grant cleanup");
     std::cout << "SERVER_GRANTS_SERVICES_DRAINED\n" << std::flush;
   }
+
   g_main_loop_unref(loop);
   registration.Close();
   return 0;
 }
+
 void PublicClient(const std::string& root, const std::string& endpoint,
                   const std::string& mode) {
   auto* previous = g_main_context_get_thread_default();
@@ -332,9 +374,11 @@ void PublicClient(const std::string& root, const std::string& endpoint,
     else
       Check(Fds() <= baseline, "client descriptor leak");
   }
+
   std::cout << "PUBLIC_CLIENT_" << mode << "_PASS fd_count=" << Fds()
             << std::endl;
 }
+
 void RawClient(const std::string& root, const std::string& endpoint) {
   Context context;
   Listener a, b;
@@ -361,6 +405,7 @@ void RawClient(const std::string& root, const std::string& endpoint) {
   idle.Disconnect();
   std::cout << "RAW_INSTANCE_REPLAY_PASS\n" << std::flush;
 }
+
 std::set<int> Sockets() {
   std::set<int> result;
   for (const auto& item :
@@ -371,6 +416,7 @@ std::set<int> Sockets() {
   }
   return result;
 }
+
 struct RawProxy {
   rpc_port_proxy_h proxy = nullptr;
   rpc_port_h main = nullptr;
@@ -379,12 +425,14 @@ struct RawProxy {
     if (proxy) rpc_port_proxy_destroy(proxy);
   }
 };
+
 struct Parcel {
   rpc_port_parcel_h value = nullptr;
   ~Parcel() {
     if (value) rpc_port_parcel_destroy(value);
   }
 };
+
 std::string RawAuthorize(rpc_port_h port) {
   Parcel request, response;
   Check(!rpc_port_parcel_create(&request.value), "raw parcel");
@@ -401,6 +449,7 @@ std::string RawAuthorize(rpc_port_h port) {
   std::unique_ptr<char, decltype(&std::free)> owned(text, &std::free);
   return text;
 }
+
 bool RawConfirmFails(rpc_port_h port, const std::string& nonce) {
   Parcel request, response;
   Check(!rpc_port_parcel_create(&request.value), "confirm parcel");
@@ -413,6 +462,7 @@ bool RawConfirmFails(rpc_port_h port, const std::string& nonce) {
   return rpc_port_parcel_read_int32(response.value, &method) || method != 0 ||
          rpc_port_parcel_read_int32(response.value, &result) || result != 0;
 }
+
 void SplitSockets(const std::string& root, const std::string& endpoint) {
   for (size_t selected = 0; selected < 2; ++selected) {
     Context context;
@@ -465,6 +515,7 @@ void SplitSockets(const std::string& root, const std::string& endpoint) {
           "disconnected split write must not confirm");
   }
 }
+
 struct Child {
   OwnedChildren owned{1};
   uint64_t token = 0;
@@ -478,6 +529,7 @@ struct Child {
       owned.Release(token);
     }
   }
+
   void Start(std::vector<std::string> args) {
     std::vector<char*> pointers;
     for (auto& arg : args) pointers.push_back(arg.data());
@@ -500,6 +552,7 @@ struct Child {
     Check(result == 0, "spawn");
     token = id;
   }
+
   void Wait(std::chrono::seconds budget = 20s) {
     auto end = std::chrono::steady_clock::now() + budget;
     while (std::chrono::steady_clock::now() < end) {
@@ -515,6 +568,7 @@ struct Child {
     throw std::runtime_error("child deadline");
   }
 };
+
 void Run() {
   fixture::TrustedPath(Self(), true);
   Scope scope;
@@ -562,10 +616,12 @@ void Run() {
     Check(!std::filesystem::exists(endpoint_path), "server endpoint retained");
     std::cout << "READ_TRANSPORT_CASE_PASS " << mode << std::endl;
   }
+
   scope.Cleanup();
   std::cout << "READ_TRANSPORT_FIXTURE_PASS\n";
 }
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   try {
     Check(geteuid() == 0, "root fixture only");

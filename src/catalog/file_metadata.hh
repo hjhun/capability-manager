@@ -17,9 +17,11 @@
 #define CAPABILITY_MANAGER_CATALOG_FILE_METADATA_HH_
 
 #include <cstddef>
+
 #include <sys/types.h>
 
 namespace capmgr {
+
 // Metadata only. Probe on a DIRECTORY before ever opening a SQLite data inode;
 // kernels silently ignoring O_PATH must fail before an ordinary data FD exists.
 void RequireDataPinSupport(int directory);

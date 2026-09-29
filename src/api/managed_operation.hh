@@ -23,7 +23,9 @@
 #include <mutex>
 #include <string>
 #include <thread>
+
 namespace capmgr {
+
 // Trusted private coordinator, never IPC data. The only coordination thread is
 // owned here; subclasses do not spawn threads/native callbacks outside this table.
 // Construction/token binding have no side effects. Coordinate may START only
@@ -34,6 +36,7 @@ struct ManagedPublicationOperations {
   virtual void BeforeTerminalPublication() {
   }  // trusted fault seam, coordinator only
 };
+
 class ManagedOperation {
  public:
   enum class Cleanup { kPending, kUncertain, kConfirmedComplete };
@@ -95,6 +98,7 @@ class ManagedOperation {
   std::future<void> exited_ = exit_promise_.get_future();
   bool attempted_ = false, joined_ = false, joining_ = false;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_API_MANAGED_OPERATION_HH_

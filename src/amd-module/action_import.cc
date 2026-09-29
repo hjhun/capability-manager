@@ -1,9 +1,27 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "amd-module/action_import.hh"
+
 #include <set>
 #include <mutex>
+
 namespace capmgr {
+
 namespace {
+
 void Collect(const Json& node, std::set<std::string>& refs,
              std::set<std::string>& boxes, unsigned depth = 0) {
   if (depth > 128)
@@ -36,6 +54,7 @@ void Collect(const Json& node, std::set<std::string>& refs,
   } else if (node.is_array())
     for (const auto& schema : node) Collect(schema, refs, boxes, depth + 1);
 }
+
 bool Derived(const std::string& name, const std::string& base,
              const std::map<std::string, Json>& entities) {
   std::set<std::string> visited;
@@ -52,7 +71,8 @@ bool Derived(const std::string& name, const std::string& base,
   }
   return false;
 }
-}
+}  // namespace
+
 Json EntityClosure(const Json& action,
                    const std::map<std::string, Json>& entities) {
   std::set<std::string> refs, boxes, processed;
@@ -91,6 +111,7 @@ Json EntityClosure(const Json& action,
   }
   return out;
 }
+
 std::vector<Entry> ReadActionSnapshot(const std::string& path) {
   Database source(path, Database::Access::kReadOnly);
   Transaction snapshot(source, false);
@@ -155,11 +176,14 @@ std::vector<Entry> ReadActionSnapshot(const std::string& path) {
     }
     entries.push_back(std::move(e));
   }
+
   snapshot.Commit();
   return entries;
 }
-}
+}  // namespace capmgr
+
 namespace capmgr {
+
 bool SynchronizeActions(CatalogWriter& catalog, const std::string& source_path,
                         const std::function<void(uint64_t)>& changed) {
   // One importer per process serializes source snapshots through catalog commit.
@@ -179,4 +203,4 @@ bool SynchronizeActions(CatalogWriter& catalog, const std::string& source_path,
   if (changed && revision) changed(revision);
   return published;
 }
-}
+}  // namespace capmgr

@@ -17,10 +17,14 @@
 #define CAPABILITY_MANAGER_CATALOG_READ_LEASE_HH_
 
 #include "catalog/read_access.hh"
+
 #include <array>
 #include <memory>
+
 #include <sys/types.h>
+
 namespace capmgr {
+
 // Trusted configuration, never an IPC/application argument. Image provisioning
 // must protect normalized path ancestors/mounts from rename and place lock_path
 // OUTSIDE the writer-controlled catalog directory. A shared generation lease
@@ -34,12 +38,14 @@ struct ReadLeasePolicy {
   mode_t directory_mode, file_mode, lock_mode;
   std::string directory_label, file_label, lock_label;
 };
+
 // Private test seam; production default reads security.SMACK64 from each FD.
 // A test substitution does not prove Smack or pathname/ancestor provisioning.
 struct ReadLeaseOperations {
   virtual ~ReadLeaseOperations() = default;
   virtual std::string Label(int fd);
 };
+
 class CatalogReadLease final : public ReadAccess {
  public:
   // Independently opens O_RDONLY lease description, whole-file OFD RDLCK.
@@ -71,6 +77,7 @@ class CatalogReadLease final : public ReadAccess {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_CATALOG_READ_LEASE_HH_

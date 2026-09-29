@@ -1,18 +1,38 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "platform/tidl_channels.hh"
+
 #include <gmock/gmock.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+
 #include <cstring>
+
 using namespace capmgr;
+
 namespace {
+
 class Policy : public ConnectionPolicy {
  public:
   MOCK_METHOD(PolicyDecision, CheckSocket, (int), (override));
 };
+
 struct Connection {
   int listener = -1, client = -1, accepted = -1;
   explicit Connection(const std::string& path) {
@@ -34,12 +54,15 @@ struct Connection {
     accepted = accept4(listener, nullptr, nullptr, SOCK_CLOEXEC);
     if (accepted < 0) throw std::runtime_error("accept");
   }
+
   ~Connection() {
     for (int fd : {client, accepted, listener})
       if (fd >= 0) close(fd);
   }
 };
-}
+
+}  // namespace
+
 TEST_F(CatalogTest, BindingRejectsDefaultsDuplicateChannelsAndSwappedDispatch) {
   Connection main(root_ + "/main"), callback(root_ + "/callback");
   auto policy = std::make_shared<testing::StrictMock<Policy>>();
@@ -65,6 +88,7 @@ TEST_F(CatalogTest, BindingRejectsDefaultsDuplicateChannelsAndSwappedDispatch) {
       .WillOnce(testing::Return(PolicyDecision::kAllowed));
   EXPECT_TRUE(binding.ValidateChannels(main.accepted, callback.accepted));
 }
+
 TEST_F(CatalogTest, BindingRechecksPolicyAndDetectsCallbackDisconnect) {
   Connection main(root_ + "/main"), callback(root_ + "/callback");
   auto policy = std::make_shared<testing::StrictMock<Policy>>();
@@ -83,6 +107,7 @@ TEST_F(CatalogTest, BindingRechecksPolicyAndDetectsCallbackDisconnect) {
   callback.client = -1;
   EXPECT_FALSE(binding.ValidateChannels(main.accepted, callback.accepted));
 }
+
 TEST_F(CatalogTest, BindingRejectsCallbackFromAnotherLiveProcess) {
   Connection main(root_ + "/main");
   int listener = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
@@ -105,6 +130,7 @@ TEST_F(CatalogTest, BindingRejectsCallbackFromAnotherLiveProcess) {
     char byte;
     _exit(read(client, &byte, 1) == 1 ? 0 : 2);
   }
+
   int accepted = accept4(listener, nullptr, nullptr, SOCK_CLOEXEC);
   ASSERT_GE(accepted, 0);
   auto callback = Peer::FromSocket(accepted);

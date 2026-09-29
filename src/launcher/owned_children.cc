@@ -1,16 +1,37 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/owned_children.hh"
+
 #include <cerrno>
 #include <exception>
 #include <limits>
+
 #include <signal.h>
+
 #include <stdexcept>
+
 #include <sys/wait.h>
+
 #include <system_error>
 #include <thread>
 
 namespace capmgr {
+
 namespace {
+
 class LinuxOperations final : public ChildOperations {
  public:
   int Observe(pid_t pid, ChildExit& result) noexcept override {
@@ -28,30 +49,37 @@ class LinuxOperations final : public ChildOperations {
     }
     return 0;
   }
+
   int Kill(pid_t pid) noexcept override {
     return kill(pid, SIGKILL) < 0 ? errno : 0;
   }
+
   int Reap(pid_t pid) noexcept override {
     int status = 0;
     pid_t result = waitpid(pid, &status, WNOHANG);
     return result == pid ? 0 : (result < 0 ? errno : EAGAIN);
   }
 };
-}
+
+}  // namespace
+
 ChildOperations& LinuxChildOperations() {
   static LinuxOperations instance;
   return instance;
 }
+
 OwnedChildren::OwnedChildren(size_t capacity, ChildOperations& operations,
                              uint64_t first_id)
     : capacity_(capacity), operations_(operations), next_id_(first_id) {
   if (!capacity || capacity > jobs_.size() || !first_id)
     throw std::invalid_argument("child table bounds");
 }
+
 OwnedChildren::~OwnedChildren() {
   for (const auto& job : jobs_)
     if (job.id && job.status.state != ChildState::Complete) std::terminate();
 }
+
 uint64_t OwnedChildren::Reserve() {
   std::lock_guard lock(mutex_);
   Job* free = nullptr;
@@ -68,6 +96,7 @@ uint64_t OwnedChildren::Reserve() {
       next_id_ == std::numeric_limits<uint64_t>::max() ? 0 : next_id_ + 1;
   return free->id;
 }
+
 void OwnedChildren::AttachReserved(uint64_t id, pid_t pid) noexcept {
   std::lock_guard lock(mutex_);
   Job* slot = nullptr;
@@ -76,12 +105,14 @@ void OwnedChildren::AttachReserved(uint64_t id, pid_t pid) noexcept {
       std::terminate();
     if (id && job.id == id) slot = &job;
   }
+
   if (pid <= 0 || !slot || slot->status.state != ChildState::Reserved)
     std::terminate();
   slot->pid = pid;
   slot->status = {};
   slot->no_signal = false;
 }
+
 void OwnedChildren::AbandonUnspawned(uint64_t id) {
   std::lock_guard lock(mutex_);
   auto& job = Find(id);
@@ -89,6 +120,7 @@ void OwnedChildren::AbandonUnspawned(uint64_t id) {
     throw std::logic_error("child may exist; reservation cannot be abandoned");
   job = Job{};
 }
+
 uint64_t OwnedChildren::Adopt(pid_t pid) {
   std::lock_guard lock(mutex_);
   if (pid <= 0) throw std::invalid_argument("direct child PID");
@@ -99,6 +131,7 @@ uint64_t OwnedChildren::Adopt(pid_t pid) {
       throw std::invalid_argument("child already owned");
     if (!job.id) free = &job;
   }
+
   if (!free || !next_id_)
     throw std::runtime_error(
         "child admission closed: capacity or ID exhaustion");
@@ -114,11 +147,13 @@ uint64_t OwnedChildren::Adopt(pid_t pid) {
       next_id_ == std::numeric_limits<uint64_t>::max() ? 0 : next_id_ + 1;
   return free->id;
 }
+
 OwnedChildren::Job& OwnedChildren::Find(uint64_t id) {
   for (auto& job : jobs_)
     if (id && job.id == id) return job;
   throw std::out_of_range("unknown child job");
 }
+
 bool OwnedChildren::Refresh(Job& job) {
   if (job.status.state == ChildState::Reserved ||
       job.status.state == ChildState::Complete ||
@@ -141,6 +176,7 @@ bool OwnedChildren::Refresh(Job& job) {
         true;  // BEFORE waitpid releases numeric PID, under the same lock.
     job.status = {ChildState::ReapPending, observed.code, observed.signal, 0};
   }
+
   int error = operations_.Reap(job.pid);
   job.status.system_error = error;
   if (!error)
@@ -149,12 +185,14 @@ bool OwnedChildren::Refresh(Job& job) {
     job.status.state = ChildState::Uncertain;
   return false;
 }
+
 ChildStatus OwnedChildren::Inspect(uint64_t id) {
   std::lock_guard lock(mutex_);
   auto& job = Find(id);
   Refresh(job);
   return job.status;
 }
+
 ChildStatus OwnedChildren::Stop(uint64_t id) {
   std::lock_guard lock(mutex_);
   auto& job = Find(id);
@@ -166,6 +204,7 @@ ChildStatus OwnedChildren::Stop(uint64_t id) {
   }
   return job.status;
 }
+
 ChildStatus OwnedChildren::StopAndWait(uint64_t id,
                                        std::chrono::milliseconds budget) {
   if (budget.count() < 0 || budget > std::chrono::seconds(60))
@@ -183,6 +222,7 @@ ChildStatus OwnedChildren::StopAndWait(uint64_t id,
   }
   return status;
 }
+
 void OwnedChildren::Release(uint64_t id) {
   std::lock_guard lock(mutex_);
   auto& job = Find(id);
@@ -190,6 +230,7 @@ void OwnedChildren::Release(uint64_t id) {
     throw std::logic_error("cannot release unconfirmed cleanup");
   job = Job{};
 }
+
 size_t OwnedChildren::Size() const {
   std::lock_guard lock(mutex_);
   size_t size = 0;
@@ -197,4 +238,4 @@ size_t OwnedChildren::Size() const {
     if (job.id) ++size;
   return size;
 }
-}
+}  // namespace capmgr

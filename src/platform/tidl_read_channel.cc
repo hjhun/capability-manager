@@ -1,12 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "platform/tidl_read_channel.hh"
 #include "catalog/read_grant.hh"
 #include "capability_manager_proxy.h"
+
 #include <glib.h>
+
 #include <exception>
 #include <thread>
+
 namespace capmgr {
+
 namespace {
+
 using Proxy = rpc_port::capability_manager_proxy::proxy::CapabilityManager;
 class Context {
  public:
@@ -15,11 +34,13 @@ class Context {
     if (!context_) throw std::bad_alloc();
     g_main_context_push_thread_default(context_);
   }
+
   ~Context() { Close(); }
   void Check() const {
     if (std::this_thread::get_id() != owner_)
       throw Error(ErrorCode::kPermission, "Read channel thread mismatch");
   }
+
   void Close() noexcept {
     if (!context_) return;
     if (std::this_thread::get_id() != owner_ ||
@@ -34,6 +55,7 @@ class Context {
   const std::thread::id owner_;
   GMainContext* context_;
 };
+
 class Listener final : public Proxy::IEventListener {
  public:
   explicit Listener(Context& context) : context_(context) {}
@@ -41,11 +63,13 @@ class Listener final : public Proxy::IEventListener {
     context_.Check();
     connected = true;
   }
+
   void OnDisconnected() override {
     context_.Check();
     connected = false;
     lost = true;
   }
+
   void OnRejected() override {
     context_.Check();
     connected = false;
@@ -56,7 +80,9 @@ class Listener final : public Proxy::IEventListener {
  private:
   Context& context_;
 };
-}
+
+}  // namespace
+
 struct TidlReadChannel::Impl {
   enum class State { kConnected, kIssued, kConfirmed, kClosed };
   Context context;  // constructed/pushed BEFORE proxy creation and sync connect
@@ -69,18 +95,21 @@ struct TidlReadChannel::Impl {
     proxy->Connect(true);
     Check();
   }
+
   ~Impl() {
     try {
       Close();
     } catch (...) {
     }
   }
+
   void Check() {
     context.Check();
     if (state == State::kClosed || !proxy || !listener.connected ||
         listener.lost)
       throw Error(ErrorCode::kPermission, "Read channel is not reusable");
   }
+
   void Close() {
     context.Check();
     state = State::kClosed;
@@ -99,6 +128,7 @@ struct TidlReadChannel::Impl {
     if (failure) std::rethrow_exception(failure);
   }
 };
+
 TidlReadChannel::TidlReadChannel(const std::string& endpoint)
     : impl_(std::make_unique<Impl>(endpoint)) {}
 TidlReadChannel::~TidlReadChannel() = default;
@@ -119,6 +149,7 @@ std::string TidlReadChannel::AuthorizeCatalog() {
     throw;
   }
 }
+
 void TidlReadChannel::ConfirmCatalog(std::string_view descriptor) {
   try {
     impl_->Check();
@@ -135,6 +166,7 @@ void TidlReadChannel::ConfirmCatalog(std::string_view descriptor) {
     throw;
   }
 }
+
 void TidlReadChannel::Finish() {
   try {
     impl_->Check();
@@ -149,4 +181,4 @@ void TidlReadChannel::Finish() {
     throw;
   }
 }
-}
+}  // namespace capmgr

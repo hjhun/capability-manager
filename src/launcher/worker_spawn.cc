@@ -1,26 +1,48 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_spawn.hh"
 #include "common/error.hh"
+
 #include <array>
 #include <charconv>
 #include <cerrno>
+
 #include <fcntl.h>
 #include <signal.h>
 #include <spawn.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #ifndef CAPMGR_WORKER_IMAGE
 #define CAPMGR_WORKER_IMAGE "/usr/libexec/capmgr/capmgr-spawn-worker"
 #endif
+
 namespace capmgr {
+
 namespace {
+
 constexpr const char* kImage = CAPMGR_WORKER_IMAGE;
 [[noreturn]] void Fail(const char* message) {
   throw Error(ErrorCode::kIo, message);
 }
+
 void Check(bool condition, const char* message) {
   if (!condition) Fail(message);
 }
+
 struct Sources {
   std::array<int, 6> fd{-1, -1, -1, -1, -1, -1};
   ~Sources() {
@@ -28,6 +50,7 @@ struct Sources {
       if (n >= 0) close(n);
   }
 };
+
 struct Actions {
   posix_spawn_file_actions_t files{};
   posix_spawnattr_t attributes{};
@@ -40,11 +63,13 @@ struct Actions {
       Fail("Worker spawn setup");
     }
   }
+
   ~Actions() {
     posix_spawnattr_destroy(&attributes);
     posix_spawn_file_actions_destroy(&files);
   }
 };
+
 void Image() {
   int fd = open(kImage, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
   if (fd < 0) Fail("Fixed worker image unavailable");
@@ -62,7 +87,8 @@ void Image() {
   // No path handoff from clients exists. This file check is not a replacement for
   // image-owned ancestor/mount provenance or a deployment update lock.
 }
-}
+}  // namespace
+
 uint64_t SpawnFixedWorker(OwnedChildren& children, uint64_t generation,
                           const WorkerInheritedFds& input) {
   Check(generation != 0, "Zero worker generation");
@@ -142,4 +168,4 @@ uint64_t SpawnFixedWorker(OwnedChildren& children, uint64_t generation,
   }
   return owned;
 }
-}
+}  // namespace capmgr

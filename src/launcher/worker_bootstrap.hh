@@ -21,8 +21,11 @@
 #include <string>
 #include <span>
 #include <vector>
+
 #include <sys/types.h>
+
 namespace capmgr {
+
 // In-process image policy, NEVER decoded from IPC or client argv. This validator
 // does not provision policy or prove the image/ancestors/mount provenance. The
 // service must run in initial PID/mount namespaces with platform-owned /proc;
@@ -56,12 +59,14 @@ class WorkerInitialNamespaces {
   std::array<dev_t, 2> devices_{};
   std::array<ino_t, 2> inodes_{};
 };
+
 struct WorkerBootstrapPolicy {
   uint64_t capabilities;
   std::vector<gid_t> supplementary_groups;
   std::string smack_label;
   WorkerInitialNamespaces& namespaces;
 };
+
 // Before loading: exact inherited 0..8 plus captured witnesses, null stdio, independent
 // pipes, creator proc-object identity/liveness, same trusted procfs and namespace
 // context. Capture marks 3..8 CLOEXEC; Validate verifies it and sets SIGPIPE
@@ -82,6 +87,6 @@ class LeasedWorkerLoop;
 // Owner-bound, one-shot gate: adds only THIS owner's concrete five lease FDs.
 // The same catalog directory inode at fixed7 and its owned alias is intentional.
 void FinishWorkerBootstrap(const WorkerBootstrapPolicy&, LeasedWorkerLoop&);
-}
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_BOOTSTRAP_HH_

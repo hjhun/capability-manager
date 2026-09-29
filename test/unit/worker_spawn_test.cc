@@ -1,9 +1,25 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_spawn.hh"
 #include "common/error.hh"
 #include "launcher/worker_supervisor.hh"
+
 #include <filesystem>
 #include <fstream>
+
 #include <sys/stat.h>
 #include <gtest/gtest.h>
 #include <fcntl.h>
@@ -12,23 +28,29 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 struct Pipe {
   int fds[2]{-1, -1};
   Pipe() {
     if (pipe2(fds, O_CLOEXEC)) throw std::runtime_error("pipe");
   }
+
   ~Pipe() {
     for (int fd : fds)
       if (fd >= 0) close(fd);
   }
+
   void Close(int i) {
     if (fds[i] >= 0) close(fds[i]);
     fds[i] = -1;
   }
 };
+
 struct Fixture {
   Pipe command, cancel, reply, ready;
   int parent = open("/proc/self", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
@@ -41,15 +63,18 @@ struct Fixture {
     a.sa_handler = SIG_DFL;
     sigaction(SIGCHLD, &a, nullptr);
   }
+
   ~Fixture() {
     close(parent);
     close(catalog);
     sigaction(SIGCHLD, &saved, nullptr);
   }
+
   WorkerInheritedFds Fds() {
     return {command.fds[0], cancel.fds[0], reply.fds[1],
             parent,         catalog,       ready.fds[1]};
   }
+
   void Mode(char mode) { ASSERT_EQ(write(command.fds[1], &mode, 1), 1); }
   ChildStatus Wait(uint64_t token) {
     ChildStatus status;
@@ -63,7 +88,9 @@ struct Fixture {
     return status;
   }
 };
-}
+
+}  // namespace
+
 TEST(WorkerSpawn, FixedImageGetsOnlyMappedDescriptorsAndFixedEnvironment) {
   Fixture f;
   int leak = open("/dev/null", O_RDONLY);
@@ -95,6 +122,7 @@ TEST(WorkerSpawn, FixedImageGetsOnlyMappedDescriptorsAndFixedEnvironment) {
   close(sockets[0]);
   close(sockets[1]);
 }
+
 TEST(WorkerSpawn, PositiveSpawnIsOwnedImmediatelyAndCleanupIsObserved) {
   Fixture f;
   f.Mode('L');
@@ -107,6 +135,7 @@ TEST(WorkerSpawn, PositiveSpawnIsOwnedImmediatelyAndCleanupIsObserved) {
   f.children.Release(token);
   EXPECT_EQ(f.children.Size(), 0u);
 }
+
 TEST(WorkerSpawn, NonzeroWorkerExitIsNotSuccessfulExitProof) {
   Fixture f;
   f.Mode('E');
@@ -116,6 +145,7 @@ TEST(WorkerSpawn, NonzeroWorkerExitIsNotSuccessfulExitProof) {
   EXPECT_EQ(status.exit_code, 7);
   f.children.Release(token);
 }
+
 TEST(WorkerSpawn, InvalidGenerationDirectionAndDirectoriesCreateNoChild) {
   Fixture f;
   EXPECT_THROW(SpawnFixedWorker(f.children, 0, f.Fds()), Error);
@@ -136,6 +166,7 @@ TEST(WorkerSpawn, InvalidGenerationDirectionAndDirectoriesCreateNoChild) {
   EXPECT_THROW(SpawnFixedWorker(f.children, 1, input), Error);
   EXPECT_EQ(f.children.Size(), 0u);
 }
+
 TEST(WorkerSpawn, ClosedStdioDoesNotCollideWithSourcesOrFixedTargets) {
   pid_t child = fork();
   ASSERT_GE(child, 0);
@@ -171,6 +202,7 @@ TEST(WorkerSpawn, Exit127RequiresFailureHandlingDespitePositiveSpawn) {
 }
 
 namespace {
+
 // Uses the separate fixed fixture image, real posix_spawn/OwnedChildren and
 // anonymous FD8 transport. No NamespaceInit, catalog load or workload is run.
 struct ReadyFixture {
@@ -196,6 +228,7 @@ struct ReadyFixture {
     a.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &a, &previous);
   }
+
   ~ReadyFixture() {
     supervisor.reset();
     if (worker && f.children.Size()) {
@@ -211,6 +244,7 @@ struct ReadyFixture {
     std::filesystem::remove_all(root, error);
     if (error) std::abort();
   }
+
   void Spawn(bool retain_writer = false) {
     auto session = std::make_unique<WorkerSession>(
         *journal, f.command.fds[1], f.cancel.fds[1], f.reply.fds[0]);
@@ -228,6 +262,7 @@ struct ReadyFixture {
         std::move(session), f.children, worker, f.ready.fds[0]);
     f.ready.Close(0);
   }
+
   bool Ready() {
     for (int i = 0; i < 2000; ++i) {
       if (supervisor->PollStartup()) return true;
@@ -236,7 +271,9 @@ struct ReadyFixture {
     return false;
   }
 };
-}
+
+}  // namespace
+
 TEST(WorkerSpawn, RealFd8ReadyAndCleanOwnedExitCompleteTheCoordinator) {
   ReadyFixture f;
   f.f.Mode('S');
@@ -250,10 +287,12 @@ TEST(WorkerSpawn, RealFd8ReadyAndCleanOwnedExitCompleteTheCoordinator) {
     stopped = f.supervisor->ConfirmNormalExit();
     if (!stopped) usleep(1000);
   }
+
   EXPECT_TRUE(stopped);
   EXPECT_EQ(f.f.children.Size(), 0u);
   EXPECT_FALSE(f.journal->Blocked());
 }
+
 TEST(WorkerSpawn, RetainedReadyWriterPreventsAdmissionEvenAfterRealRecord) {
   ReadyFixture f;
   int report = fcntl(f.f.reply.fds[0], F_DUPFD_CLOEXEC, 20);
@@ -275,6 +314,7 @@ TEST(WorkerSpawn, RetainedReadyWriterPreventsAdmissionEvenAfterRealRecord) {
   EXPECT_TRUE(f.journal->Blocked());
   EXPECT_TRUE(f.journal->Reservations().empty());
 }
+
 TEST(WorkerSpawn, RealWorkerDeathAfterReadyBlocksStartAndRetainsGeneration) {
   ReadyFixture f;
   f.f.Mode('L');

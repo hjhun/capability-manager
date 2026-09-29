@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 
 #include <sys/stat.h>
@@ -9,13 +23,15 @@
 #include <utility>
 
 namespace {
+
 thread_local int persist_failure = SQLITE_OK;
 class FailPersist {
  public:
   explicit FailPersist(int code) { persist_failure = code; }
   ~FailPersist() { persist_failure = SQLITE_OK; }
 };
-}
+
+}  // namespace
 
 // GNU ld wrapping is enabled only for capmgr-unit-tests. Calls from production
 // objects reach the real SQLite routine except the one explicitly injected call.
@@ -29,6 +45,7 @@ extern "C" int __wrap_sqlite3_file_control(sqlite3* db, const char* name,
 }
 
 namespace {
+
 using namespace capmgr;
 using Identity = std::pair<dev_t, ino_t>;
 using Identities = std::array<Identity, 3>;
@@ -49,6 +66,7 @@ class WriterWalTest : public CatalogTest {
     }
     return files;
   }
+
   void Persistent(Database& db) {
     int flag = -1;
     ASSERT_EQ(sqlite3_file_control(db.handle(), "main",
@@ -59,6 +77,7 @@ class WriterWalTest : public CatalogTest {
     ASSERT_TRUE(synchronous.Step());
     EXPECT_EQ(synchronous.Integer(0), 2);  // FULL
   }
+
   void Read(uint64_t revision, const std::string& term) {
     Catalog reader(path_, Database::Access::kReadOnly);
     EXPECT_EQ(sqlite3_db_readonly(reader.database().handle(), "main"), 1);
@@ -140,6 +159,7 @@ TEST_F(WriterWalTest, ReopenedWriterCommitsAndCheckpointsWithLiveReader) {
     EXPECT_EQ(Files(), files);
     EXPECT_EQ(reader.Search("messages").size(), 1u);
   }
+
   EXPECT_EQ(Files(), files);
   Read(2, "messages");
   EXPECT_EQ(Files(), files);
@@ -169,4 +189,4 @@ TEST_F(WriterWalTest, FileControlFailureRejectsConstructionAndAllowsRetry) {
     Publish(writer, "pkg.one", {Make()});
   }
 }
-}
+}  // namespace

@@ -1,13 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "platform/tidl_read_service.hh"
+
 namespace capmgr {
+
 namespace {
+
 CatalogGrantBudget& RequireBudget(
     const std::shared_ptr<CatalogGrantBudget>& budget) {
   if (!budget) throw Error(ErrorCode::kInvalid, "Missing catalog grant budget");
   return *budget;
 }
-}
+}  // namespace
+
 TidlReadService::TidlReadService(std::string sender, std::string instance,
                                  ReadLeasePolicy policy,
                                  CatalogReaderPrincipal principal,
@@ -21,6 +39,7 @@ TidlReadService::~TidlReadService() { OnTerminate(); }
 void TidlReadService::Owner() const noexcept {
   if (std::this_thread::get_id() != owner_) std::terminate();
 }
+
 void TidlReadService::OnCreate() noexcept {
   Owner();
   if (terminated_ || expiry_) return;
@@ -29,6 +48,7 @@ void TidlReadService::OnCreate() noexcept {
     terminated_ = true;
     return;
   }
+
   g_source_set_callback(
       expiry_,
       [](gpointer data) -> gboolean {
@@ -43,6 +63,7 @@ void TidlReadService::OnCreate() noexcept {
   if (!g_source_attach(expiry_, g_main_context_get_thread_default()))
     OnTerminate();
 }
+
 void TidlReadService::OnTerminate() noexcept {
   Owner();
   terminated_ = true;
@@ -54,6 +75,7 @@ void TidlReadService::OnTerminate() noexcept {
   grant_
       .Revoke();  // no I/O beyond closing lease FDs, no concurrent grant operation
 }
+
 void TidlReadService::Principal() {
   Owner();
   auto peer = MainPrincipal();
@@ -62,6 +84,7 @@ void TidlReadService::Principal() {
       peer->security_label() != principal_.socket_label)
     throw Error(ErrorCode::kPermission, "Catalog principal denied");
 }
+
 std::string TidlReadService::AuthorizeCatalog() {
   try {
     Principal();
@@ -71,6 +94,7 @@ std::string TidlReadService::AuthorizeCatalog() {
     return {};
   }
 }
+
 int TidlReadService::ConfirmCatalog(std::string nonce) {
   try {
     Principal();
@@ -81,4 +105,4 @@ int TidlReadService::ConfirmCatalog(std::string nonce) {
     return static_cast<int>(ErrorCode::kPermission);
   }
 }
-}
+}  // namespace capmgr

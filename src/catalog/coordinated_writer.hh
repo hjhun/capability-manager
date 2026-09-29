@@ -20,6 +20,7 @@
 #include "catalog/generation_lease.hh"
 
 namespace capmgr {
+
 // Private single-owner facade. No SQLite/Catalog/statement/blob/backup resource
 // escapes; all results are owning values. Callers quiesce before destruction.
 // Legacy path-only Catalog remains an isolated harness, not this production API.
@@ -45,6 +46,7 @@ class CoordinatedCatalogWriter final : public CatalogWriter {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_CATALOG_COORDINATED_WRITER_HH_

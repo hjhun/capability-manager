@@ -17,7 +17,9 @@
 #define CAPABILITY_MANAGER_LAUNCHER_WORKER_SUPERVISOR_HH_
 
 #include "launcher/worker_session.hh"
+
 namespace capmgr {
+
 // Fixed 32-byte bootstrap record: CWB1, LE version1(u16), length32(u16),
 // generation(u64), observed catalog revision(u64 <=INT64_MAX), reserved zero(u64).
 // Worker writes exactly once and closes the separate pipe BEFORE job admission;
@@ -57,6 +59,7 @@ class WorkerSupervisor {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_SUPERVISOR_HH_

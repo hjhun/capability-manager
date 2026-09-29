@@ -19,9 +19,13 @@
 #include <functional>
 #include <string>
 #include <vector>
+
 #include <nlohmann/json.hpp>
+
 #include "catalog/database.hh"
+
 namespace capmgr {
+
 using Json = nlohmann::json;
 enum class Kind : int {
   kAll = 0,
@@ -30,6 +34,7 @@ enum class Kind : int {
   kCli = 3,
   kAction = 4
 };
+
 struct Entry {
   std::string id;
   std::string name;
@@ -43,6 +48,7 @@ struct Entry {
   std::string executable;
   std::string key;
 };
+
 std::string CanonicalId(Kind kind, const std::string& name,
                         const std::string& app_id = {});
 const char* KindName(Kind kind);
@@ -56,6 +62,7 @@ class CatalogWriter {
   virtual void Finalize(const std::string& operation, bool success) = 0;
   virtual uint64_t Revision() = 0;
 };
+
 class Catalog : public CatalogWriter {
  public:
   Catalog(const std::string& path, Database::Access access);
@@ -82,6 +89,7 @@ class Catalog : public CatalogWriter {
   Database db_;
   bool writer_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_CATALOG_CATALOG_HH_

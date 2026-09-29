@@ -17,17 +17,21 @@
 #define CAPABILITY_MANAGER_LAUNCHER_WORKER_CATALOG_HH_
 
 #include "launcher/worker_loop.hh"
+
 namespace capmgr {
+
 struct WorkerCatalogFilePolicy {
   uid_t writer;
   gid_t group;
   mode_t directory_mode;  // exact0700/0750/2750
   mode_t file_mode;       // exact0600/0640 for DB/WAL/SHM
 };
+
 struct WorkerCatalogSnapshot {
   uint64_t revision;
   WorkerRegistry registry;
 };
+
 // Startup-only private snapshot loader, NEVER call with a live worker job.
 // Directory FD is borrowed from the trusted fixed frontend, not an IPC client.
 // Caller keeps that FD exclusively stable/open through validation and dup;
@@ -49,6 +53,6 @@ struct WorkerCatalogSnapshot {
 // Policy is trusted internal configuration, never supplied by an IPC request.
 WorkerCatalogSnapshot LoadWorkerCatalog(int trusted_directory,
                                         const WorkerCatalogFilePolicy&);
-}
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_CATALOG_HH_

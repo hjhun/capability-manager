@@ -17,8 +17,11 @@
 #define CAPABILITY_MANAGER_PLATFORM_TIDL_CHANNELS_HH_
 
 #include "platform/authorization.hh"
+
 #include <mutex>
+
 namespace capmgr {
+
 // Inherited by the locally generated ServiceBase. Bind BOTH sockets before
 // OnCreate; validate the actual MAIN fd before any parcel is decoded. Callback
 // extension getters are never an authority. This authorizes a connection, not
@@ -41,6 +44,7 @@ class TidlChannels {
   mutable std::mutex mutex_;
   std::shared_ptr<Peer> main_, callback_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_PLATFORM_TIDL_CHANNELS_HH_

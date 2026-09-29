@@ -1,19 +1,40 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "platform/credential_packet.hh"
 #include "common/error.hh"
+
 #include <array>
 #include <cerrno>
 #include <cstring>
+
 #include <sys/socket.h>
 #include <unistd.h>
+
 #ifndef SCM_SECURITY
 #define SCM_SECURITY 0x03
 #endif
+
 namespace capmgr {
+
 namespace {
+
 [[noreturn]] void Reject() {
   throw Error(ErrorCode::kPermission, "Unverified packet sender");
 }
+
 void RequireOption(int fd, int name, int expected) {
   int value = 0;
   socklen_t size = sizeof(value);
@@ -21,7 +42,8 @@ void RequireOption(int fd, int name, int expected) {
       size != sizeof(value) || value != expected)
     Reject();
 }
-}
+}  // namespace
+
 std::string ReceiveCredentialPacket(const Peer& peer) {
   if (!peer.HasVerifiedLiveTask())
     throw Error(ErrorCode::kUnsupported, "Live-task proof API unavailable");
@@ -84,6 +106,7 @@ std::string ReceiveCredentialPacket(const Peer& peer) {
     } else
       unexpected = true;
   }
+
   if (received <= 0 || (message.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) ||
       unexpected || credential_count != 1 || label_count != 1 ||
       credentials.pid != peer.pid() || credentials.uid != peer.uid() ||
@@ -93,4 +116,4 @@ std::string ReceiveCredentialPacket(const Peer& peer) {
     Reject();
   return std::string(payload.data(), static_cast<size_t>(received));
 }
-}
+}  // namespace capmgr

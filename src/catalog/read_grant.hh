@@ -17,14 +17,18 @@
 #define CAPABILITY_MANAGER_CATALOG_READ_GRANT_HH_
 
 #include "catalog/read_lease.hh"
+
 #include <array>
 #include <atomic>
 #include <chrono>
 #include <mutex>
+
 namespace capmgr {
+
 struct CatalogGrantReceipt {
   std::string nonce, descriptor;
 };
+
 // Fixed CMG1:<64 lowercase hex nonce>:<165-byte CMR1 descriptor>.
 CatalogGrantReceipt ParseCatalogGrant(std::string_view);
 class CatalogGrantBudget {
@@ -38,6 +42,7 @@ class CatalogGrantBudget {
   void Release() noexcept { count_.fetch_sub(1); }
   std::atomic<unsigned> count_{0};
 };
+
 // Explicit private test seam, never selected from an IPC request.
 struct CatalogGrantOperations {
   using Time = std::chrono::steady_clock::time_point;
@@ -45,6 +50,7 @@ struct CatalogGrantOperations {
   virtual Time Now() noexcept;
   virtual std::array<unsigned char, 32> Random();
 };
+
 // One object per already-authorized ServiceBase, NOT a global nonce lookup.
 // Budget/operations must outlive it. Generated MAIN/callback policy checks must
 // precede Issue/Confirm. Caller must schedule Expire at least once per service
@@ -81,6 +87,7 @@ class CatalogReadGrant {
   CatalogGrantOperations::Time expires_{};
   bool reserved_ = false;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_CATALOG_READ_GRANT_HH_

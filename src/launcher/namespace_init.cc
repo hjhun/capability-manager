@@ -1,7 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/namespace_init.hh"
+
 #include <cerrno>
 #include <cstddef>
+
 #include <fcntl.h>
 #include <linux/capability.h>
 #include <linux/magic.h>
@@ -17,7 +33,9 @@
 #include <unistd.h>
 
 namespace capmgr {
+
 namespace {
+
 // ARMv7 exposes legacy 16-bit setxid numbers alongside the 32-bit variants.
 #ifdef SYS_setresuid32
 constexpr long kSetUid = SYS_setresuid32, kSetGid = SYS_setresgid32,
@@ -37,22 +55,26 @@ bool WriteAll(int fd, const void* bytes, size_t size) {
   }
   return true;
 }
+
 bool Report(const NamespaceInitConfig& c, InitMessageKind kind, InitStage stage,
             int error = 0, int code = 0, int signal = 0) {
   InitMessage message{kind, stage, error, code, signal};
   return WriteAll(c.status_write, &message, sizeof(message));
 }
+
 int Fail(const NamespaceInitConfig& c, InitStage stage) {
   int error = errno ? errno : EIO;
   Report(c, InitMessageKind::Failed, stage, error);
   return 125;
 }
+
 size_t Length(const char* s, size_t maximum) {
   size_t size = 0;
   if (!s) return maximum;
   while (size < maximum && s[size]) ++size;
   return size;
 }
+
 bool LabelEquals(const char* expected) {
   int fd = open("/proc/self/attr/current", O_RDONLY | O_CLOEXEC);
   if (fd < 0) return false;
@@ -70,6 +92,7 @@ bool LabelEquals(const char* expected) {
     if (value[i] != expected[i]) return false;
   return true;
 }
+
 bool SetLabel(const char* expected) {
   if (LabelEquals(expected)) return true;
   size_t length = Length(expected, 256);
@@ -77,6 +100,7 @@ bool SetLabel(const char* expected) {
     errno = EINVAL;
     return false;
   }
+
   int fd = open("/proc/self/attr/current", O_WRONLY | O_CLOEXEC);
   if (fd < 0) return false;
   bool ok = WriteAll(fd, expected, length);
@@ -85,6 +109,7 @@ bool SetLabel(const char* expected) {
   errno = saved;
   return ok && LabelEquals(expected);
 }
+
 struct Dirent64 {
   uint64_t ino;
   int64_t offset;
@@ -92,6 +117,7 @@ struct Dirent64 {
   unsigned char type;
   char name[1];
 };
+
 bool CloseInherited(int control, int status, int parent_process) {
   int directory = open("/proc/self/fd", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
   if (directory < 0) return false;
@@ -131,9 +157,11 @@ bool CloseInherited(int control, int status, int parent_process) {
       offset += entry->length;
     }
   }
+
   close(directory);
   return true;
 }
+
 bool ProcessAlive(int process) {
   struct statfs fs{};
   struct stat info{};
@@ -142,6 +170,7 @@ bool ProcessAlive(int process) {
     errno = EINVAL;
     return false;
   }
+
   int fd = openat(process, "stat", O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
   if (fd < 0) return false;
   char data[4096];
@@ -169,6 +198,7 @@ bool ProcessAlive(int process) {
     errno = ESRCH;
     return false;
   }
+
   if (state != 'R' && state != 'S' && state != 'D' && state != 'T' &&
       state != 't' && state != 'I' && state != 'W' && state != 'P') {
     errno = EINVAL;
@@ -176,6 +206,7 @@ bool ProcessAlive(int process) {
   }
   return true;
 }
+
 bool MountIsolated(int parent) {
   struct statfs fs{};
   struct stat before{}, now{};
@@ -201,6 +232,7 @@ bool MountIsolated(int parent) {
     errno = EINVAL;
     return false;
   }
+
   int current = open("/proc/self/ns/mnt", O_RDONLY | O_CLOEXEC);
   if (current < 0) return false;
   bool ok = fstat(current, &now) == 0;
@@ -214,6 +246,7 @@ bool MountIsolated(int parent) {
   }
   return true;
 }
+
 bool ParentAlive(const NamespaceInitConfig& c) {
   if (!ProcessAlive(c.parent_process)) return false;
   pollfd poller{c.control_read, POLLIN, 0};
@@ -228,6 +261,7 @@ bool ParentAlive(const NamespaceInitConfig& c) {
   }
   return true;
 }
+
 bool AwaitGo(const NamespaceInitConfig& c) {
   timespec start{};
   if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) return false;
@@ -254,6 +288,7 @@ bool AwaitGo(const NamespaceInitConfig& c) {
     return ParentAlive(c);
   }
 }
+
 bool ClearAndVerifyCapabilities() {
   __user_cap_header_struct header{_LINUX_CAPABILITY_VERSION_3, 0};
   __user_cap_data_struct data[2]{};
@@ -283,7 +318,8 @@ bool ClearAndVerifyCapabilities() {
   }
   return true;
 }
-}
+}  // namespace
+
 int NamespaceInit(void* configuration) noexcept {
   const auto& c = *static_cast<const NamespaceInitConfig*>(configuration);
   if (getpid() != 1 || !c.uid || !c.gid || c.control_read < 3 ||
@@ -309,6 +345,7 @@ int NamespaceInit(void* configuration) noexcept {
         return Fail(c, InitStage::Context);
       }
   }
+
   if (!ProcessAlive(c.parent_process)) return Fail(c, InitStage::Parent);
   if (!MountIsolated(c.parent_mount_namespace))
     return Fail(c, InitStage::Mount);
@@ -352,6 +389,7 @@ int NamespaceInit(void* configuration) noexcept {
       return Fail(c, InitStage::Bounding);
     found = true;
   }
+
   if (!found) {
     errno = ENOTSUP;
     return Fail(c, InitStage::Bounding);
@@ -371,6 +409,7 @@ int NamespaceInit(void* configuration) noexcept {
     errno = EPERM;
     return Fail(c, InitStage::Credentials);
   }
+
   if (prctl(PR_SET_PDEATHSIG, SIGKILL) < 0 || !ParentAlive(c))
     return Fail(c, InitStage::Parent);
   if (!Report(c, InitMessageKind::Ready, InitStage::Go)) return 125;
@@ -396,6 +435,7 @@ int NamespaceInit(void* configuration) noexcept {
     WriteAll(error_pipe[1], &error, sizeof(error));
     _exit(127);
   }
+
   close(error_pipe[1]);
   int exec_error = 0;
   size_t received = 0;
@@ -411,6 +451,7 @@ int NamespaceInit(void* configuration) noexcept {
     if (!count) break;
     received += static_cast<size_t>(count);
   }
+
   close(error_pipe[0]);
   if (received) {
     errno = received == sizeof(exec_error) ? exec_error : EIO;
@@ -424,6 +465,7 @@ int NamespaceInit(void* configuration) noexcept {
     errno = EIO;
     return Fail(c, InitStage::Exec);
   }
+
   if (!Report(c, InitMessageKind::Started, InitStage::Exec)) return 125;
   for (;;) {
     int status = 0;
@@ -442,4 +484,4 @@ int NamespaceInit(void* configuration) noexcept {
     }
   }
 }
-}
+}  // namespace capmgr

@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 
 #include <fcntl.h>
@@ -18,7 +32,9 @@
 #include "launcher/leased_worker_loop.hh"
 
 extern char** environ;
+
 namespace capmgr {
+
 // Trusted test startup bypass ONLY. No implementation of this friend is linked
 // into the product. Ready() here is NOT successful root bootstrap/table evidence.
 class LeasedWorkerLoopTestAccess {
@@ -29,34 +45,43 @@ class LeasedWorkerLoopTestAccess {
     return std::unique_ptr<LeasedWorkerLoop>(
         new LeasedWorkerLoop(std::move(snapshot), context, runtime, {}));
   }
+
   static void Ready(LeasedWorkerLoop& owner) {
     owner.BeginStartup();
     owner.CompleteStartup();
   }
+
   static std::array<int, 5> Descriptors(LeasedWorkerLoop& owner) {
     return owner.CatalogDescriptors();
   }
+
   static WorkerInitialNamespaces InvalidNamespaces() {
     return WorkerInitialNamespaces(WorkerInitialNamespaces::Uncaptured{});
   }
 };
+
 }  // namespace capmgr
+
 namespace {
+
 using namespace capmgr;
 using namespace std::chrono_literals;
 struct Labels : GenerationLeaseOperations {
   std::string Label(int) override { return "Fixture"; }
 };
+
 struct Pipe {
   int fds[2]{-1, -1};
   Pipe() {
     if (pipe2(fds, O_CLOEXEC | O_NONBLOCK)) throw std::runtime_error("pipe");
   }
+
   ~Pipe() {
     for (auto fd : fds)
       if (fd >= 0) close(fd);
   }
 };
+
 struct Signals {
   struct sigaction pipe{}, child{};
   Signals() {
@@ -68,11 +93,13 @@ struct Signals {
     action.sa_handler = SIG_DFL;
     sigaction(SIGCHLD, &action, nullptr);
   }
+
   ~Signals() {
     sigaction(SIGPIPE, &pipe, nullptr);
     sigaction(SIGCHLD, &child, nullptr);
   }
 };
+
 struct Runtime : WorkerRuntime {
   int spawns = 0;
   pid_t Spawn(NamespaceInitConfig& config, void*) noexcept override {
@@ -90,6 +117,7 @@ struct Runtime : WorkerRuntime {
       pause();  // Parent loop cancels/reaps through its real owner table.
   }
 };
+
 class LeasedWorkerLoopTest : public CatalogTest {
  protected:
   void SetUp() override {
@@ -118,6 +146,7 @@ class LeasedWorkerLoopTest : public CatalogTest {
     ASSERT_GE(directory_, 0);
     ASSERT_GE(parent_, 0);
   }
+
   void TearDown() override {
     if (owner_) {
       owner_->Shutdown();
@@ -155,19 +184,23 @@ class LeasedWorkerLoopTest : public CatalogTest {
     std::cerr << "RETAINED_WORKER_OWNER_SCOPE=" << root_ << std::endl;
     std::terminate();
   }
+
   WorkerContext Context() {
     return {7,   command_.fds[0], cancel_.fds[0], reply_.fds[1], parent_, 301,
             301, "System"};
   }
+
   LeasedWorkerCatalogSnapshot Snapshot() {
     WorkerCatalogReader reader(directory_, policy_, &labels_);
     return reader.Finish();  // Physical SQL close BEFORE every later fork.
   }
+
   void Owner() {
     owner_ =
         LeasedWorkerLoopTestAccess::Construct(Snapshot(), Context(), runtime_);
     LeasedWorkerLoopTestAccess::Ready(*owner_);
   }
+
   void Tick(bool drain = true) {
     owner_->Step();
     if (drain && reply_.fds[0] >= 0) {
@@ -177,6 +210,7 @@ class LeasedWorkerLoopTest : public CatalogTest {
     }
     std::this_thread::sleep_for(1ms);
   }
+
   void SendStart(bool valid = true) {
     auto bytes = EncodeWorkerCommand(
         {WorkerCommandKind::Start, 7, 1, 1,
@@ -199,12 +233,14 @@ class LeasedWorkerLoopTest : public CatalogTest {
     }
     Retain();
   }
+
   bool CanDeleteScope() const {
     if (ownership_uncertain_) return false;
     for (const auto& record : records_)
       if (record.id) return false;
     return children_.Size() == 0;
   }
+
   Record& LaunchChild(const std::function<void()>& action) {
     auto& record = Reserve();
     const pid_t child = fork();
@@ -225,10 +261,12 @@ class LeasedWorkerLoopTest : public CatalogTest {
     }
     return record;
   }
+
   int Child(const std::function<void()>& action) {
     auto& record = LaunchChild(action);
     return record.id ? WaitChild(record) : -1;
   }
+
   int WaitChild(Record& record, std::chrono::milliseconds budget = 3s) {
     const auto end = WorkerLoop::Clock::now() + budget;
     ChildStatus result;
@@ -249,6 +287,7 @@ class LeasedWorkerLoopTest : public CatalogTest {
     record = {};
     return result.signal ? -result.signal : result.exit_code;
   }
+
   void Probe(bool busy) {
     const auto executable =
         std::filesystem::read_symlink("/proc/self/exe").parent_path().string() +
@@ -274,6 +313,7 @@ class LeasedWorkerLoopTest : public CatalogTest {
     ASSERT_EQ(rc, 0);
     EXPECT_EQ(WaitChild(record), 0);
   }
+
   void FillReply() {
     std::array<char, 4096> data{};
     while (write(reply_.fds[1], data.data(), data.size()) > 0) {
@@ -291,6 +331,7 @@ class LeasedWorkerLoopTest : public CatalogTest {
   std::array<Record, 4> records_{};
   bool ownership_uncertain_ = false;
 };
+
 }  // namespace
 
 TEST_F(LeasedWorkerLoopTest, NormalRetirementIsTerminalAndReleasesSameLease) {
@@ -311,6 +352,7 @@ TEST_F(LeasedWorkerLoopTest, NormalRetirementIsTerminalAndReleasesSameLease) {
   EXPECT_THROW(owner_->Revision(), Error);
   owner_.reset();
 }
+
 TEST_F(LeasedWorkerLoopTest, NoStepOrReadyBeforeOwnerBoundOneShotStartup) {
   auto owner =
       LeasedWorkerLoopTestAccess::Construct(Snapshot(), Context(), runtime_);
@@ -326,6 +368,7 @@ TEST_F(LeasedWorkerLoopTest, NoStepOrReadyBeforeOwnerBoundOneShotStartup) {
   owner.reset();  // Pre-admission failure; no job could have been admitted.
   Probe(false);
 }
+
 TEST_F(LeasedWorkerLoopTest, FactoryValidationRejectsBeforeLeaseOrSQLite) {
   auto namespaces = LeasedWorkerLoopTestAccess::InvalidNamespaces();
   WorkerBootstrapPolicy policy{0, {}, "System", namespaces};
@@ -338,6 +381,7 @@ TEST_F(LeasedWorkerLoopTest, FactoryValidationRejectsBeforeLeaseOrSQLite) {
   EXPECT_EQ(runtime_.spawns, 0);
   Probe(false);
 }
+
 TEST_F(LeasedWorkerLoopTest, ConcreteReportRejectsFlagsBeforePublication) {
   auto owner =
       LeasedWorkerLoopTestAccess::Construct(Snapshot(), Context(), runtime_);
@@ -365,6 +409,7 @@ TEST_F(LeasedWorkerLoopTest, ConcreteReportRejectsFlagsBeforePublication) {
   owner.reset();
   Probe(false);
 }
+
 TEST_F(LeasedWorkerLoopTest, MovedFromAndConstructorFailureCannotPublish) {
   auto snapshot = Snapshot();
   auto moved = std::move(snapshot);
@@ -379,6 +424,7 @@ TEST_F(LeasedWorkerLoopTest, MovedFromAndConstructorFailureCannotPublish) {
                std::runtime_error);
   Probe(false);
 }
+
 TEST_F(LeasedWorkerLoopTest,
        ChildFreeQueuedCompleteMustDrainBeforeNormalRelease) {
   Owner();
@@ -397,6 +443,7 @@ TEST_F(LeasedWorkerLoopTest,
   Probe(false);
   owner_.reset();
 }
+
 TEST_F(LeasedWorkerLoopTest, LossCannotRetireUntilActualChildCleanup) {
   Owner();
   SendStart();
@@ -421,6 +468,7 @@ TEST_F(LeasedWorkerLoopTest, LossCannotRetireUntilActualChildCleanup) {
   EXPECT_THROW(owner_->CanExitCleanly(), Error);
   owner_.reset();
 }
+
 TEST_F(LeasedWorkerLoopTest, InheritedOperationsRejectBeforeLoopAndDestructor) {
   Owner();
   EXPECT_EQ(Child([&] {
@@ -449,6 +497,7 @@ TEST_F(LeasedWorkerLoopTest, InheritedOperationsRejectBeforeLoopAndDestructor) {
   EXPECT_EQ(Child([&] { owner_.reset(); }), 77);  // BEFORE inherited loop dtor.
   Probe(true);
 }
+
 TEST_F(LeasedWorkerLoopTest, OpenAdmissionImplicitDestructionFailStops) {
   // Construct inside the owned child, after all parent SQLite has closed.
   EXPECT_EQ(Child([&] {
@@ -460,6 +509,7 @@ TEST_F(LeasedWorkerLoopTest, OpenAdmissionImplicitDestructionFailStops) {
             77);
   Probe(false);
 }
+
 TEST_F(LeasedWorkerLoopTest, QueuedChildFreeCompleteDestructionFailStops) {
   EXPECT_EQ(Child([&] {
               Owner();
@@ -523,6 +573,7 @@ TEST_F(LeasedWorkerLoopTest, UnknownOwnershipCannotBeClearedBySuccessfulProbe) {
   ownership_uncertain_ =
       false;  // TEST-only reset of the no-launch injected fault.
 }
+
 TEST_F(LeasedWorkerLoopTest, ReportPreservesDeclaredNonblockingLockFlag) {
   auto owner =
       LeasedWorkerLoopTestAccess::Construct(Snapshot(), Context(), runtime_);

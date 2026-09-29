@@ -17,13 +17,15 @@
 #define CAPABILITY_MANAGER_PLATFORM_CYNARA_SOCKET_HH_
 
 #include <mutex>
+
 namespace capmgr::internal {
+
 // Cynara's socket credential helpers require external serialization. Share this
 // lock between credential extraction and policy identity extraction.
 inline std::mutex& CynaraSocketMutex() {
   static std::mutex mutex;
   return mutex;
 }
-}
+}  // namespace capmgr::internal
 
 #endif  // CAPABILITY_MANAGER_PLATFORM_CYNARA_SOCKET_HH_

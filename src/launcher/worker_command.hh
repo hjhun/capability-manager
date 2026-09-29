@@ -22,7 +22,9 @@
 #include <string>
 #include <vector>
 #include <array>
+
 namespace capmgr {
+
 // Private anonymous-pipe coordination for a fixed parent/worker pair, not a
 // public protocol/UDS endpoint or authorization mechanism. No path/UID/FD selection
 // is carried here. START's body is the original bounded tools/call request.
@@ -34,6 +36,7 @@ struct WorkerCommand {
   uint64_t token;
   std::string request;
 };
+
 std::vector<uint8_t> EncodeWorkerCommand(const WorkerCommand& command);
 // A separate priority reader accepts only CANCEL. The single-threaded worker
 // must poll it and anchored parent liveness before the regular reader/queued START
@@ -70,6 +73,7 @@ class WorkerCommandReader {
   std::string body_;
   std::optional<Clock::time_point> started_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_COMMAND_HH_

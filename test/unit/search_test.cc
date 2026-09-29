@@ -1,5 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
+
 using namespace capmgr;
 TEST_F(CatalogTest, RepresentativeEnglishSearchAndUnicodeCorpus) {
   Catalog catalog(path_, Database::Access::kWriter);
@@ -41,6 +56,7 @@ TEST_F(CatalogTest, RepresentativeEnglishSearchAndUnicodeCorpus) {
     entry.keywords = row.keywords;
     entries.push_back(entry);
   }
+
   Publish(catalog, "pkg.one", entries);
   for (const auto& [query, key] :
        std::vector<std::pair<std::string, std::string>>{
@@ -59,11 +75,13 @@ TEST_F(CatalogTest, RepresentativeEnglishSearchAndUnicodeCorpus) {
     EXPECT_EQ(found.front()["id"], "skill:" + key) << query;
     EXPECT_LE(found.size(), 5u);
   }
+
   EXPECT_TRUE(catalog.Search("photos weather").empty());
   EXPECT_TRUE(catalog.Search("unrelatedxyz").empty());
   EXPECT_TRUE(catalog.Search("OR NOT * : ^ ( ) \"").empty());
   EXPECT_TRUE(catalog.Search("photos", Kind::kCli).empty());
 }
+
 TEST_F(CatalogTest, MissingFtsStorageFailsExplicitlyAsDatabaseError) {
   Catalog catalog(path_, Database::Access::kWriter);
   Publish(catalog, "pkg.one", {Make("example")});

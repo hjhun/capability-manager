@@ -15,7 +15,9 @@
 
 #include <cerrno>
 #include <cstdlib>
+
 #include <fcntl.h>
+
 #ifndef CAPMGR_LOADER_MISSING_ENTRY
 extern "C" __attribute__((visibility("default"))) int CapmgrRealPolicyFixture(
     const char*, const char*, const char*, const char* descriptor) noexcept {

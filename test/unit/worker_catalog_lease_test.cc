@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 
 #include <fcntl.h>
@@ -21,7 +35,9 @@
 #include "launcher/owned_children.hh"
 
 extern char** environ;
+
 namespace {
+
 // Test-executable-only faults. No production connection/statement accessor.
 thread_local bool observe_reader = false, fail_prepare = false;
 thread_local bool retain_statement = false, fail_close = false;
@@ -31,7 +47,8 @@ thread_local sqlite3_stmt* retained = nullptr;
 thread_local int readonly_opens = 0, close_calls = 0;
 thread_local const char* corrupt_metadata = nullptr;
 thread_local std::function<void(int)> close_observer;
-}
+}  // namespace
+
 extern "C" int __real_sqlite3_open_v2(const char*, sqlite3**, int, const char*);
 extern "C" int __real_sqlite3_prepare_v2(sqlite3*, const char*, int,
                                          sqlite3_stmt**, const char**);
@@ -43,8 +60,10 @@ extern "C" int __wrap_sqlite3_open_v2(const char* path, sqlite3** db, int flags,
     ++readonly_opens;
     EXPECT_EQ(flags & (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), 0);
   }
+
   return __real_sqlite3_open_v2(path, db, flags, vfs);
 }
+
 extern "C" int __wrap_sqlite3_prepare_v2(sqlite3* db, const char* sql, int size,
                                          sqlite3_stmt** result,
                                          const char** tail) {
@@ -61,6 +80,7 @@ extern "C" int __wrap_sqlite3_prepare_v2(sqlite3* db, const char* sql, int size,
   }
   return rc;
 }
+
 extern "C" int __wrap_sqlite3_step(sqlite3_stmt* statement) {
   if (observe_reader && fail_step_allocation) {
     if (allocation_step_skip == 0) {
@@ -69,8 +89,10 @@ extern "C" int __wrap_sqlite3_step(sqlite3_stmt* statement) {
     }
     --allocation_step_skip;
   }
+
   return __real_sqlite3_step(statement);
 }
+
 extern "C" int __wrap_sqlite3_close(sqlite3* db) {
   if (!observe_reader || !db) return __real_sqlite3_close(db);
   ++close_calls;
@@ -80,7 +102,9 @@ extern "C" int __wrap_sqlite3_close(sqlite3* db) {
   if (close_observer) close_observer(rc);  // Including physical SQLITE_OK.
   return rc;
 }
+
 namespace {
+
 using namespace capmgr;
 using namespace std::chrono_literals;
 struct Labels : GenerationLeaseOperations {
@@ -90,12 +114,14 @@ struct Labels : GenerationLeaseOperations {
     return "Fixture";
   }
 };
+
 struct Fd {
   int fd = -1;
   ~Fd() {
     if (fd >= 0) close(fd);
   }
 };
+
 class WorkerCatalogLeaseTest : public CatalogTest {
  protected:
   void SetUp() override {
@@ -119,6 +145,7 @@ class WorkerCatalogLeaseTest : public CatalogTest {
     observe_reader = true;
     readonly_opens = close_calls = 0;
   }
+
   void TearDown() override {
     observe_reader = fail_prepare = retain_statement = fail_close = false;
     fail_step_allocation = false;
@@ -138,6 +165,7 @@ class WorkerCatalogLeaseTest : public CatalogTest {
     }
     CatalogTest::TearDown();
   }
+
   void ErrorIs(ErrorCode code, const std::function<void()>& action) {
     try {
       action();
@@ -158,6 +186,7 @@ class WorkerCatalogLeaseTest : public CatalogTest {
       }
     std::terminate();
   }
+
   pid_t Fork() {
     auto& record = Reserve();
     const auto child = fork();
@@ -170,6 +199,7 @@ class WorkerCatalogLeaseTest : public CatalogTest {
     }
     return child;
   }
+
   bool Wait(pid_t child, int expected) {
     Record* owned = nullptr;
     for (auto& record : records_)
@@ -192,6 +222,7 @@ class WorkerCatalogLeaseTest : public CatalogTest {
     }
     return normal;  // Uncertain records remain owned for fail-stop teardown.
   }
+
   void Probe(const char* mode, bool busy) {
     const auto executable =
         std::filesystem::read_symlink("/proc/self/exe").parent_path().string() +
@@ -217,10 +248,12 @@ class WorkerCatalogLeaseTest : public CatalogTest {
     ASSERT_EQ(rc, 0);
     EXPECT_TRUE(Wait(child, 0)) << mode << " " << expected;
   }
+
   std::unique_ptr<WorkerCatalogReader> Reader(int fd = -1) {
     return std::make_unique<WorkerCatalogReader>(fd < 0 ? directory_.fd : fd,
                                                  policy_, &labels_);
   }
+
   void PublishCli(std::string key, std::string executable) {
     auto e = Make(std::move(key), "pkg.one", Kind::kCli);
     e.executable = std::move(executable);
@@ -359,6 +392,7 @@ TEST_F(WorkerCatalogLeaseTest, BusyDestructorFailsBeforeConnectionOrLeaseLoss) {
     reader.reset();
     _exit(5);
   }
+
   EXPECT_TRUE(Wait(child, 86));
   Probe("generation", false);
 }
@@ -375,6 +409,7 @@ TEST_F(WorkerCatalogLeaseTest, BusyConstructorUnwindDoesNotDropLiveSqlLease) {
     (void)Reader();  // Policy error + real escaped statement => close BUSY.
     _exit(3);
   }
+
   EXPECT_TRUE(Wait(child, 86));
   EXPECT_EQ(chmod(shm.c_str(), 0600), 0);
   Probe("generation", false);
@@ -424,16 +459,19 @@ TEST_F(WorkerCatalogLeaseTest, SchemaAndCorruptCliDenyWithoutMigration) {
     auto reader = Reader();
     ErrorIs(ErrorCode::kUnsupported, [&] { (void)reader->Finish(); });
   }
+
   Probe("generation", false);
   {
     Database writer(path_, Database::Access::kWriter);
     writer.Exec("PRAGMA user_version=2");
   }
+
   PublishCli("first", "/usr/bin/true");
   {
     Database writer(path_, Database::Access::kWriter);
     writer.Exec("UPDATE capability SET stable_key='wrong'");
   }
+
   auto reader = Reader();
   ErrorIs(ErrorCode::kDatabase, [&] { (void)reader->Finish(); });
 }
@@ -479,6 +517,7 @@ TEST_F(WorkerCatalogLeaseTest, InheritedSqlReaderRejectsAndFailsBeforeCleanup) {
     reader.reset();
     _exit(8);
   }
+
   EXPECT_TRUE(Wait(child, 86));
   auto snapshot = reader->Finish();
   Probe("generation", true);
@@ -494,6 +533,7 @@ TEST_F(WorkerCatalogLeaseTest,
     Probe("generation", true);
     _exit(HasFailure() ? 3 : 0);
   }
+
   EXPECT_TRUE(Wait(child, 0));
   Probe("generation", true);
   snapshot.reset();
@@ -517,6 +557,7 @@ TEST_F(WorkerCatalogLeaseTest,
     close(release[0]);
     _exit(0);
   }
+
   close(release[0]);
   snapshot.reset();
   Probe("generation", true);
@@ -557,6 +598,7 @@ TEST_F(WorkerCatalogLeaseTest, LoaderCloseAndFailurePreserveOtherReadSnapshot) {
     auto snapshot = Reader()->Finish();
     EXPECT_EQ(snapshot.Revision(), 2u);
   }
+
   Probe("checkpoint", true);
   fail_prepare = true;
   ErrorIs(ErrorCode::kDatabase, [&] { Reader(); });
@@ -579,6 +621,7 @@ TEST_F(WorkerCatalogLeaseTest, PublishedCliOnlyMatchesLegacySelection) {
     writer.Finalize("other-kind", true);
     writer.Close();
   }
+
   auto snapshot = Reader()->Finish();
   auto legacy =
       LoadWorkerCatalog(directory_.fd, {getuid(), getgid(), 0700, 0600});
@@ -609,6 +652,7 @@ TEST_F(WorkerCatalogLeaseTest, Exact256BoundAndCorruptTypesMatchLegacy) {
         directory_.fd,
         (WorkerCatalogFilePolicy{getuid(), getgid(), 0700, 0600})));
   }
+
   auto extra = Make("extra", "pkg.one", Kind::kCli);
   extra.executable = "/usr/bin/true";
   entries.push_back(std::move(extra));
@@ -629,6 +673,7 @@ TEST_F(WorkerCatalogLeaseTest, Exact256BoundAndCorruptTypesMatchLegacy) {
         "DELETE FROM capability WHERE stable_key='extra'; "
         "UPDATE capability SET keywords=X'0102' WHERE stable_key='entry0'");
   }
+
   auto reader = Reader();
   ErrorIs(ErrorCode::kDatabase, [&] { (void)reader->Finish(); });
   ErrorIs(ErrorCode::kDatabase, [&] {
@@ -652,6 +697,7 @@ TEST_F(WorkerCatalogLeaseTest,
     Probe("begin", true);
     Probe("exclusive", true);
   }
+
   active.Exec("ROLLBACK");
 }
 

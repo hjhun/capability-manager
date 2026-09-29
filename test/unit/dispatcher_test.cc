@@ -1,11 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "api/dispatcher.hh"
+
 #include <gtest/gtest.h>
+
 #include <future>
+
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 struct Blocked {
   std::promise<void> entered, release;
   std::shared_future<void> allowed = release.get_future().share();
@@ -16,7 +36,9 @@ struct Blocked {
     self.allowed.wait();
   }
 };
-}
+
+}  // namespace
+
 TEST(Dispatcher,
      ActiveCallbackRejectsReplaceRemoveAndExternalDestroyWithoutClosing) {
   Dispatcher dispatcher;
@@ -35,6 +57,7 @@ TEST(Dispatcher,
   EXPECT_EQ(dispatcher.Close(), Dispatcher::CloseResult::kDone);
   EXPECT_EQ(old.calls, 1);
 }
+
 TEST(Dispatcher, CallbackCanCancelButCannotDestroyOrReplaceItself) {
   Dispatcher dispatcher;
   struct State {
@@ -70,6 +93,7 @@ TEST(Dispatcher, CallbackCanCancelButCannotDestroyOrReplaceItself) {
   while (dispatcher.Close() != Dispatcher::CloseResult::kDone)
     std::this_thread::yield();
 }
+
 TEST(Dispatcher, SuccessfulDestroyCancelsWorkersAndPreventsFutureCallbacks) {
   Dispatcher dispatcher;
   std::atomic<int> calls = 0;
@@ -90,6 +114,7 @@ TEST(Dispatcher, SuccessfulDestroyCancelsWorkersAndPreventsFutureCallbacks) {
   EXPECT_EQ(dispatcher.Close(), Dispatcher::CloseResult::kDone);
   EXPECT_EQ(calls, 0);
 }
+
 TEST(Dispatcher, TokenExhaustionDoesNotWrapAndExceptionsHaveOneTerminalReply) {
   Dispatcher dispatcher(UINT64_MAX);
   std::promise<std::string> response;
@@ -146,6 +171,7 @@ TEST(Dispatcher, UnsupportedCancellationIsNeverReportedAsSuccess) {
   } catch (const Error& error) {
     EXPECT_EQ(error.code(), ErrorCode::kUnsupported);
   }
+
   EXPECT_EQ(dispatcher.Close(), Dispatcher::CloseResult::kDone);
 }
 
@@ -180,6 +206,7 @@ TEST(Dispatcher, MalformedAfterAckAndMissingTerminalRetireWithOneFailure) {
     EXPECT_EQ(state.calls, 2);
   }
 }
+
 TEST(Dispatcher, ClosedEventReleasesCapacityAndDropsLaterFrames) {
   Dispatcher dispatcher;
   struct State {
@@ -214,11 +241,13 @@ TEST(Dispatcher, ClosedEventReleasesCapacityAndDropsLaterFrames) {
       std::this_thread::sleep_for(1ms);
     }
   }
+
   EXPECT_TRUE(admitted);
   while (dispatcher.Close() != Dispatcher::CloseResult::kDone)
     std::this_thread::yield();
   EXPECT_EQ(state.calls, 2);
 }
+
 TEST(Dispatcher, DestroyAfterAcknowledgementCancelsAndSuppressesLateEvents) {
   Dispatcher dispatcher;
   std::promise<void> ack;
@@ -271,6 +300,7 @@ TEST(Dispatcher, QueuedTerminalCannotBeCancelledWhileAnotherCallbackBlocks) {
       EXPECT_EQ(error.code(), ErrorCode::kNotFound);
     }
   }
+
   blocker.release.set_value();
   while (dispatcher.Close() != Dispatcher::CloseResult::kDone)
     std::this_thread::yield();
@@ -370,6 +400,7 @@ TEST(Dispatcher,
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(Dispatcher, CallbackCompletionDoesNotHideAnUnfinishedWorkerBehindBusy) {
   ASSERT_EXIT(
       ([] {
@@ -400,6 +431,7 @@ TEST(Dispatcher, CallbackCompletionDoesNotHideAnUnfinishedWorkerBehindBusy) {
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(Dispatcher, WorkerAndDispatcherThreadLocalDestructionRemainBounded) {
   ASSERT_EXIT(
       ([] {
@@ -468,6 +500,7 @@ TEST(Dispatcher, WorkerAndDispatcherThreadLocalDestructionRemainBounded) {
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(Dispatcher, PendingCloseRetainsProcessCapacity) {
   ASSERT_EXIT(([] {
                 alarm(5);
@@ -502,6 +535,7 @@ TEST(Dispatcher, PendingCloseRetainsProcessCapacity) {
               }()),
               testing::ExitedWithCode(0), "");
 }
+
 TEST(Dispatcher, BlockedResultCallbackKeepsDestroyBusyWithoutClosingAdmission) {
   Dispatcher dispatcher;
   Blocked blocked;

@@ -1,8 +1,25 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "pkgmgr-plugin/parser.hh"
+
 #include <fstream>
+
 #include <sys/stat.h>
+
 using namespace capmgr;
 class ParserTest : public CatalogTest {
  protected:
@@ -28,10 +45,12 @@ class ParserTest : public CatalogTest {
                 {"outputSchema", {{"type", "object"}}}};
     Write("cli.json", cli);
   }
+
   void Write(const std::string& name, const Json& value) {
     std::ofstream(root_ + "/" + name) << value.dump();
   }
 };
+
 TEST_F(ParserTest, RepeatedAndSemicolonMetadataAreCollectedOnce) {
   auto entries = ParsePackage(root_, "pkg",
                               {{Kind::kSkill, " skill.json ; skill.json ", ""},
@@ -41,6 +60,7 @@ TEST_F(ParserTest, RepeatedAndSemicolonMetadataAreCollectedOnce) {
   EXPECT_EQ(entries[0].id, "skill:example");
   EXPECT_EQ(entries[1].id, "cli:example");
 }
+
 TEST_F(ParserTest, AppScopeComesFromCallbackAndAllowsSameNames) {
   auto entries = ParsePackage(root_, "pkg",
                               {{Kind::kAppSkill, "skill.json", "app.one"},
@@ -48,6 +68,7 @@ TEST_F(ParserTest, AppScopeComesFromCallbackAndAllowsSameNames) {
   ASSERT_EQ(entries.size(), 2u);
   EXPECT_NE(entries[0].id, entries[1].id);
 }
+
 TEST_F(ParserTest, EmptyTraversalAbsoluteAndSymlinkPathsAreRejected) {
   std::filesystem::create_symlink(root_ + "/skill.json", root_ + "/link.json");
   for (const char* path : {"", "skill.json;", ";skill.json", "../skill.json",
@@ -55,6 +76,7 @@ TEST_F(ParserTest, EmptyTraversalAbsoluteAndSymlinkPathsAreRejected) {
     EXPECT_THROW(ParsePackage(root_, "pkg", {{Kind::kSkill, path, ""}}), Error)
         << path;
 }
+
 TEST_F(ParserTest, LastBadDescriptorLeavesNoPartialPendingPublication) {
   Catalog catalog(path_, Database::Access::kWriter);
   EXPECT_THROW(StagePackage(catalog, "op", root_, "pkg",
@@ -65,6 +87,7 @@ TEST_F(ParserTest, LastBadDescriptorLeavesNoPartialPendingPublication) {
   EXPECT_TRUE(catalog.Search("picture").empty());
   EXPECT_THROW(catalog.Finalize("op", true), Error);
 }
+
 TEST_F(ParserTest, OfflineSuccessAndFailureNeedNoService) {
   Catalog catalog(path_, Database::Access::kWriter);
   StagePackage(catalog, "op", root_, "pkg", {{Kind::kSkill, "skill.json", ""}},
@@ -78,6 +101,7 @@ TEST_F(ParserTest, OfflineSuccessAndFailureNeedNoService) {
   catalog.Finalize("success", true);
   EXPECT_EQ(catalog.Search("picture").size(), 1u);
 }
+
 TEST_F(ParserTest, ActionMetadataAndNonExecutableCliAreRejected) {
   EXPECT_THROW(ParsePackage(root_, "pkg", {{Kind::kAction, "skill.json", ""}}),
                Error);

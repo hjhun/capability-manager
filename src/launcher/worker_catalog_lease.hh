@@ -20,6 +20,7 @@
 #include "launcher/worker_catalog.hh"
 
 namespace capmgr {
+
 // Startup snapshot with the SAME independent generation lease as its physically
 // closed RO connection. Move-only; no assignment may retire a live worker lease.
 // This freezes generation maintenance, NOT WAL contents or executable authority.
@@ -47,6 +48,7 @@ class LeasedWorkerCatalogSnapshot final {
   WorkerCatalogSnapshot snapshot_;
   std::unique_ptr<CatalogReadLease> lease_;
 };
+
 // Caller-serialized private startup facade, never available to a plugin/IPC
 // request. Borrowed directory is readable/non-O_PATH and remains exclusively
 // stable through construction; the concrete lease independently opens its own
@@ -78,6 +80,7 @@ class WorkerCatalogReader final {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
+
 }  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_CATALOG_LEASE_HH_

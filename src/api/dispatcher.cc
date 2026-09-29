@@ -1,14 +1,34 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "api/dispatcher.hh"
+
 #include <nlohmann/json.hpp>
+
 #include <algorithm>
 #include <array>
+
 namespace capmgr {
+
 namespace {
+
 std::atomic<unsigned> global_jobs{0};
 struct ReplyFailure {
   const char* cause;
 };
+
 void ValidateReply(const std::string& text, const nlohmann::json& id,
                    bool event, bool complete, Dispatcher::Protocol protocol) {
   using Json = nlohmann::json;
@@ -62,6 +82,7 @@ void ValidateReply(const std::string& text, const nlohmann::json& id,
          json["result"]["isError"] != false))
       throw ReplyFailure{"invalid subscription acknowledgement"};
   }
+
   if (json.contains("error")) {
     const auto& error = json["error"];
     if (!error.is_object() || !error.contains("code") ||
@@ -72,10 +93,12 @@ void ValidateReply(const std::string& text, const nlohmann::json& id,
       throw ReplyFailure{"malformed error response"};
   }
 }
-}
+}  // namespace
+
 Dispatcher::Job::~Job() {
   if (admitted) --global_jobs;
 }
+
 Dispatcher::Dispatcher(uint64_t first, DispatcherOperations* operations)
     : operations_(operations), next_(first), dispatcher_([this] {
         Dispatch();
@@ -87,6 +110,7 @@ Dispatcher::Dispatcher(uint64_t first, DispatcherOperations* operations)
 Dispatcher::~Dispatcher() {
   if (Close() != CloseResult::kDone) std::terminate();
 }
+
 uint64_t Dispatcher::Execute(Work work, nlohmann::json rpc_id,
                              capmgr_result_cb callback, void* data,
                              bool supports_cancel) {
@@ -100,6 +124,7 @@ uint64_t Dispatcher::Execute(Work work, nlohmann::json rpc_id,
       },
       std::move(rpc_id), callback, data, supports_cancel);
 }
+
 uint64_t Dispatcher::ExecuteFrames(FramedWork work, nlohmann::json rpc_id,
                                    capmgr_result_cb callback, void* data,
                                    bool supports_cancel, Protocol protocol) {
@@ -107,6 +132,7 @@ uint64_t Dispatcher::ExecuteFrames(FramedWork work, nlohmann::json rpc_id,
   return AdmitJob(std::move(work), std::move(rpc_id), callback, data,
                   supports_cancel, protocol, {});
 }
+
 uint64_t Dispatcher::ExecuteManaged(std::shared_ptr<ManagedOperation> owner,
                                     nlohmann::json rpc_id,
                                     capmgr_result_cb callback, void* data) {
@@ -114,6 +140,7 @@ uint64_t Dispatcher::ExecuteManaged(std::shared_ptr<ManagedOperation> owner,
   return AdmitJob({}, std::move(rpc_id), callback, data, true,
                   Protocol::kGeneric, std::move(owner));
 }
+
 uint64_t Dispatcher::AdmitJob(FramedWork work, nlohmann::json rpc_id,
                               capmgr_result_cb callback, void* data,
                               bool supports_cancel, Protocol protocol,
@@ -230,6 +257,7 @@ uint64_t Dispatcher::AdmitJob(FramedWork work, nlohmann::json rpc_id,
   wake_.notify_all();
   return token;
 }
+
 void Dispatcher::Cancel(uint64_t token) {
   std::unique_lock lock(mutex_);
   auto it = jobs_.find(token);
@@ -244,17 +272,20 @@ void Dispatcher::Cancel(uint64_t token) {
   if (owner && !owner->RequestCancel())
     throw Error(ErrorCode::kIo, "Managed cancellation coordinator has ended");
 }
+
 bool Dispatcher::EnterCallback() {
   std::lock_guard lock(mutex_);
   if (active_ || closing_) return false;
   active_ = true;
   return true;
 }
+
 void Dispatcher::LeaveCallback() {
   std::lock_guard lock(mutex_);
   active_ = false;
   wake_.notify_one();
 }
+
 bool Dispatcher::SetChanged(capmgr_changed_cb callback, void* data) {
   std::lock_guard lock(mutex_);
   if (active_ || closing_) return false;
@@ -262,6 +293,7 @@ bool Dispatcher::SetChanged(capmgr_changed_cb callback, void* data) {
   changed_data_ = data;
   return true;
 }
+
 void Dispatcher::Changed(uint64_t revision) {
   std::lock_guard lock(mutex_);
   if (closing_ || revision <= newest_revision_) return;
@@ -269,10 +301,12 @@ void Dispatcher::Changed(uint64_t revision) {
   changed_revision_ = revision;
   wake_.notify_one();
 }
+
 void Dispatcher::CheckAdmission() {
   std::lock_guard lock(mutex_);
   if (closing_) throw Error(ErrorCode::kBusy, "Client is closing");
 }
+
 bool Dispatcher::HasFinishedWorker() const {
   for (const auto& [token, job] : jobs_)
     if (job->work_done && !job->joined && !job->joining &&
@@ -281,6 +315,7 @@ bool Dispatcher::HasFinishedWorker() const {
       return true;
   return false;
 }
+
 bool Dispatcher::JoinFinished(std::unique_lock<std::mutex>& lock) {
   for (auto it = jobs_.begin(); it != jobs_.end(); ++it) {
     auto job = it->second;
@@ -302,6 +337,7 @@ bool Dispatcher::JoinFinished(std::unique_lock<std::mutex>& lock) {
   }
   return false;
 }
+
 void Dispatcher::RetireJob(uint64_t token, std::unique_lock<std::mutex>& lock) {
   auto it = jobs_.find(token);
   if (it == jobs_.end()) return;
@@ -311,10 +347,12 @@ void Dispatcher::RetireJob(uint64_t token, std::unique_lock<std::mutex>& lock) {
   owner.reset();
   lock.lock();
 }
+
 bool Dispatcher::Releasable(const Job& job) const {
   return job.joined &&
          (!job.managed || (job.proof && job.quiescent && !job.poisoned));
 }
+
 void Dispatcher::RefreshManaged(std::unique_lock<std::mutex>& lock,
                                 bool offer) {
   std::array<std::pair<uint64_t, std::shared_ptr<Job>>, 2> observed;
@@ -386,6 +424,7 @@ void Dispatcher::RefreshManaged(std::unique_lock<std::mutex>& lock,
       RetireJob(it->first, lock);
   }
 }
+
 Dispatcher::CloseResult Dispatcher::Close(std::chrono::milliseconds budget) {
   const auto deadline = std::chrono::steady_clock::now() +
                         std::clamp(budget, std::chrono::milliseconds(0),
@@ -397,6 +436,7 @@ Dispatcher::CloseResult Dispatcher::Close(std::chrono::milliseconds budget) {
     std::lock_guard lock(mutex_);
     return active_ ? CloseResult::kBusy : CloseResult::kIoPending;
   }
+
   std::unique_lock lock(mutex_);
   if (active_) return CloseResult::kBusy;
   closing_ = true;
@@ -412,6 +452,7 @@ Dispatcher::CloseResult Dispatcher::Close(std::chrono::milliseconds budget) {
     owners[i]->RequestCancel();
     owners[i].reset();
   }
+
   lock.lock();
   for (;;) {
     RefreshManaged(lock, false);
@@ -453,6 +494,7 @@ Dispatcher::CloseResult Dispatcher::Close(std::chrono::milliseconds budget) {
                                             std::chrono::milliseconds(2)));
   }
 }
+
 void Dispatcher::Dispatch() {
   for (;;) {
     std::unique_lock lock(mutex_);
@@ -515,4 +557,4 @@ void Dispatcher::Dispatch() {
     wake_.notify_all();
   }
 }
-}
+}  // namespace capmgr

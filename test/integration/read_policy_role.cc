@@ -1,9 +1,26 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Fixed, explicitly injected root/UID301 fixture roles. Not a product endpoint.
 #include "api/read_admission.hh"
 #include "catalog/coordinated_writer.hh"
+
 #include <dirent.h>
+
 #include <filesystem>
+
 #include <signal.h>
 #include <fcntl.h>
 #include <linux/capability.h>
@@ -14,6 +31,7 @@
 #include <sys/syscall.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
+
 #include <array>
 #include <chrono>
 #include <cstring>
@@ -22,11 +40,14 @@
 #include <set>
 
 using namespace capmgr;
+
 namespace {
+
 using Clock = std::chrono::steady_clock;
 void Check(bool okay, const char* cause) {
   if (!okay) throw std::runtime_error(cause);
 }
+
 void Await(int fd, short events, Clock::time_point end) {
   for (;;) {
     int remaining =
@@ -41,6 +62,7 @@ void Await(int fd, short events, Clock::time_point end) {
     return;
   }
 }
+
 void Send(Json value) {
   auto text = value.dump() + "\n";
   Check(text.size() <= 4096, "status size");
@@ -54,6 +76,7 @@ void Send(Json value) {
     offset += static_cast<size_t>(n);
   }
 }
+
 Json Receive() {
   auto end = Clock::now() + std::chrono::seconds(20);
   std::string bytes;
@@ -86,6 +109,7 @@ Json Receive() {
   };
   return Json::parse(bytes, callback);
 }
+
 std::string TaskLabel() {
   std::ifstream file("/proc/self/attr/current", std::ios::binary);
   Check(static_cast<bool>(file), "own task label open");
@@ -95,6 +119,7 @@ std::string TaskLabel() {
   Check(!text.empty() && text.size() <= 255, "own task label bytes");
   return text;
 }
+
 void Table() {
   DIR* tasks = opendir("/proc/self/task");
   Check(tasks, "own task scan");
@@ -109,6 +134,7 @@ void Table() {
     }
     if (item->d_name[0] != '.') ++task_count;
   }
+
   int closed = closedir(tasks);
   Check(scan_error == 0 && closed == 0, "incomplete own task scan");
   Check(task_count == 1, "fixture initial single thread");
@@ -130,6 +156,7 @@ void Table() {
     okay &= number >= 0 && number <= 5;
     ++count;
   }
+
   closed = closedir(scan);
   Check(scan_error == 0 && closed == 0, "incomplete own FD scan");
   Check(okay && count == 6, "unexpected inherited descriptor");
@@ -162,6 +189,7 @@ void Table() {
       Check(fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0, "control nonblocking");
   }
 }
+
 void Drop(const std::string& label, bool group) {
   // Own-task fixture context only, never peer credential authority.
   int fd = open("/proc/self/attr/current", O_WRONLY | O_CLOEXEC);
@@ -177,6 +205,7 @@ void Drop(const std::string& label, bool group) {
     Check(present >= 0 && prctl(PR_CAPBSET_DROP, cap, 0, 0, 0) == 0,
           "bounding capability drop");
   }
+
   Check(prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_CLEAR_ALL, 0, 0, 0) == 0,
         "ambient capability clear");
   gid_t platform = 10212;
@@ -212,9 +241,11 @@ void Drop(const std::string& label, bool group) {
               prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_IS_SET, cap, 0, 0) == 0,
           "retained bounding/ambient capability");
   }
+
   Check(prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) == 1 && TaskLabel() == label,
         "context label/NNP");
 }
+
 class Channel final : public CatalogAdmissionChannel {
  public:
   std::string descriptor;
@@ -223,6 +254,7 @@ class Channel final : public CatalogAdmissionChannel {
     ++authorize;
     return descriptor;
   }
+
   void CheckSameLive() override {}  // explicitly modeled, not socket authority
   void ConfirmCatalog(std::string_view value) override {
     ++confirm;
@@ -231,10 +263,14 @@ class Channel final : public CatalogAdmissionChannel {
     auto reply = Receive();
     Check(reply == Json{{"command", "confirmed"}}, "modeled confirm reply");
   }
+
   void Finish() override { ++finish; }
 };
-}
+
+}  // namespace
+
 namespace {
+
 ReadLeasePolicy Policy(const std::string& key) {
   Check(key.size() == 32 &&
             key.find_first_not_of("0123456789abcdef") == std::string::npos,
@@ -254,6 +290,7 @@ ReadLeasePolicy Policy(const std::string& key) {
           label + "Catalog",
           label + "Lock"};
 }
+
 void DeniedOpen(const std::string& path, int flags) {
   errno = 0;
   int fd = open(path.c_str(), flags | O_CLOEXEC | O_NOFOLLOW, 0600);
@@ -264,6 +301,7 @@ void DeniedOpen(const std::string& path, int flags) {
   int error = errno;
   Check(error == EACCES || error == EPERM, "denial was not access veto");
 }
+
 void Probe(const ReadLeasePolicy& policy, const std::string& role) {
   bool mac = role == "denied-mac", dac = role == "denied-dac";
   auto root = std::filesystem::path(policy.directory).parent_path().string();
@@ -278,6 +316,7 @@ void Probe(const ReadLeasePolicy& policy, const std::string& role) {
           {"later_stages", "NOT_RUN"}});
     return;
   }
+
   int fd = open(policy.lock_path.c_str(), O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
   Check(fd >= 0, "lock read setup");
   struct flock shared{};
@@ -304,6 +343,7 @@ void Probe(const ReadLeasePolicy& policy, const std::string& role) {
           {"SQLite", "NOT_RUN"}});
     return;
   }
+
   fd = open(policy.directory.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
   Check(fd >= 0, "allowed directory baseline");
   close(fd);
@@ -314,6 +354,7 @@ void Probe(const ReadLeasePolicy& policy, const std::string& role) {
     close(fd);  // no SQLite connection has been opened in THIS process yet
     DeniedOpen(path, O_RDWR);
   }
+
   DeniedOpen(policy.directory + "/forbidden", O_WRONLY | O_CREAT | O_EXCL);
   DeniedOpen(policy.directory + "/mac-write-probe", O_WRONLY);
   DeniedOpen(policy.directory + "/mac-directory/forbidden",
@@ -324,6 +365,7 @@ void Probe(const ReadLeasePolicy& policy, const std::string& role) {
         {"direct_files", "read-baseline"},
         {"MAC_write", "denied"}});
 }
+
 class MetadataObservation final : public ReadLeaseOperations {
  public:
   explicit MetadataObservation(ReadLeasePolicy policy)
@@ -345,12 +387,14 @@ class MetadataObservation final : public ReadLeaseOperations {
  private:
   ReadLeasePolicy policy_;
 };
+
 class AdmissionObservation final : public AccessGate {
  public:
   explicit AdmissionObservation(LeasedCatalogGate& gate) : gate_(gate) {}
   std::string AuthorizeAndGetDatabase() override {
     return gate_.AuthorizeAndGetDatabase();  // forbidden path-only fallback
   }
+
   std::unique_ptr<ReadAccess> AuthorizeReadAccess() override {
     auto access = gate_.AuthorizeReadAccess();
     returned = true;
@@ -361,6 +405,7 @@ class AdmissionObservation final : public AccessGate {
  private:
   LeasedCatalogGate& gate_;
 };
+
 void Reader(const Json& config) {
   Check(config.is_object() && config.size() == 2 && config.contains("key") &&
             config.contains("role"),
@@ -457,8 +502,10 @@ void Reader(const Json& config) {
     throw;
   }
 }
-}
+}  // namespace
+
 namespace {
+
 Entry FixtureEntry(int generation) {
   Entry entry;
   entry.id = "cli:fixture";
@@ -470,6 +517,7 @@ Entry FixtureEntry(int generation) {
   entry.detail = Json::object();
   return entry;
 }
+
 void Writer(const Json& config) {
   Check(
       config.is_object() && config.size() == 2 && config.at("role") == "writer",
@@ -574,9 +622,11 @@ void Writer(const Json& config) {
       throw std::runtime_error("unsupported fixed writer command");
     }
   }
+
   throw std::runtime_error("writer command count limit");
 }
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   (void)argv;
   bool table_valid = false;

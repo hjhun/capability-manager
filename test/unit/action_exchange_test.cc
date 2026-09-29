@@ -1,9 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/action_exchange.hh"
+
 #include <gtest/gtest.h>
+
 #include <climits>
+
 using namespace capmgr;
+
 namespace {
+
 Entry Action(bool stream = false) {
   Entry entry;
   entry.kind = Kind::kAction;
@@ -13,6 +32,7 @@ Entry Action(bool stream = false) {
   if (stream) entry.detail["eventSchema"] = {{"type", "object"}};
   return entry;
 }
+
 Request Call(Json id = "original") {
   return ParseRequest(
       Json({{"jsonrpc", "2.0"},
@@ -21,7 +41,8 @@ Request Call(Json id = "original") {
             {"params", {{"name", Action().id}, {"arguments", Json::object()}}}})
           .dump());
 }
-}
+}  // namespace
+
 TEST(ActionExchange, MapsIndependentIdsAndRegisteredName) {
   for (const Json& id :
        {Json("same:☃"), Json(INT64_MIN), Json(INT64_MAX), Json(0)}) {
@@ -39,9 +60,11 @@ TEST(ActionExchange, MapsIndependentIdsAndRegisteredName) {
     EXPECT_TRUE(Json::parse(frame.json)["result"]["isError"]);
     EXPECT_THROW(exchange.Accept(INT_MAX, "{}"), Error);
   }
+
   EXPECT_THROW(ActionExchange(Action(), Call(), 0, false), Error);
   EXPECT_THROW(ActionExchange(Action(), Call(), -1, false), Error);
 }
+
 TEST(ActionExchange,
      PreservesArgumentAndReplyPayloadBytesWhileReplacingOnlyOuterId) {
   auto request = Call();
@@ -61,6 +84,7 @@ TEST(ActionExchange,
   expected.replace(at, 5, " : \"original\" ");
   EXPECT_EQ(exchange.Accept(7, before).json, expected);
 }
+
 TEST(ActionExchange, NativeErrorsRemainNativeAndWrongIdsDoNotAdvanceState) {
   ActionExchange exchange(Action(), Call(-5), 8, false);
   EXPECT_THROW(exchange.Accept(9, R"({"jsonrpc":"2.0","id":8,"result":{}})"),
@@ -73,6 +97,7 @@ TEST(ActionExchange, NativeErrorsRemainNativeAndWrongIdsDoNotAdvanceState) {
   EXPECT_EQ(Json::parse(result.json)["error"]["code"], -42);
   EXPECT_EQ(Json::parse(result.json)["id"], -5);
 }
+
 TEST(ActionExchange, SubscriptionCapabilityRequiredBeforeAdmission) {
   EXPECT_THROW(ActionExchange(Action(true), Call(), 1, false), Error);
   auto request = Call();
@@ -83,6 +108,7 @@ TEST(ActionExchange, SubscriptionCapabilityRequiredBeforeAdmission) {
   EXPECT_THROW(ActionExchange(Action(), ParseRequest(json.dump()), 1, true),
                Error);
 }
+
 TEST(ActionExchange, AckEventsAndCloseHaveIndependentTerminalFlag) {
   ActionExchange exchange(Action(true), Call(), 1, true);
   EXPECT_THROW(
@@ -108,6 +134,7 @@ TEST(ActionExchange, AckEventsAndCloseHaveIndependentTerminalFlag) {
   EXPECT_THROW(exchange.Accept(1, R"({"jsonrpc":"2.0","id":1,"event":{}})"),
                Error);
 }
+
 TEST(ActionExchange, PreAckFailureTerminatesWithoutClosedEvent) {
   ActionExchange exchange(Action(true), Call(), 1, true);
   auto reply = exchange.Accept(
@@ -116,6 +143,7 @@ TEST(ActionExchange, PreAckFailureTerminatesWithoutClosedEvent) {
   EXPECT_FALSE(reply.is_event);
   EXPECT_TRUE(reply.complete);
 }
+
 TEST(ActionExchange, MalformedDuplicateNestedAndOversizedRepliesAreRejected) {
   ActionExchange exchange(Action(), Call(), 1, false);
   for (const char* reply :

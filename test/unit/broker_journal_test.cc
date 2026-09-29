@@ -1,7 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "launcher/broker_journal.hh"
+
 #include <fcntl.h>
+
 #include <fstream>
 #include <limits>
 #include <thread>
@@ -9,11 +25,15 @@
 #include <mutex>
 #include <set>
 #include <cerrno>
+
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 using namespace capmgr;
+
 namespace {
+
 class JournalTest : public CatalogTest {
  protected:
   int directory = -1;
@@ -24,10 +44,12 @@ class JournalTest : public CatalogTest {
     ASSERT_GE(directory, 0);
     Seed();
   }
+
   void TearDown() override {
     if (directory >= 0) close(directory);
     CatalogTest::TearDown();
   }
+
   void Seed(uint64_t next = 1) {
     std::ofstream(root_ + "/state.json") << Json{{"version", 1},
                                                  {"generation", 0},
@@ -37,7 +59,9 @@ class JournalTest : public CatalogTest {
     ASSERT_EQ(chmod((root_ + "/state.json").c_str(), 0600), 0);
   }
 };
-}
+
+}  // namespace
+
 TEST_F(JournalTest, DurableNormalLifecyclePreservesMonotonicTokens) {
   {
     BrokerJournal journal(directory, geteuid());
@@ -49,12 +73,14 @@ TEST_F(JournalTest, DurableNormalLifecyclePreservesMonotonicTokens) {
     journal.ConfirmJobGone(first);
     journal.ConfirmNormalWorkerExit();
   }
+
   BrokerJournal reopened(directory, geteuid());
   EXPECT_FALSE(reopened.Blocked());
   EXPECT_EQ(reopened.Generation(), 1u);
   EXPECT_EQ(reopened.BeginGeneration(), 2u);
   EXPECT_EQ(reopened.Reserve(), 2u);
 }
+
 TEST_F(JournalTest, ReapedCrashedWorkerDoesNotClearDurableReservations) {
   pid_t worker = fork();
   ASSERT_GE(worker, 0);
@@ -80,6 +106,7 @@ TEST_F(JournalTest, ReapedCrashedWorkerDoesNotClearDurableReservations) {
   EXPECT_THROW(restart.ConfirmJobGone(1), Error);
   EXPECT_THROW(restart.ConfirmNormalWorkerExit(), Error);
 }
+
 TEST_F(JournalTest, StatusLossPersistsUncertaintyEvenWithNoJobs) {
   {
     BrokerJournal journal(directory, geteuid());
@@ -87,11 +114,13 @@ TEST_F(JournalTest, StatusLossPersistsUncertaintyEvenWithNoJobs) {
     journal.MarkUncertain();
     EXPECT_TRUE(journal.Blocked());
   }
+
   BrokerJournal restart(directory, geteuid());
   EXPECT_TRUE(restart.Blocked());
   EXPECT_TRUE(restart.Reservations().empty());
   EXPECT_THROW(restart.BeginGeneration(), Error);
 }
+
 TEST_F(JournalTest, GlobalCapacityIncludesEveryReservedJob) {
   BrokerJournal journal(directory, geteuid());
   journal.BeginGeneration();
@@ -101,6 +130,7 @@ TEST_F(JournalTest, GlobalCapacityIncludesEveryReservedJob) {
   journal.ConfirmJobGone(2);
   EXPECT_EQ(journal.Reserve(), 5u);
 }
+
 TEST_F(JournalTest, ExhaustedTokenNeverWrapsOrReuses) {
   Seed(std::numeric_limits<uint64_t>::max());
   BrokerJournal journal(directory, geteuid());
@@ -113,17 +143,20 @@ TEST_F(JournalTest, ExhaustedTokenNeverWrapsOrReuses) {
   EXPECT_EQ(journal.BeginGeneration(), 2u);
   EXPECT_THROW(journal.Reserve(), Error);
 }
+
 TEST_F(JournalTest, ExclusiveStoreRejectsSecondOwnerAndUnsafeStorage) {
   {
     BrokerJournal journal(directory, geteuid());
     EXPECT_THROW(BrokerJournal(directory, geteuid()), Error);
   }
+
   ASSERT_EQ(chmod(root_.c_str(), 0770), 0);
   EXPECT_THROW(BrokerJournal(directory, geteuid()), Error);
   ASSERT_EQ(chmod(root_.c_str(), 0700), 0);
   ASSERT_EQ(chmod((root_ + "/state.json").c_str(), 0644), 0);
   EXPECT_THROW(BrokerJournal(directory, geteuid()), Error);
 }
+
 TEST_F(JournalTest, MissingCorruptDuplicateAndSymlinkStateNeverBootstraps) {
   ASSERT_EQ(unlink((root_ + "/state.json").c_str()), 0);
   EXPECT_THROW(BrokerJournal(directory, geteuid()), Error);
@@ -137,6 +170,7 @@ TEST_F(JournalTest, MissingCorruptDuplicateAndSymlinkStateNeverBootstraps) {
   ASSERT_EQ(symlink("elsewhere", (root_ + "/state.json").c_str()), 0);
   EXPECT_THROW(BrokerJournal(directory, geteuid()), Error);
 }
+
 TEST_F(JournalTest, PartialWriteMarkerPoisonsAdmissionAndSurvivesRestart) {
   {
     BrokerJournal journal(directory, geteuid());
@@ -146,6 +180,7 @@ TEST_F(JournalTest, PartialWriteMarkerPoisonsAdmissionAndSurvivesRestart) {
     EXPECT_TRUE(journal.Blocked());
     EXPECT_THROW(journal.ConfirmNormalWorkerExit(), Error);
   }
+
   EXPECT_THROW(BrokerJournal(directory, geteuid()), Error);
   EXPECT_TRUE(std::filesystem::exists(root_ + "/state.next"));
 }
@@ -195,6 +230,7 @@ TEST_F(JournalTest,
   EXPECT_TRUE(journal.Blocked());
   EXPECT_THROW(journal.Reserve(), Error);
 }
+
 TEST_F(JournalTest, SpecialModeBitsAreRejectedForDirectoryStateAndLock) {
   for (mode_t bit : {04000, 02000, 01000}) {
     ASSERT_EQ(chmod(root_.c_str(), 0700 | bit), 0);
@@ -208,7 +244,9 @@ TEST_F(JournalTest, SpecialModeBitsAreRejectedForDirectoryStateAndLock) {
     ASSERT_EQ(chmod((root_ + "/lock").c_str(), 0600), 0);
   }
 }
+
 namespace {
+
 class FaultOperations : public JournalOperations {
  public:
   enum Point {
@@ -227,6 +265,7 @@ class FaultOperations : public JournalOperations {
     }
     return LinuxJournalOperations().Write(fd, bytes, count);
   }
+
   int Sync(int fd) noexcept override {
     ++sync_count;
     if ((failure == FileSyncFailure && sync_count == 1) ||
@@ -236,6 +275,7 @@ class FaultOperations : public JournalOperations {
     }
     return LinuxJournalOperations().Sync(fd);
   }
+
   int Replace(int directory) noexcept override {
     if (failure == RenameFailure) {
       errno = EIO;
@@ -244,7 +284,9 @@ class FaultOperations : public JournalOperations {
     return LinuxJournalOperations().Replace(directory);
   }
 };
-}
+
+}  // namespace
+
 TEST_F(JournalTest,
        WriteFileSyncRenameAndDirectorySyncFailuresPoisonAdmission) {
   for (auto point :

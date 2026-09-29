@@ -18,8 +18,11 @@
 
 #include <memory>
 #include <string>
+
 #include <sys/types.h>
+
 namespace capmgr {
+
 // Owns connection-time socket credentials, obtained through platform APIs.
 // An inherited/passed endpoint can outlive its connector. This is not a task
 // liveness, PID-reuse, per-message identity or namespace-authority proof.
@@ -48,6 +51,7 @@ class Peer {
   gid_t gid_ = 0;
   std::string label_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_PLATFORM_PEER_HH_

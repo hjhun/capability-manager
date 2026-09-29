@@ -21,7 +21,9 @@
 #include <limits>
 
 using namespace capmgr::fixture::realpolicy;
+
 namespace {
+
 const char* stage = "fixed-reference-startup";
 uint64_t Number(const char* text) {
   const std::string_view value(text);
@@ -33,7 +35,8 @@ uint64_t Number(const char* text) {
         "fixed identity number");
   return result;
 }
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   try {
     // These identity values are trusted private coordinator setup, never public

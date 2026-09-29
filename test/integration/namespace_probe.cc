@@ -1,39 +1,66 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Private setup fixture, never installed as a privileged/setuid helper.
 #include "launcher/namespace_init.hh"
 #include "launcher/owned_children.hh"
+
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
+
 #include <fcntl.h>
+
 #include <fstream>
 #include <iostream>
+
 #include <linux/capability.h>
 #include <poll.h>
 #include <pwd.h>
 #include <sched.h>
 #include <signal.h>
+
 #include <sstream>
 #include <stdexcept>
+
 #include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
+
 #include <thread>
+
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 void Require(bool condition, const char* description) {
   if (!condition)
     throw std::runtime_error(std::string(description) + ": " + strerror(errno));
 }
+
 std::string ReadFile(const std::string& path) {
   std::ifstream file(path);
   return {std::istreambuf_iterator<char>(file), {}};
 }
+
 std::string ReadOutput(int fd) {
   std::string output;
   char buffer[1024];
@@ -47,6 +74,7 @@ std::string ReadOutput(int fd) {
   }
   return output;
 }
+
 InitMessage Receive(int fd) {
   InitMessage message{};
   size_t used = 0;
@@ -63,9 +91,11 @@ InitMessage Receive(int fd) {
     Require(size > 0, "read setup message");
     used += static_cast<size_t>(size);
   }
+
   Require(used == sizeof(message), "setup message deadline");
   return message;
 }
+
 int Workload(const std::string& request) {
   auto* account = getpwnam("app_fw");
   if (!account || getuid() != account->pw_uid || getgid() != account->pw_gid ||
@@ -95,6 +125,7 @@ int Workload(const std::string& request) {
         prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_IS_SET, cap, 0, 0) != 0)
       return 33;
   }
+
   std::istringstream stat(ReadFile("/proc/self/stat"));
   pid_t proc_pid = 0;
   stat >> proc_pid;
@@ -117,6 +148,7 @@ int Workload(const std::string& request) {
     (void)entry;
     ++descriptors;
   }
+
   if (descriptors != 4) return 38;
   std::cout << "ISOLATION_OK pid=" << getpid() << " uid=" << getuid() << "\n"
             << std::flush;
@@ -139,14 +171,17 @@ int Workload(const std::string& request) {
     close(ready[0]);
     std::cout << "SETSID_READY\n" << std::flush;
   }
+
   if (request == R"({"mode":"linger"})")
     for (;;) pause();
   return 0;
 }
+
 int ClosedStdinInit(void* config) {
   close(0);
   return NamespaceInit(config);
 }
+
 void Run(const std::string& executable, const char* request,
          int expected_exec_error, bool wrong_flags = false,
          bool closed_stdin = false) {
@@ -260,15 +295,18 @@ void Run(const std::string& executable, const char* request,
     close(error[0]);
     throw;
   }
+
   close(control[1]);
   close(status[0]);
   close(output[0]);
   close(error[0]);
 }
+
 struct DelayedConfiguration {
   NamespaceInitConfig config;
   int read_gate;
 };
+
 int DelayedInit(void* input) {
   auto* delayed = static_cast<DelayedConfiguration*>(input);
   char go;
@@ -280,6 +318,7 @@ int DelayedInit(void* input) {
   close(delayed->read_gate);
   return NamespaceInit(&delayed->config);
 }
+
 void ParentDeath(const std::string& executable, int phase,
                  bool retained_writer = false) {
   // Become reaper for the namespace init when its direct creating parent dies.
@@ -361,6 +400,7 @@ void ParentDeath(const std::string& executable, int phase,
       _exit(1);
     }
   }
+
   close(relay[1]);
   close(capture[1]);
   close(held_control[0]);
@@ -418,13 +458,15 @@ void ParentDeath(const std::string& executable, int phase,
     close(delay[1]);
     throw;
   }
+
   close(relay[0]);
   close(capture[0]);
   close(delay[1]);
   if (held_control[1] >= 0) close(held_control[1]);
 }
 
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   if (argc == 3 && std::string(argv[1]) == "--json") return Workload(argv[2]);
   try {

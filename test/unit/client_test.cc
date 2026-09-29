@@ -1,12 +1,29 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "api/client.hh"
+
 #include <gmock/gmock.h>
+
 using namespace capmgr;
 class MockGate : public AccessGate {
  public:
   MOCK_METHOD(std::string, AuthorizeAndGetDatabase, (), (override));
 };
+
 TEST_F(CatalogTest, AuthorizationFailureDoesNotOpenDatabase) {
   testing::StrictMock<MockGate> gate;
   EXPECT_CALL(gate, AuthorizeAndGetDatabase())
@@ -16,6 +33,7 @@ TEST_F(CatalogTest, AuthorizationFailureDoesNotOpenDatabase) {
   EXPECT_EQ(client, nullptr);
   EXPECT_FALSE(std::filesystem::exists(path_));
 }
+
 TEST_F(CatalogTest, ClientQueriesAreLocalAndResultsOutliveClient) {
   Catalog writer(path_, Database::Access::kWriter);
   Publish(writer, "pkg.one", {Make()});
@@ -54,6 +72,7 @@ TEST_F(CatalogTest, ClientQueriesAreLocalAndResultsOutliveClient) {
   EXPECT_EQ(item, nullptr);
   capmgr_search_results_free(results);
 }
+
 TEST_F(CatalogTest, FailureOutputsAreClearedAndReadOnlyCannotBootstrap) {
   testing::StrictMock<MockGate> gate;
   EXPECT_CALL(gate, AuthorizeAndGetDatabase()).WillOnce(testing::Return(path_));
@@ -67,6 +86,7 @@ TEST_F(CatalogTest, FailureOutputsAreClearedAndReadOnlyCannotBootstrap) {
             CAPMGR_ERROR_INVALID_ARGUMENT);
   EXPECT_EQ(detail, nullptr);
 }
+
 TEST_F(CatalogTest, ForeachDestroyReturnsBusyAndKeepsHandleAlive) {
   Catalog writer(path_, Database::Access::kWriter);
   Publish(writer, "pkg.one", {Make()});
@@ -86,6 +106,7 @@ TEST_F(CatalogTest, ForeachDestroyReturnsBusyAndKeepsHandleAlive) {
             0);
   EXPECT_EQ(capmgr_client_destroy(client), 0);
 }
+
 TEST_F(CatalogTest, CorruptDetailReturnsDatabaseAndClearsOutput) {
   Catalog writer(path_, Database::Access::kWriter);
   Publish(writer, "pkg.one", {Make()});

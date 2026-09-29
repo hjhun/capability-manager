@@ -17,12 +17,15 @@
 #define CAPABILITY_MANAGER_PKGMGR_PLUGIN_PARSER_HH_
 
 #include "catalog/catalog.hh"
+
 namespace capmgr {
+
 struct Metadata {
   Kind kind;
   std::string value;
   std::string app_id;
 };
+
 std::vector<Entry> ParsePackage(const std::string& package_root,
                                 const std::string& owner,
                                 const std::vector<Metadata>& metadata);
@@ -34,6 +37,6 @@ void StagePackage(
     const std::string& root, const std::string& owner,
     const std::vector<Metadata>& metadata,
     FinalizationAuthority authority = FinalizationAuthority::kUnavailable);
-}
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_PKGMGR_PLUGIN_PARSER_HH_

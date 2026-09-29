@@ -1,16 +1,36 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "api/client.hh"
 #include "launcher/worker_result.hh"
+
 #include <fcntl.h>
+
 #include <fstream>
 #include <future>
+
 #include <signal.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 const std::string request =
     R"({"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"cli:test","arguments":{"x":7}}})";
 const std::string native =
@@ -23,6 +43,7 @@ class Gate : public AccessGate {
  private:
   std::string path_;
 };
+
 struct State : JournalOperations {
   std::string root;
   std::atomic<int> admissions = 0, preparations = 0, starts = 0;
@@ -33,9 +54,11 @@ struct State : JournalOperations {
   ssize_t Write(int fd, const void* b, size_t n) noexcept override {
     return LinuxJournalOperations().Write(fd, b, n);
   }
+
   int Replace(int fd) noexcept override {
     return LinuxJournalOperations().Replace(fd);
   }
+
   int Sync(int fd) noexcept override {
     if (block.exchange(false)) {
       syncing.set_value();
@@ -48,16 +71,19 @@ struct State : JournalOperations {
     return LinuxJournalOperations().Sync(fd);
   }
 };
+
 struct Pipe {
   int fd[2];
   Pipe() {
     if (pipe2(fd, O_NONBLOCK | O_CLOEXEC)) throw std::runtime_error("pipe");
   }
+
   ~Pipe() {
     close(fd[0]);
     close(fd[1]);
   }
 };
+
 std::vector<uint8_t> Frame(uint64_t token, uint64_t seq, WorkerReplyKind kind,
                            std::string body = {}) {
   std::vector<uint8_t> bytes(56 + body.size());
@@ -76,6 +102,7 @@ std::vector<uint8_t> Frame(uint64_t token, uint64_t seq, WorkerReplyKind kind,
   std::copy(body.begin(), body.end(), bytes.begin() + 56);
   return bytes;
 }
+
 class Operation final : public ManagedOperation {
  public:
   Operation(std::shared_ptr<State> state, const Entry& entry,
@@ -185,6 +212,7 @@ class Operation final : public ManagedOperation {
   Entry entry_;
   std::string request_;
 };
+
 class Backend final : public ExecutionBackend {
  public:
   explicit Backend(std::shared_ptr<State> state) : state_(std::move(state)) {}
@@ -201,6 +229,7 @@ class Backend final : public ExecutionBackend {
  private:
   std::shared_ptr<State> state_;
 };
+
 void Seed(const std::string& path) {
   std::filesystem::create_directory(path);
   chmod(path.c_str(), 0700);
@@ -208,10 +237,12 @@ void Seed(const std::string& path) {
       << R"({"version":1,"generation":0,"next":1,"state":"clean","jobs":[]})";
   chmod((path + "/state.json").c_str(), 0600);
 }
+
 void Count(uint64_t, const char*, bool, void* p) {
   ++*static_cast<std::atomic<int>*>(p);
 }
-}
+}  // namespace
+
 TEST_F(CatalogTest,
        ManagedPublicDestroyRetainsHandleAcrossBlockedAndFailedFsync) {
   Catalog writer(path_, Database::Access::kWriter);
@@ -275,6 +306,7 @@ TEST_F(CatalogTest,
     std::filesystem::remove_all(root_ + "/journal");
   }
 }
+
 TEST_F(CatalogTest,
        ManagedPublicNativeResultWaitsForDurableCompleteAndPreservesBytes) {
   Catalog writer(path_, Database::Access::kWriter);
@@ -325,6 +357,7 @@ TEST_F(CatalogTest,
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST_F(CatalogTest,
        ManagedPreparationFailureHasNoReservationAndClearsPublicToken) {
   Catalog writer(path_, Database::Access::kWriter);
@@ -346,6 +379,7 @@ TEST_F(CatalogTest,
   EXPECT_EQ(capmgr_client_destroy(client), 0);
   EXPECT_EQ(calls, 0);
 }
+
 TEST_F(CatalogTest, ActionNeverCallsManagedCliPreparation) {
   Catalog writer(path_, Database::Access::kWriter);
   Publish(writer, "pkg", {Make("test", "pkg", Kind::kAction)});
@@ -376,6 +410,7 @@ TEST_F(CatalogTest, ActionNeverCallsManagedCliPreparation) {
   EXPECT_EQ(state->starts, 0);
   EXPECT_FALSE(std::filesystem::exists(state->root));
 }
+
 TEST_F(CatalogTest, ManagedPreparationAllocationFailureRemainsSynchronous) {
   Catalog writer(path_, Database::Access::kWriter);
   Publish(writer, "pkg", {Make("test", "pkg", Kind::kCli)});

@@ -18,7 +18,9 @@
 
 #include "api/client.hh"
 #include "catalog/read_lease.hh"
+
 namespace capmgr {
+
 // Trusted private transport seam; no production implementation is selected here.
 // Authorize retains an independent issuer lease and a bounded, expiring, one-use
 // grant on the SAME service instance. The concrete channel owns its nonce.
@@ -37,6 +39,7 @@ class CatalogAdmissionChannel {
   virtual void ConfirmCatalog(std::string_view descriptor) = 0;
   virtual void Finish() = 0;
 };
+
 // Caller owns the channel across the whole CreateClient call (and failure cleanup).
 // Gate and channel are serialized, no concurrent reuse. Fixed policy and ancestor/
 // mount provisioning are caller-owned; no request-selected path is introduced.
@@ -53,6 +56,7 @@ class LeasedCatalogGate final : public AccessGate {
   CatalogAdmissionChannel& channel_;
   ReadLeaseOperations* operations_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_API_READ_ADMISSION_HH_

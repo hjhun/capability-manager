@@ -1,12 +1,30 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "platform/authorization.hh"
 #include "common/error.hh"
+
 #include <gtest/gtest.h>
 #include <cynara-creds-socket.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+
 #include <cstring>
+
 #include <unistd.h>
+
 #include <atomic>
 #include <chrono>
 #include <iostream>
@@ -14,6 +32,7 @@
 #include <vector>
 
 namespace {
+
 enum class Failure { kNone, kPid, kUid, kGid, kSmack, kUser, kClient };
 thread_local Failure failure = Failure::kNone;
 std::atomic<bool> track{false};
@@ -28,14 +47,17 @@ struct Call {
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
+
   ~Call() {
     if (tracked) active.fetch_sub(1);
   }
 };
+
 struct Inject {
   explicit Inject(Failure value) { failure = value; }
   ~Inject() { failure = Failure::kNone; }
 };
+
 struct Pair {
   int fd[2]{-1, -1};
   Pair() {
@@ -61,12 +83,15 @@ struct Pair {
       throw std::runtime_error("Unix test connection");
     }
   }
+
   ~Pair() {
     for (int value : fd)
       if (value >= 0) close(value);
   }
 };
-}
+
+}  // namespace
+
 extern "C" int __real_cynara_creds_socket_get_pid(int, pid_t*);
 extern "C" int __real_cynara_creds_socket_get_user(int, cynara_user_creds,
                                                    char**);
@@ -77,6 +102,7 @@ extern "C" int __wrap_cynara_creds_socket_get_pid(int fd, pid_t* pid) {
   if (failure == Failure::kPid) return CYNARA_API_UNKNOWN_ERROR;
   return __real_cynara_creds_socket_get_pid(fd, pid);
 }
+
 extern "C" int __wrap_cynara_creds_socket_get_user(int fd,
                                                    cynara_user_creds method,
                                                    char** user) {
@@ -87,6 +113,7 @@ extern "C" int __wrap_cynara_creds_socket_get_user(int fd,
     return CYNARA_API_UNKNOWN_ERROR;
   return __real_cynara_creds_socket_get_user(fd, method, user);
 }
+
 extern "C" int __wrap_cynara_creds_socket_get_client(int fd,
                                                      cynara_client_creds method,
                                                      char** client) {
@@ -96,6 +123,7 @@ extern "C" int __wrap_cynara_creds_socket_get_client(int fd,
     return CYNARA_API_UNKNOWN_ERROR;
   return __real_cynara_creds_socket_get_client(fd, method, client);
 }
+
 TEST(CynaraSocket, EachHelperFailureRejectsWithoutKernelFallback) {
   Pair pair;
   for (auto point :
@@ -103,13 +131,16 @@ TEST(CynaraSocket, EachHelperFailureRejectsWithoutKernelFallback) {
     Inject fault(point);
     EXPECT_THROW(capmgr::Peer::FromSocket(pair.fd[0]), capmgr::Error);
   }
+
   auto peer = capmgr::Peer::FromSocket(pair.fd[0]);
   for (auto point : {Failure::kUser, Failure::kClient}) {
     Inject fault(point);
     EXPECT_THROW(capmgr::RequirePlatformPrivilege(*peer), capmgr::Error);
   }
+
   EXPECT_TRUE(peer->Connected());
 }
+
 TEST(CynaraSocket, ConcurrentInstancesSerializeEveryHelper) {
   Pair pair;
   peak = 0;
@@ -139,6 +170,7 @@ TEST(CynaraSocket, ConcurrentInstancesSerializeEveryHelper) {
   EXPECT_EQ(active, 0);
   EXPECT_EQ(peak, 1);
 }
+
 TEST(CynaraSocket, ExplicitIdentityAndDefaultPolicyMappingsAreDistinct) {
   Pair pair;
   auto peer = capmgr::Peer::FromSocket(pair.fd[0]);

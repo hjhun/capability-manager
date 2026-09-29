@@ -1,30 +1,53 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "catalog/read_lease.hh"
 #include "catalog/file_metadata.hh"
+
 #include <array>
 #include <cerrno>
 #include <filesystem>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
 #include <unistd.h>
+
 namespace capmgr {
+
 namespace {
+
 [[noreturn]] void Deny() {
   throw Error(ErrorCode::kPermission, "Catalog generation lease rejected");
 }
+
 void Require(bool ok) {
   if (!ok) Deny();
 }
+
 struct Fd {
   int value = -1;
   ~Fd() {
     if (value >= 0) close(value);
   }
 };
+
 bool Same(const struct stat& a, const struct stat& b) {
   return a.st_dev == b.st_dev && a.st_ino == b.st_ino;
 }
+
 void NoAcl(int fd, bool directory = false) {
   for (const char* name :
        {"system.posix_acl_access", "system.posix_acl_default"}) {
@@ -35,6 +58,7 @@ void NoAcl(int fd, bool directory = false) {
             (errno == ENODATA || errno == ENOTSUP));
   }
 }
+
 bool Normal(const std::string& path) {
   return !path.empty() && path.find('\0') == std::string::npos &&
          path[0] == '/' && path.back() != '/' &&
@@ -42,7 +66,8 @@ bool Normal(const std::string& path) {
              std::filesystem::path(path);
 }
 ReadLeaseOperations real_operations;
-}
+}  // namespace
+
 std::string ReadLeaseOperations::Label(int fd) {
   std::array<char, 256> bytes{};
   auto size =
@@ -53,6 +78,7 @@ std::string ReadLeaseOperations::Label(int fd) {
   Require(!result.empty() && result.find('\0') == std::string::npos);
   return result;
 }
+
 struct CatalogReadLease::Impl {
   ReadLeasePolicy policy;
   ReadLeaseOperations& operations;
@@ -109,6 +135,7 @@ struct CatalogReadLease::Impl {
     }
     Check();
   }
+
   void Verify(int fd, const struct stat& info, uid_t uid, gid_t gid,
               mode_t mode, const std::string& label, bool dir) {
     Require((dir ? S_ISDIR(info.st_mode) : S_ISREG(info.st_mode)) &&
@@ -117,6 +144,7 @@ struct CatalogReadLease::Impl {
     NoAcl(fd, dir);
     Require(operations.Label(fd) == label);
   }
+
   void CheckOne(int fd, const struct stat& identity, const std::string& name,
                 uid_t uid, gid_t gid, mode_t mode, const std::string& label,
                 bool dir = false) {
@@ -128,6 +156,7 @@ struct CatalogReadLease::Impl {
             named.st_uid == uid && named.st_gid == gid &&
             (named.st_mode & 07777) == mode);
   }
+
   void Check() {
     Require(!poisoned && creator == getpid());
     try {
@@ -148,6 +177,7 @@ struct CatalogReadLease::Impl {
     }
   }
 };
+
 CatalogReadLease::CatalogReadLease(ReadLeasePolicy policy,
                                    ReadLeaseOperations* operations)
     : impl_(std::make_unique<Impl>(std::move(policy), operations)) {}
@@ -155,6 +185,7 @@ CatalogReadLease::~CatalogReadLease() = default;
 const std::string& CatalogReadLease::Path() const noexcept {
   return impl_->path;
 }
+
 void CatalogReadLease::Check() { impl_->Check(); }
 void CatalogReadLease::MatchDirectory(int source) {
   try {
@@ -170,6 +201,7 @@ void CatalogReadLease::MatchDirectory(int source) {
     throw;
   }
 }
+
 std::array<int, 5> CatalogReadLease::WorkerDescriptors() {
   Check();  // Creator/poison check precedes all descriptor/policy work.
   const std::array<int, 5> result{impl_->lock.value, impl_->directory.value,
@@ -190,6 +222,7 @@ std::array<int, 5> CatalogReadLease::WorkerDescriptors() {
   }
   return result;
 }
+
 std::string CatalogReadLease::Descriptor() {
   Check();
   static_assert(sizeof(dev_t) <= sizeof(uint64_t) &&
@@ -209,6 +242,7 @@ std::string CatalogReadLease::Descriptor() {
     }
   return result;
 }
+
 void CatalogReadLease::MatchDescriptor(std::string_view descriptor) {
   try {
     Require(descriptor.size() == 165 && descriptor == Descriptor());
@@ -217,6 +251,7 @@ void CatalogReadLease::MatchDescriptor(std::string_view descriptor) {
     throw;
   }
 }
+
 void CatalogReadLease::Opened(Database& db) {
   try {
     Check();
@@ -231,4 +266,4 @@ void CatalogReadLease::Opened(Database& db) {
     throw;
   }
 }
-}
+}  // namespace capmgr

@@ -1,7 +1,24 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "api/read_admission.hh"
+
 namespace capmgr {
+
 namespace {
+
 class HandoffAccess final : public ReadAccess {
  public:
   HandoffAccess(std::unique_ptr<CatalogReadLease> lease, std::string descriptor,
@@ -14,6 +31,7 @@ class HandoffAccess final : public ReadAccess {
     lease_->Check();
     if (channel_) channel_->CheckSameLive();
   }
+
   void Opened(Database& db) override {
     lease_->Opened(db);
     lease_->MatchDescriptor(descriptor_);
@@ -34,7 +52,9 @@ class HandoffAccess final : public ReadAccess {
   std::string descriptor_;
   CatalogAdmissionChannel* channel_;
 };
-}
+
+}  // namespace
+
 LeasedCatalogGate::LeasedCatalogGate(ReadLeasePolicy policy,
                                      CatalogAdmissionChannel& channel,
                                      ReadLeaseOperations* operations)
@@ -42,6 +62,7 @@ LeasedCatalogGate::LeasedCatalogGate(ReadLeasePolicy policy,
 std::string LeasedCatalogGate::AuthorizeAndGetDatabase() {
   throw Error(ErrorCode::kPermission, "Owned catalog admission required");
 }
+
 std::unique_ptr<ReadAccess> LeasedCatalogGate::AuthorizeReadAccess() {
   channel_.CheckSameLive();
   auto descriptor = channel_.AuthorizeCatalog();
@@ -54,4 +75,4 @@ std::unique_ptr<ReadAccess> LeasedCatalogGate::AuthorizeReadAccess() {
   return std::make_unique<HandoffAccess>(std::move(lease),
                                          std::move(descriptor), channel_);
 }
-}
+}  // namespace capmgr

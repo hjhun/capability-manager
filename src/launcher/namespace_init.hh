@@ -17,8 +17,11 @@
 #define CAPABILITY_MANAGER_LAUNCHER_NAMESPACE_INIT_HH_
 
 #include <cstdint>
+
 #include <sys/types.h>
+
 namespace capmgr {
+
 // Single-threaded trusted broker ONLY (not arbitrary multithreaded raw clone).
 // Trusted in-process configuration prepared BEFORE clone. Never deserialize this
 // from IPC. Future broker must resolve catalog, policy, app_fw identity and label.
@@ -42,12 +45,14 @@ struct NamespaceInitConfig {
   int parent_process;
   int parent_mount_namespace;
 };
+
 enum class InitMessageKind : uint32_t {
   Ready = 1,
   Started = 2,
   Exited = 3,
   Failed = 4
 };
+
 enum class InitStage : uint32_t {
   Context = 1,
   Signals,
@@ -63,6 +68,7 @@ enum class InitStage : uint32_t {
   Exec,
   Wait
 };
+
 struct InitMessage {
   InitMessageKind kind;
   InitStage stage;
@@ -70,6 +76,7 @@ struct InitMessage {
   int32_t code;
   int32_t signal;
 };
+
 static_assert(sizeof(InitMessage) ==
               20);  // Fixed pipe record on 32/64-bit targets.
 // Non-exec namespace PID1. Uses no heap allocation, C++ runtime locks, or logging
@@ -78,6 +85,6 @@ static_assert(sizeof(InitMessage) ==
 // Parent owns direct child via OwnedChildren; this function does not provide a
 // broker service, cgroup limits, catalog authorization, or hard teardown bound.
 int NamespaceInit(void* configuration) noexcept;
-}
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_NAMESPACE_INIT_HH_

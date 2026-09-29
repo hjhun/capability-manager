@@ -1,34 +1,57 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_command.hh"
 #include "common/error.hh"
+
 #include <gtest/gtest.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/socket.h>
+
 #include <array>
+
 using namespace capmgr;
+
 namespace {
+
 struct Pipe {
   int descriptors[2]{-1, -1};
   Pipe() {
     if (pipe2(descriptors, O_CLOEXEC | O_NONBLOCK))
       throw std::runtime_error("pipe");
   }
+
   ~Pipe() {
     for (auto fd : descriptors)
       if (fd >= 0) close(fd);
   }
+
   void Send(const std::vector<uint8_t>& bytes) {
     ASSERT_EQ(write(descriptors[1], bytes.data(), bytes.size()),
               static_cast<ssize_t>(bytes.size()));
   }
 };
+
 WorkerCommand Start(uint64_t sequence = 1) {
   return {
       WorkerCommandKind::Start, 7, sequence, 9,
       R"({"jsonrpc":"2.0","id":"exact","method":"tools/call","params":{"name":"cli:fixture","arguments":{}}})"};
 }
-}
+}  // namespace
+
 TEST(WorkerCommand, FragmentedStartPreservesExactRequest) {
   Pipe pipe;
   WorkerCommandReader reader(pipe.descriptors[0], 7);
@@ -43,6 +66,7 @@ TEST(WorkerCommand, FragmentedStartPreservesExactRequest) {
       received = std::move(next);
     }
   }
+
   ASSERT_TRUE(received);
   EXPECT_EQ(received->request, command.request);
   EXPECT_EQ(received->token, 9u);
@@ -50,6 +74,7 @@ TEST(WorkerCommand, FragmentedStartPreservesExactRequest) {
   EXPECT_EQ(received->generation, 7u);
   EXPECT_FALSE(reader.ReadOne());
 }
+
 TEST(WorkerCommand, PartialStartCannotBlockIndependentPriorityCancel) {
   Pipe regular, priority;
   WorkerCommandReader input(regular.descriptors[0], 7),
@@ -66,6 +91,7 @@ TEST(WorkerCommand, PartialStartCannotBlockIndependentPriorityCancel) {
   EXPECT_EQ(stopped->token, 9u);
   EXPECT_FALSE(input.ReadOne());
 }
+
 TEST(WorkerCommand, BufferedCommandAfterParentEndpointCloseIsRejected) {
   Pipe pipe;
   WorkerCommandReader reader(pipe.descriptors[0], 7);
@@ -75,6 +101,7 @@ TEST(WorkerCommand, BufferedCommandAfterParentEndpointCloseIsRejected) {
   EXPECT_THROW(reader.ReadOne(), Error);
   EXPECT_THROW(reader.ReadOne(), Error);
 }
+
 TEST(WorkerCommand, PartialFrameDeadlinePoisonsChannel) {
   Pipe pipe;
   WorkerCommandReader reader(pipe.descriptors[0], 7);
@@ -85,6 +112,7 @@ TEST(WorkerCommand, PartialFrameDeadlinePoisonsChannel) {
   EXPECT_FALSE(reader.ReadOne(now + std::chrono::seconds(4)));
   EXPECT_THROW(reader.ReadOne(now + std::chrono::seconds(5)), Error);
 }
+
 TEST(WorkerCommand,
      HeaderCorruptionGenerationReplayAndChannelMisuseAreRejected) {
   for (auto offset : {0u, 4u, 6u, 8u, 16u, 24u, 36u}) {
@@ -107,6 +135,7 @@ TEST(WorkerCommand,
   wrong.Send(bytes);
   EXPECT_THROW(priority.ReadOne(), Error);
 }
+
 TEST(WorkerCommand, DeclaredOversizeIsRejectedBeforeReadingBody) {
   Pipe pipe;
   WorkerCommandReader reader(pipe.descriptors[0], 7);
@@ -118,6 +147,7 @@ TEST(WorkerCommand, DeclaredOversizeIsRejectedBeforeReadingBody) {
   pipe.Send(bytes);
   EXPECT_THROW(reader.ReadOne(), Error);
 }
+
 TEST(WorkerCommand, SequenceExhaustionNeverWraps) {
   Pipe pipe;
   WorkerCommandReader reader(pipe.descriptors[0], 7, false, UINT64_MAX);
@@ -127,6 +157,7 @@ TEST(WorkerCommand, SequenceExhaustionNeverWraps) {
   pipe.Send(EncodeWorkerCommand({WorkerCommandKind::Status, 7, 1, 9, {}}));
   EXPECT_THROW(reader.ReadOne(), Error);
 }
+
 TEST(WorkerCommand, InvalidStartPayloadPoisonsReadChannel) {
   for (
       const std::string body :
@@ -145,6 +176,7 @@ TEST(WorkerCommand, InvalidStartPayloadPoisonsReadChannel) {
     EXPECT_THROW(reader.ReadOne(), Error);
   }
 }
+
 TEST(WorkerCommand, EncoderRejectsNestedDuplicateAndAuthorityPayloads) {
   auto command = Start();
   command.request =
@@ -161,6 +193,7 @@ TEST(WorkerCommand, EncoderRejectsNestedDuplicateAndAuthorityPayloads) {
   command.token = 0;
   EXPECT_THROW(EncodeWorkerCommand(command), Error);
 }
+
 TEST(WorkerCommand, PipeTypeAndDirectionAreRequired) {
   Pipe pipe;
   EXPECT_THROW(WorkerCommandReader(pipe.descriptors[1], 7), Error);

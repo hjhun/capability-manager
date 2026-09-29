@@ -21,8 +21,11 @@
 #include <mutex>
 #include <string>
 #include <vector>
+
 #include <sys/types.h>
+
 namespace capmgr {
+
 // Private syscall seam for deterministic persistence failure tests. Implementations
 // return the usual syscall result/errno and must not reenter BrokerJournal.
 class JournalOperations {
@@ -32,6 +35,7 @@ class JournalOperations {
   virtual int Sync(int fd) noexcept = 0;
   virtual int Replace(int directory) noexcept = 0;
 };
+
 JournalOperations& LinuxJournalOperations();
 // Private durable reservation store, not an IPC or reset interface. Production
 // supplies a prevalidated root-owned directory FD and owner=0. A different owner
@@ -69,6 +73,7 @@ class BrokerJournal {
   std::vector<uint64_t> jobs_;
   bool blocked_ = true;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_BROKER_JOURNAL_HH_

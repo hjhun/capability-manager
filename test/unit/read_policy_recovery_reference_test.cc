@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "../fixtures/read_policy_recovery_reference.hh"
 
 #include <gtest/gtest.h>
@@ -14,6 +28,7 @@
 #include <string_view>
 
 namespace {
+
 using capmgr::fixture::realpolicy::MatchesRecoveryReference;
 using capmgr::fixture::realpolicy::RecoveryReference;
 struct stat Identity() {
@@ -25,6 +40,7 @@ struct stat Identity() {
   info.st_mode = S_IFREG | 0600;
   return info;
 }
+
 TEST(ReadPolicyRecoveryReference, ExactIdentityAndOnlyInheritedThenCloexec) {
   const auto info = Identity();
   EXPECT_TRUE(MatchesRecoveryReference(info, info, O_RDWR, 0, false));
@@ -32,12 +48,14 @@ TEST(ReadPolicyRecoveryReference, ExactIdentityAndOnlyInheritedThenCloexec) {
   EXPECT_FALSE(MatchesRecoveryReference(info, info, O_RDWR, 0, true));
   EXPECT_FALSE(MatchesRecoveryReference(info, info, O_RDWR, FD_CLOEXEC, false));
 }
+
 TEST(ReadPolicyRecoveryReference, RejectsMissingWrongAccessAndPathDescriptors) {
   const auto info = Identity();
   for (int flags : {-1, O_RDONLY, O_WRONLY, O_PATH})
     EXPECT_FALSE(MatchesRecoveryReference(info, info, flags, FD_CLOEXEC, true));
   EXPECT_FALSE(MatchesRecoveryReference(info, info, O_RDWR, -1, true));
 }
+
 TEST(ReadPolicyRecoveryReference, RejectsSubstitutionOrChangedMetadata) {
   const auto info = Identity();
   for (int field = 0; field != 7; ++field) {
@@ -52,6 +70,7 @@ TEST(ReadPolicyRecoveryReference, RejectsSubstitutionOrChangedMetadata) {
     EXPECT_FALSE(MatchesRecoveryReference(changed, info, O_RDWR, 0, false));
   }
 }
+
 TEST(ReadPolicyRecoveryReference, TrustedExpectedMetadataMustAlsoBeExact) {
   for (int field = 0; field != 6; ++field) {
     auto bad = Identity();
@@ -145,10 +164,12 @@ void Isolated(bool corrupt_identity) {
     FAIL() << "reference fixture timed out";
     return;
   }
+
   ASSERT_EQ(observed, child);
   ASSERT_TRUE(WIFEXITED(status));
   EXPECT_EQ(WEXITSTATUS(status), 0);
 }
+
 TEST(ReadPolicyRecoveryReference,
      RootReferenceDestructionDoesNotCloseOrUnlock) {
   if (geteuid() != 0 || !getenv("CAPMGR_RECOVERY_REFERENCE_TESTS") ||
@@ -156,10 +177,11 @@ TEST(ReadPolicyRecoveryReference,
     GTEST_SKIP() << "Explicit standalone root reference test required";
   Isolated(false);
 }
+
 TEST(ReadPolicyRecoveryReference, RootFailedValidationLeavesReferenceOpen) {
   if (geteuid() != 0 || !getenv("CAPMGR_RECOVERY_REFERENCE_TESTS") ||
       std::string_view(getenv("CAPMGR_RECOVERY_REFERENCE_TESTS")) != "1")
     GTEST_SKIP() << "Explicit standalone root reference test required";
   Isolated(true);
 }
-}
+}  // namespace

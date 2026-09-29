@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Explicit no-START root development fixture; not installed or run by CTest.
 #include "catalog/coordinated_writer.hh"
 
@@ -28,6 +42,7 @@
 #include "trusted_fixture.hh"
 
 namespace {
+
 using namespace capmgr;
 using namespace std::chrono_literals;
 using Clock = WorkerSupervisor::Clock;
@@ -42,6 +57,7 @@ struct Fd {
   ~Fd() {
     if (value >= 0) close(value);
   }
+
   Fd(const Fd&) = delete;
   Fd& operator=(const Fd&) = delete;
   void Close() {
@@ -58,6 +74,7 @@ struct Pipe {
     for (int value : fd)
       if (value >= 0) close(value);
   }
+
   void Close(int side) {
     const int owned = fd[side];
     fd[side] = -1;
@@ -98,6 +115,7 @@ std::set<std::string> Entries(int directory) {
     closedir(scan);
     throw;
   }
+
   const int closed = closedir(scan);
   Check(!error && !closed, "fixture complete directory scan");
   return result;
@@ -125,12 +143,14 @@ struct Scope {
       throw std::runtime_error("fixture scope pin");
     }
   }
+
   ~Scope() {
     // Never infer child absence or delete from destructor/exception unwinding.
     if (!done)
       std::cerr << "RETAINED_LEASED_BOOTSTRAP_SCOPE=" << path << std::endl;
     if (anchor >= 0) close(anchor);
   }
+
   void Cleanup() {
     fixture::TrustedPath(path);
     struct stat held{}, named{};
@@ -226,6 +246,7 @@ void CreateFile(const std::string& path, std::string_view bytes = {}) {
     Check(count > 0, "fixture seed write");
     offset += static_cast<size_t>(count);
   }
+
   Check(!fsync(file.value), "fixture seed sync");
   file.Close();
 }
@@ -259,6 +280,7 @@ void Provision(Scope& scope, bool missing_shm) {
     std::cout << "PROVISIONED_REAL_METADATA=" << lease.Descriptor()
               << std::endl;
   }
+
   if (missing_shm) {
     auto maintenance = CatalogGenerationLease::Acquire(
         Policy(scope), CatalogGenerationLease::Mode::kMaintenance);
@@ -271,6 +293,7 @@ void Provision(Scope& scope, bool missing_shm) {
               before.st_ino == after.st_ino && !unlink(path.c_str()),
           "fixture EX missing-SHM perturbation");
   }
+
   CreateFile(
       scope.path + "/journal/state.json",
       R"({"version":1,"generation":0,"next":1,"state":"clean","jobs":[]})");
@@ -311,6 +334,7 @@ void Probe(Scope& scope, Children& children, size_t slot,
     children.owned.AbandonUnspawned(children.records[slot]);
     children.records[slot] = 0;
   }
+
   posix_spawn_file_actions_destroy(&actions);
   Check(!result, "fixture probe spawn");
   const auto status = children.Wait(slot, 5s);

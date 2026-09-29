@@ -18,14 +18,19 @@
 
 #include "capability_manager_stub.h"
 #include "catalog/read_grant.hh"
+
 #include <glib.h>
+
 #include <thread>
+
 namespace capmgr {
+
 struct CatalogReaderPrincipal {
   uid_t uid;
   gid_t gid;
   std::string socket_label;
 };
+
 // Development adapter only. Construct/dispatch/expire/destroy in ONE service
 // GMainContext owner thread. The generated stub validates bound MAIN/callback and
 // real Cynara before each parcel; the fixed principal rule is additional policy.
@@ -61,6 +66,7 @@ class TidlReadService : public rpc_port::capability_manager_stub::stub::
   GSource* expiry_ = nullptr;
   bool terminated_ = false;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_PLATFORM_TIDL_READ_SERVICE_HH_

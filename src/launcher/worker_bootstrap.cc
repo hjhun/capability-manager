@@ -1,25 +1,46 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_bootstrap.hh"
 #include "launcher/leased_worker_loop.hh"
+
 #include <algorithm>
 #include <array>
 #include <charconv>
 #include <cerrno>
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <linux/capability.h>
 #include <linux/magic.h>
 #include <signal.h>
+
 #include <stdexcept>
 #include <system_error>
 #include <string_view>
+
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/vfs.h>
 #include <unistd.h>
+
 namespace capmgr {
+
 namespace {
+
 void Check(bool ok, const char* why) {
   if (!ok) {
     int error = errno;
@@ -27,12 +48,14 @@ void Check(bool ok, const char* why) {
                             why);
   }
 }
+
 struct Fd {
   int value;
   ~Fd() {
     if (value >= 0) close(value);
   }
 };
+
 std::string ReadAt(int directory, const char* name, size_t bound) {
   Fd fd{openat(directory, name, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)};
   Check(fd.value >= 0, "bootstrap proc field open");
@@ -46,6 +69,7 @@ std::string ReadAt(int directory, const char* name, size_t bound) {
   data.resize(static_cast<size_t>(size));
   return data;
 }
+
 uint64_t Number(std::string_view value) {
   uint64_t n = 0;
   auto result = std::from_chars(value.data(), value.data() + value.size(), n);
@@ -53,9 +77,11 @@ uint64_t Number(std::string_view value) {
         "bootstrap proc number");
   return n;
 }
+
 struct Process {
   uint64_t pid, start;
 };
+
 Process Stat(int directory) {
   auto text = ReadAt(directory, "stat", 4096);
   size_t first = text.find(' '), end = text.rfind(')');
@@ -73,11 +99,13 @@ Process Stat(int directory) {
     Check(space != std::string_view::npos, "bootstrap short proc stat");
     rest.remove_prefix(space + 1);
   }
+
   size_t space = rest.find(' ');
   Check(space != std::string_view::npos, "bootstrap missing starttime");
   return {Number(std::string_view(text).substr(0, first)),
           Number(rest.substr(0, space))};
 }
+
 void SameNamespace(int parent, int self, const char* name) {
   Fd a{openat(parent, name, O_RDONLY | O_CLOEXEC)},
       b{openat(self, name, O_RDONLY | O_CLOEXEC)};
@@ -89,6 +117,7 @@ void SameNamespace(int parent, int self, const char* name) {
             x.st_ino == y.st_ino,
         "bootstrap namespace mismatch");
 }
+
 void Parent() {
   pid_t parent = getppid();
   Check(parent > 1, "bootstrap creator reparented");
@@ -114,6 +143,7 @@ void Parent() {
             getppid() == parent,
         "bootstrap creator changed");
 }
+
 void Context(const WorkerBootstrapPolicy& policy) {
   uid_t r, e, s;
   gid_t gr, ge, gs;
@@ -155,6 +185,7 @@ void Context(const WorkerBootstrapPolicy& policy) {
           "bootstrap ambient/bounding read");
     if (bit) bounding |= uint64_t(1) << cap;
   }
+
   Check(bounding == policy.capabilities &&
             prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) == 1 &&
             prctl(PR_GET_SECUREBITS, 0, 0, 0, 0) == 0,
@@ -168,6 +199,7 @@ void Context(const WorkerBootstrapPolicy& policy) {
   for (int sig = 1; sig < NSIG; ++sig)
     Check(sigismember(&mask, sig) != 1, "bootstrap blocked signal");
 }
+
 void OneTask() {
   DIR* dir = opendir("/proc/self/task");
   Check(dir, "bootstrap task directory");
@@ -180,6 +212,7 @@ void OneTask() {
   closedir(dir);
   Check(!error && count == 1, "bootstrap requires one task");
 }
+
 void CheckDescriptors(bool initial, std::span<const int> aliases = {},
                       std::span<const int> namespaces = {},
                       std::span<const int> catalog = {}) {
@@ -221,6 +254,7 @@ void CheckDescriptors(bool initial, std::span<const int> aliases = {},
         Check(fcntl(fd, F_GETFD) == FD_CLOEXEC, "bootstrap lost CLOEXEC");
     }
   }
+
   for (size_t i = 0; i < aliases.size(); ++i) {
     int fd = aliases[i];
     Check(std::find(namespaces.begin(), namespaces.end(), fd) ==
@@ -242,6 +276,7 @@ void CheckDescriptors(bool initial, std::span<const int> aliases = {},
               (flags & O_ACCMODE) == (i == 2 ? O_WRONLY : O_RDONLY),
           "bootstrap owned FD identity");
   }
+
   for (size_t i = 0; i < catalog.size(); ++i) {
     const int fd = catalog[i];
     const int flags = fcntl(fd, F_GETFL);
@@ -265,6 +300,7 @@ void CheckDescriptors(bool initial, std::span<const int> aliases = {},
             "bootstrap catalog directory mismatch");
     }
   }
+
   DIR* dir = opendir("/proc/self/fd");
   Check(dir, "bootstrap FD directory");
   int own = dirfd(dir);
@@ -287,7 +323,8 @@ void CheckDescriptors(bool initial, std::span<const int> aliases = {},
   closedir(dir);
   Check(!error && !extra, "bootstrap unexpected FD");
 }
-}
+}  // namespace
+
 WorkerInitialNamespaces::WorkerInitialNamespaces() {
   try {
     Check(getuid() == 0 && geteuid() == 0, "namespace capture root startup");
@@ -317,6 +354,7 @@ WorkerInitialNamespaces::WorkerInitialNamespaces() {
     throw;
   }
 }
+
 WorkerInitialNamespaces::~WorkerInitialNamespaces() { Close(); }
 bool WorkerInitialNamespaces::Close() noexcept {
   bool ok = true;
@@ -327,6 +365,7 @@ bool WorkerInitialNamespaces::Close() noexcept {
     }
   return ok;
 }
+
 void WorkerInitialNamespaces::ValidateCurrent() const {
   const char* paths[] = {"/proc/self/ns/pid", "/proc/self/ns/mnt"};
   Check(fds_[0] != fds_[1], "namespace witnesses must be distinct descriptors");
@@ -343,6 +382,7 @@ void WorkerInitialNamespaces::ValidateCurrent() const {
           "captured namespace identity/context changed");
   }
 }
+
 void ValidateWorkerBootstrap(const WorkerBootstrapPolicy& policy) {
   policy.namespaces.ValidateCurrent();
   CheckDescriptors(false, {}, policy.namespaces.Descriptors());
@@ -353,6 +393,7 @@ void ValidateWorkerBootstrap(const WorkerBootstrapPolicy& policy) {
   action.sa_handler = SIG_IGN;
   Check(!sigaction(SIGPIPE, &action, nullptr), "bootstrap SIGPIPE");
 }
+
 void FinishWorkerBootstrap(const WorkerBootstrapPolicy& policy,
                            std::span<const int> loop_fds) {
   policy.namespaces.ValidateCurrent();
@@ -366,6 +407,7 @@ void FinishWorkerBootstrap(const WorkerBootstrapPolicy& policy,
   Context(policy);
   OneTask();
 }
+
 void FinishWorkerBootstrap(const WorkerBootstrapPolicy& policy,
                            LeasedWorkerLoop& owner) {
   owner.BeginStartup();  // Creator + one-shot reservation before metadata.
@@ -392,4 +434,4 @@ void FinishWorkerBootstrap(const WorkerBootstrapPolicy& policy,
     throw;
   }
 }
-}
+}  // namespace capmgr

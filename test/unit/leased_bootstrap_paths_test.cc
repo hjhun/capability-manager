@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "../fixtures/leased_bootstrap_paths.hh"
 #include "../fixtures/leased_bootstrap_children.hh"
 
@@ -8,6 +22,7 @@
 #include <string>
 
 namespace capmgr::fixture::leasedbootstrap {
+
 TEST(LeasedBootstrapPaths, ExactFixedComponents) {
   const auto paths = ParseCatalogLink(
       "/opt/usr/capmgr-leased-bootstrap-fixture-aZ019x/catalog");
@@ -16,6 +31,7 @@ TEST(LeasedBootstrapPaths, ExactFixedComponents) {
   EXPECT_EQ(paths.lock_parent, paths.scope + "/lock-parent");
   EXPECT_EQ(paths.lock, paths.lock_parent + "/generation.lock");
 }
+
 TEST(LeasedBootstrapPaths, RejectsDifferentAncestorAndScope) {
   for (const auto* path :
        {"opt/usr/capmgr-leased-bootstrap-fixture-aZ019x/catalog",
@@ -25,6 +41,7 @@ TEST(LeasedBootstrapPaths, RejectsDifferentAncestorAndScope) {
         "/opt/usr/capmgr-leased-bootstrap-fixture-aZ019xx/catalog"})
     EXPECT_THROW(ParseCatalogLink(path), std::runtime_error);
 }
+
 TEST(LeasedBootstrapPaths, RejectsNoncanonicalAndDeletedLinks) {
   for (const auto* path :
        {"/opt/usr/capmgr-leased-bootstrap-fixture-aZ019x/catalog/",
@@ -36,6 +53,7 @@ TEST(LeasedBootstrapPaths, RejectsNoncanonicalAndDeletedLinks) {
         "/opt/usr/capmgr-leased-bootstrap-fixture-a.019x/catalog"})
     EXPECT_THROW(ParseCatalogLink(path), std::runtime_error);
 }
+
 TEST(LeasedBootstrapPaths, RejectsEmbeddedNullAndInvalidBytes) {
   std::string path = "/opt/usr/capmgr-leased-bootstrap-fixture-aZ019x/catalog";
   const auto position = path.find("aZ019x");
@@ -44,9 +62,11 @@ TEST(LeasedBootstrapPaths, RejectsEmbeddedNullAndInvalidBytes) {
     EXPECT_THROW(ParseCatalogLink(path), std::runtime_error);
   }
 }
+
 TEST(LeasedBootstrapPaths, InvalidBorrowedFdRejects) {
   EXPECT_THROW(ResolveCatalog(-1), std::runtime_error);
 }
+
 TEST(LeasedBootstrapPaths, BorrowedRegularFileStaysOpen) {
   char path[] = "/tmp/capmgr-bootstrap-path-XXXXXX";
   const int created = mkstemp(path);
@@ -64,6 +84,7 @@ TEST(LeasedBootstrapPaths, BorrowedRegularFileStaysOpen) {
   EXPECT_EQ(close(fd), 0);
   EXPECT_EQ(unlink(path), 0);
 }
+
 TEST(LeasedBootstrapPaths, OPathDirectoryStaysOpen) {
   const int fd = open("/tmp", O_PATH | O_DIRECTORY | O_CLOEXEC);
   ASSERT_GE(fd, 0);
@@ -71,7 +92,9 @@ TEST(LeasedBootstrapPaths, OPathDirectoryStaysOpen) {
   EXPECT_NE(fcntl(fd, F_GETFD), -1);
   EXPECT_EQ(close(fd), 0);
 }
+
 namespace {
+
 // No kernel child is launched in these ownership fault cases.
 struct ChildReplies : ChildOperations {
   bool first_exited = false;
@@ -81,12 +104,14 @@ struct ChildReplies : ChildOperations {
     result = {pid == 112 || first_exited, 0, 0};
     return pid == 111 ? first_error : 0;
   }
+
   int Kill(pid_t) noexcept override { return 0; }
   int Reap(pid_t) noexcept override {
     ++reaps;
     return 0;
   }
 };
+
 void Attach(Children& children, size_t slot, pid_t pid) {
   children.records[slot] = children.owned.Reserve();
   children.owned.AttachReserved(children.records[slot], pid);
@@ -139,6 +164,7 @@ TEST(LeasedBootstrapChildren, OnlyExactReapsResolveAllRecords) {
 }
 
 namespace {
+
 struct RetriedReplies : ChildOperations {
   int observe_calls = 0, reap_calls = 0, kill_calls = 0;
   int observe_error = 0, reap_error = 0, kill_error = 0;
@@ -147,13 +173,16 @@ struct RetriedReplies : ChildOperations {
     result = {observe_calls > 1 || !kill_error, 0, 0};
     return observe_calls == 1 ? observe_error : 0;
   }
+
   int Kill(pid_t) noexcept override {
     return ++kill_calls == 1 ? kill_error : 0;
   }
+
   int Reap(pid_t) noexcept override {
     return ++reap_calls == 1 ? reap_error : 0;
   }
 };
+
 }  // namespace
 
 TEST(LeasedBootstrapChildren,

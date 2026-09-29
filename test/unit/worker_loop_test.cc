@@ -1,30 +1,52 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_loop.hh"
+
 #include <gtest/gtest.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <poll.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <array>
 #include <vector>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 struct Pipe {
   int fd[2]{-1, -1};
   Pipe() {
     if (pipe2(fd, O_CLOEXEC | O_NONBLOCK)) throw std::runtime_error("pipe");
   }
+
   ~Pipe() {
     for (int value : fd)
       if (value >= 0) close(value);
   }
+
   void Send(const std::vector<uint8_t>& bytes) {
     ASSERT_EQ(write(fd[1], bytes.data(), bytes.size()),
               static_cast<ssize_t>(bytes.size()));
   }
 };
+
 struct Signals {
   struct sigaction pipe{}, child{};
   Signals() {
@@ -36,11 +58,13 @@ struct Signals {
     a.sa_handler = SIG_DFL;
     sigaction(SIGCHLD, &a, nullptr);
   }
+
   ~Signals() {
     sigaction(SIGPIPE, &pipe, nullptr);
     sigaction(SIGCHLD, &child, nullptr);
   }
 };
+
 void Write(int fd, const void* bytes, size_t size) {
   auto* data = static_cast<const char*>(bytes);
   while (size) {
@@ -51,6 +75,7 @@ void Write(int fd, const void* bytes, size_t size) {
     size -= static_cast<size_t>(n);
   }
 }
+
 struct Runtime : WorkerRuntime {
   enum Mode {
     Normal,
@@ -106,11 +131,13 @@ struct Runtime : WorkerRuntime {
     _exit(0);
   }
 };
+
 uint64_t Get(const uint8_t* b, size_t size) {
   uint64_t n = 0;
   for (size_t i = 0; i < size; ++i) n |= static_cast<uint64_t>(b[i]) << (i * 8);
   return n;
 }
+
 struct Reply {
   WorkerReplyKind kind;
   uint64_t token;
@@ -118,6 +145,7 @@ struct Reply {
   int code;
   std::string data;
 };
+
 struct Fixture {
   Signals signals;
   Pipe commands, cancel, replies;
@@ -136,6 +164,7 @@ struct Fixture {
                        : std::vector<RegisteredCli>{}),
         runtime, limits);
   }
+
   ~Fixture() {
     loop->Shutdown();
     for (int i = 0; i < 2000 && !loop->Quiescent(); ++i) {
@@ -145,16 +174,19 @@ struct Fixture {
     loop.reset();
     close(parent);
   }
+
   std::vector<uint8_t> StartBytes(uint64_t token) {
     return EncodeWorkerCommand(
         {WorkerCommandKind::Start, 7, sequence++, token,
          R"({"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"cli:fixture","arguments":{}}})"});
   }
+
   void Start(uint64_t token) { commands.Send(StartBytes(token)); }
   void Cancel(uint64_t token) {
     cancel.Send(EncodeWorkerCommand(
         {WorkerCommandKind::Cancel, 7, cancel_sequence++, token, {}}));
   }
+
   void Drain() {
     uint8_t bytes[8192];
     ssize_t n;
@@ -175,27 +207,33 @@ struct Fixture {
       pending.erase(pending.begin(), pending.begin() + 56 + size);
     }
   }
+
   void Tick(bool drain = true) {
     loop->Step();
     if (drain) Drain();
     usleep(1000);
   }
+
   bool Complete(uint64_t token) {
     for (auto& r : received)
       if (r.token == token && r.kind == WorkerReplyKind::Complete) return true;
     return false;
   }
+
   void Until(uint64_t token) {
     for (int i = 0; i < 2000 && !Complete(token); ++i) Tick();
     ASSERT_TRUE(Complete(token));
   }
+
   Reply Done(uint64_t token) {
     for (auto& r : received)
       if (r.token == token && r.kind == WorkerReplyKind::Complete) return r;
     throw std::runtime_error("no completion");
   }
 };
-}
+
+}  // namespace
+
 TEST(WorkerLoop, SeparateStreamsCompleteOnlyAfterExclusiveReap) {
   Fixture f;
   f.Start(1);
@@ -207,6 +245,7 @@ TEST(WorkerLoop, SeparateStreamsCompleteOnlyAfterExclusiveReap) {
     if (r.kind == WorkerReplyKind::Stdout) out += r.data;
     if (r.kind == WorkerReplyKind::Stderr) err += r.data;
   }
+
   EXPECT_EQ(out, "stdout");
   EXPECT_EQ(err, "stderr");
   int status;
@@ -214,6 +253,7 @@ TEST(WorkerLoop, SeparateStreamsCompleteOnlyAfterExclusiveReap) {
   EXPECT_EQ(errno, ECHILD);
   EXPECT_EQ(f.loop->Jobs(), 0u);
 }
+
 TEST(WorkerLoop, CancelOvertakesPartialStartAndPreventsClone) {
   Fixture f;
   auto bytes = f.StartBytes(1);
@@ -228,6 +268,7 @@ TEST(WorkerLoop, CancelOvertakesPartialStartAndPreventsClone) {
   EXPECT_EQ(f.runtime.spawns, 0);
   EXPECT_EQ(f.Done(1).failure, WorkerFailure::Cancelled);
 }
+
 TEST(WorkerLoop, PartialCancelBlocksGoAndTimesOutWithoutBlockingCleanup) {
   Fixture f;
   f.runtime.mode = Runtime::Linger;
@@ -242,6 +283,7 @@ TEST(WorkerLoop, PartialCancelBlocksGoAndTimesOutWithoutBlockingCleanup) {
   EXPECT_FALSE(f.loop->AdmissionOpen());
   EXPECT_EQ(f.Done(1).failure, WorkerFailure::Protocol);
 }
+
 TEST(WorkerLoop, ReadyDeadlineAndMissingFinalStatusAreFailures) {
   for (auto mode : {Runtime::NoReady, Runtime::MissingExit}) {
     Fixture f({50ms, 20ms, 1024 * 1024});
@@ -253,6 +295,7 @@ TEST(WorkerLoop, ReadyDeadlineAndMissingFinalStatusAreFailures) {
                                      : WorkerFailure::Protocol);
   }
 }
+
 TEST(WorkerLoop, CatalogFailureAndCloneFailureHaveNoChildProof) {
   for (bool reject : {false, true}) {
     Fixture f({}, -1, !reject);
@@ -265,12 +308,14 @@ TEST(WorkerLoop, CatalogFailureAndCloneFailureHaveNoChildProof) {
     EXPECT_EQ(f.loop->Jobs(), 0u);
   }
 }
+
 TEST(WorkerLoop, OutputOverflowIsNotNativeSuccess) {
   Fixture f({30s, 5s, 4});
   f.Start(1);
   f.Until(1);
   EXPECT_EQ(f.Done(1).failure, WorkerFailure::OutputLimit);
 }
+
 TEST(WorkerLoop, SaturatedFrontendCannotBlockCancellationAndReaping) {
   Fixture f;
   f.runtime.mode = Runtime::Flood;
@@ -288,6 +333,7 @@ TEST(WorkerLoop, SaturatedFrontendCannotBlockCancellationAndReaping) {
   EXPECT_TRUE(f.loop->CanExitCleanly());
   EXPECT_EQ(f.Done(1).failure, WorkerFailure::Backpressure);
 }
+
 TEST(WorkerLoop, ActiveCancelProgressesWhileAnotherStartIsPartial) {
   Fixture f;
   f.runtime.mode = Runtime::Linger;
@@ -302,6 +348,7 @@ TEST(WorkerLoop, ActiveCancelProgressesWhileAnotherStartIsPartial) {
   EXPECT_EQ(f.Done(1).failure, WorkerFailure::Cancelled);
   EXPECT_EQ(f.runtime.spawns, 1);
 }
+
 TEST(WorkerLoop, DeadAnchoredParentWinsEvenWhenControlWritersRemain) {
   pid_t owner = fork();
   ASSERT_GE(owner, 0);
@@ -322,10 +369,12 @@ TEST(WorkerLoop, DeadAnchoredParentWinsEvenWhenControlWritersRemain) {
     EXPECT_FALSE(f.loop->AdmissionOpen());
     EXPECT_EQ(f.Done(1).failure, WorkerFailure::ParentLost);
   }
+
   close(anchor);
   int status;
   ASSERT_EQ(waitpid(owner, &status, 0), owner);
 }
+
 TEST(WorkerLoop, BufferedStartWithClosedChannelNeverSpawns) {
   Fixture f;
   f.Start(1);
@@ -336,6 +385,7 @@ TEST(WorkerLoop, BufferedStartWithClosedChannelNeverSpawns) {
   EXPECT_EQ(f.runtime.spawns, 0);
   EXPECT_TRUE(f.loop->Quiescent());
 }
+
 TEST(WorkerLoop, LostReplyConsumerClosesAdmissionAndRetainsUncertainty) {
   Fixture f;
   f.runtime.mode = Runtime::Linger;
@@ -357,6 +407,7 @@ TEST(WorkerLoop, CapacityRejectedStartsConsumePrecancelWithoutHurtingLiveJobs) {
     f.Start(token);
     for (int i = 0; i < 5; ++i) f.Tick();
   }
+
   ASSERT_EQ(f.loop->Jobs(), 4u);
   for (uint64_t token = 5; token <= 9; ++token) {
     f.Cancel(token);
@@ -364,6 +415,7 @@ TEST(WorkerLoop, CapacityRejectedStartsConsumePrecancelWithoutHurtingLiveJobs) {
     f.Until(token);
     EXPECT_EQ(f.Done(token).failure, WorkerFailure::Cancelled);
   }
+
   EXPECT_TRUE(f.loop->AdmissionOpen());
   EXPECT_EQ(f.loop->Jobs(), 4u);
   EXPECT_EQ(f.runtime.spawns, 4);
@@ -372,6 +424,7 @@ TEST(WorkerLoop, CapacityRejectedStartsConsumePrecancelWithoutHurtingLiveJobs) {
   EXPECT_EQ(f.Done(1).failure, WorkerFailure::Cancelled);
   EXPECT_TRUE(f.loop->AdmissionOpen());
 }
+
 TEST(WorkerRegistry, FixedBoundImmutableLookupRejectsAmbiguousEntries) {
   std::vector<RegisteredCli> entries(257, {"cli:x", "/fixture"});
   EXPECT_THROW((WorkerRegistry(entries)), std::runtime_error);

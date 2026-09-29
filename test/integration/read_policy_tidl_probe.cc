@@ -18,10 +18,12 @@
 #include "../fixtures/read_policy_context.hh"
 #include "../fixtures/read_policy_code_image.hh"
 #include "launcher/owned_children.hh"
+
 #include <dlfcn.h>
 #include <signal.h>
 #include <spawn.h>
 #include <sys/xattr.h>
+
 #include <thread>
 
 #ifndef CAPMGR_REAL_POLICY_NATIVE_IMAGE
@@ -31,7 +33,9 @@ extern char** environ;
 using namespace capmgr;
 using namespace capmgr::fixture::realpolicy;
 using namespace std::chrono_literals;
+
 namespace {
+
 const char* stage = "startup";
 struct Scope {
   char path[64] = "/opt/usr/capmgr-real-policy-XXXXXX";
@@ -50,6 +54,7 @@ struct Scope {
       throw std::runtime_error("scope anchor");
     }
   }
+
   ~Scope() {
     if (retained) std::cerr << "RETAINED_SCOPE=" << path << std::endl;
     if (!attempted && !retained) {
@@ -60,6 +65,7 @@ struct Scope {
     }
     if (anchor >= 0) close(anchor);
   }
+
   void Cleanup() {
     Check(!retained, "scope ownership/endpoint uncertainty");
     if (attempted) return;
@@ -84,6 +90,7 @@ struct Scope {
     }
   }
 };
+
 struct Child {
   OwnedChildren owned{1};
   uint64_t token = 0;
@@ -139,6 +146,7 @@ struct Child {
     token = id;
     pid = child;
   }
+
   void Wait(std::chrono::seconds budget = 20s) {
     auto end = std::chrono::steady_clock::now() + budget;
     while (std::chrono::steady_clock::now() < end) {
@@ -182,6 +190,7 @@ CodeImage OpenCodeImage() {
     throw;
   }
 }
+
 void WriteRecord(const std::string& name, const Json& value) {
   auto bytes = value.dump() + "\n";
   Check(bytes.size() <= 4096, "fixture record limit");
@@ -198,10 +207,12 @@ void WriteRecord(const std::string& name, const Json& value) {
     }
     offset += static_cast<size_t>(n);
   }
+
   int mode = fchmod(fd, 0600);
   int closed = close(fd);
   Check(!mode && !closed, "fixture record mode/close");
 }
+
 void ReportContext(FixedRole role) {
   std::cout << "REAL_GATE_VERIFIED_CONTEXT role=" << role.name
             << " uid=" << role.uid << " gid=" << role.uid
@@ -209,6 +220,7 @@ void ReportContext(FixedRole role) {
             << " caps=all-zero bounding=0 ambient=0 NNP=1 label=" << TaskLabel()
             << std::endl;
 }
+
 void Run(bool context_only, bool platform_group = false) {
   if (platform_group) {
     stage = "fixed-platform-group-prerequisite";
@@ -311,6 +323,7 @@ void Run(bool context_only, bool platform_group = false) {
                 << std::endl;
     }
   }
+
   scope.Cleanup();
   if (context_only) {
     std::cout << (platform_group
@@ -318,6 +331,7 @@ void Run(bool context_only, bool platform_group = false) {
                       : "REAL_GATE_CONTEXT_ONLY_PASS\n");
     return;
   }
+
   if (platform_group) {
     std::cout << "REAL_GATE_PLATFORM_GROUP_DIAGNOSTIC_COMPLETE positives="
               << positives << " operational_policy_changes=0\n";
@@ -339,7 +353,8 @@ void Run(bool context_only, bool platform_group = false) {
     std::cout
         << "REAL_GATE_TWO_CONTEXTS_AVAILABLE_FOR_SEPARATE_MATRIX_REVIEW\n";
 }
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   try {
     uid_t real, effective, saved;

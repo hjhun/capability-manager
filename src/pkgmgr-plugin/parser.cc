@@ -1,21 +1,41 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "pkgmgr-plugin/parser.hh"
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include <array>
 #include <cerrno>
 #include <filesystem>
 #include <set>
 #include <sstream>
+
 namespace capmgr {
+
 namespace {
+
 class File {
  public:
   explicit File(int fd) : fd_(fd) {}
   ~File() {
     if (fd_ >= 0) close(fd_);
   }
+
   int get() const { return fd_; }
   File(const File&) = delete;
   File& operator=(const File&) = delete;
@@ -23,11 +43,13 @@ class File {
  private:
   int fd_;
 };
+
 std::string Trim(const std::string& value) {
   auto first = value.find_first_not_of(" \t\r\n");
   if (first == std::string::npos) return {};
   return value.substr(first, value.find_last_not_of(" \t\r\n") - first + 1);
 }
+
 int OpenRelative(int root, const std::string& path, bool directory = false) {
   if (path.empty() || path[0] == '/' || path.back() == '/' ||
       path.find('\0') != std::string::npos)
@@ -54,6 +76,7 @@ int OpenRelative(int root, const std::string& path, bool directory = false) {
     start = end + 1;
   }
 }
+
 Json ReadDescriptor(int root, const std::string& path, size_t& bytes) {
   File fd(OpenRelative(root, path));
   struct stat st{};
@@ -76,11 +99,13 @@ Json ReadDescriptor(int root, const std::string& path, size_t& bytes) {
     text.append(buffer.data(), static_cast<size_t>(count));
     bytes += static_cast<size_t>(count);
   }
+
   Json json = Json::parse(text, nullptr, false);
   if (json.is_discarded() || !json.is_object())
     throw Error(ErrorCode::kInvalid, "Invalid descriptor JSON");
   return json;
 }
+
 std::string Text(const Json& json, const char* field) {
   if (!json.contains(field) || !json[field].is_string())
     throw Error(ErrorCode::kInvalid,
@@ -90,7 +115,8 @@ std::string Text(const Json& json, const char* field) {
     throw Error(ErrorCode::kInvalid, "Empty or NUL descriptor field");
   return value;
 }
-}
+}  // namespace
+
 std::vector<Entry> ParsePackage(const std::string& root,
                                 const std::string& owner,
                                 const std::vector<Metadata>& metadata) {
@@ -173,6 +199,7 @@ std::vector<Entry> ParsePackage(const std::string& root,
   }
   return entries;
 }
+
 void StagePackage(CatalogWriter& catalog, const std::string& operation,
                   const std::string& root, const std::string& owner,
                   const std::vector<Metadata>& metadata,
@@ -182,4 +209,4 @@ void StagePackage(CatalogWriter& catalog, const std::string& operation,
                 "Authoritative installer finalization is unavailable");
   catalog.Stage(operation, owner, ParsePackage(root, owner, metadata));
 }
-}
+}  // namespace capmgr

@@ -1,31 +1,54 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "launcher/worker_supervisor.hh"
+
 #include <fstream>
+
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 struct Pipe {
   int fds[2]{-1, -1};
   Pipe() {
     if (pipe2(fds, O_CLOEXEC | O_NONBLOCK)) throw std::runtime_error("pipe");
   }
+
   ~Pipe() {
     for (int fd : fds)
       if (fd >= 0) close(fd);
   }
+
   void Close(int i) {
     if (fds[i] >= 0) close(fds[i]);
     fds[i] = -1;
   }
+
   void Send(const uint8_t* data, size_t size) {
     ASSERT_EQ(write(fds[1], data, size), static_cast<ssize_t>(size));
   }
 };
+
 struct Child : ChildOperations {
   bool dead = false;
   int code = 0, signal = 0, observe_error = 0;
@@ -33,13 +56,16 @@ struct Child : ChildOperations {
     exit = {dead, code, signal};
     return observe_error;
   }
+
   int Kill(pid_t) noexcept override {
     dead = true;
     signal = SIGKILL;
     return 0;
   }
+
   int Reap(pid_t) noexcept override { return 0; }
 };
+
 class SupervisorTest : public CatalogTest {
  protected:
   Pipe commands, cancel, replies, bootstrap;
@@ -76,6 +102,7 @@ class SupervisorTest : public CatalogTest {
         std::move(session), children, worker, bootstrap.fds[0], now);
     bootstrap.Close(0);
   }
+
   void TearDown() override {
     supervisor.reset();
     child.observe_error = 0;
@@ -90,6 +117,7 @@ class SupervisorTest : public CatalogTest {
     sigaction(SIGPIPE, &previous, nullptr);
     CatalogTest::TearDown();
   }
+
   void Ready(uint64_t revision = 12) {
     auto record = EncodeWorkerReady(1, revision);
     bootstrap.Send(record.data(), record.size());
@@ -98,7 +126,9 @@ class SupervisorTest : public CatalogTest {
     EXPECT_TRUE(supervisor->PollStartup(now));
   }
 };
-}
+
+}  // namespace
+
 TEST_F(SupervisorTest, CannotReserveOrSendBeforeExactReadyEofAndLiveWorker) {
   EXPECT_THROW(supervisor->Start(request), Error);
   EXPECT_TRUE(journal->Reservations().empty());
@@ -113,6 +143,7 @@ TEST_F(SupervisorTest, CannotReserveOrSendBeforeExactReadyEofAndLiveWorker) {
   auto token = supervisor->Start(request);
   EXPECT_EQ(journal->Reservations(), std::vector<uint64_t>{token});
 }
+
 TEST_F(SupervisorTest, RetainedWriterAndNoDataBothHaveAbsoluteDeadline) {
   auto bytes = EncodeWorkerReady(1, 12);
   bootstrap.Send(bytes.data(), bytes.size());
@@ -121,12 +152,14 @@ TEST_F(SupervisorTest, RetainedWriterAndNoDataBothHaveAbsoluteDeadline) {
   EXPECT_TRUE(supervisor->Failed());
   EXPECT_TRUE(journal->Blocked());
 }
+
 TEST_F(SupervisorTest, SilentWorkerTimeoutDoesNotEnableRestart) {
   EXPECT_FALSE(supervisor->PollStartup(now));
   EXPECT_THROW(supervisor->PollStartup(now + 5s), Error);
   EXPECT_TRUE(journal->Blocked());
   EXPECT_THROW(journal->BeginGeneration(), Error);
 }
+
 TEST_F(SupervisorTest, LiveCheckRejectsExitAfterReadyBeforeStart) {
   Ready();
   child.dead = true;
@@ -135,6 +168,7 @@ TEST_F(SupervisorTest, LiveCheckRejectsExitAfterReadyBeforeStart) {
   EXPECT_TRUE(journal->Blocked());
   EXPECT_TRUE(journal->Reservations().empty());
 }
+
 TEST_F(SupervisorTest, ObservationFailureCannotReuseAnOldRunningState) {
   Ready();
   child.observe_error = EINTR;
@@ -142,6 +176,7 @@ TEST_F(SupervisorTest, ObservationFailureCannotReuseAnOldRunningState) {
   EXPECT_TRUE(supervisor->Failed());
   EXPECT_TRUE(journal->Blocked());
 }
+
 TEST_F(SupervisorTest, WorkerExitBeforeReadyNeverProvesNoOldJobs) {
   child.dead = true;
   child.code = 127;
@@ -149,6 +184,7 @@ TEST_F(SupervisorTest, WorkerExitBeforeReadyNeverProvesNoOldJobs) {
   EXPECT_THROW(supervisor->PollStartup(now), Error);
   EXPECT_TRUE(journal->Blocked());
 }
+
 TEST_F(SupervisorTest, CleanIdleStopRequiresReplyEofAndObservedOwnedExitZero) {
   Ready();
   supervisor->PrepareStop();
@@ -161,6 +197,7 @@ TEST_F(SupervisorTest, CleanIdleStopRequiresReplyEofAndObservedOwnedExitZero) {
   EXPECT_EQ(children.Size(), 0u);
   EXPECT_FALSE(journal->Blocked());
 }
+
 TEST_F(SupervisorTest, AbnormalExitKeepsJournalUncertainEvenWithNoJobs) {
   Ready();
   supervisor->PrepareStop();
@@ -171,6 +208,7 @@ TEST_F(SupervisorTest, AbnormalExitKeepsJournalUncertainEvenWithNoJobs) {
   EXPECT_THROW(supervisor->ConfirmNormalExit(), Error);
   EXPECT_TRUE(journal->Blocked());
 }
+
 TEST_F(SupervisorTest, BufferedCompleteDrainsAfterWorkerExitBeforeNormalProof) {
   Ready();
   auto token = supervisor->Start(request);
@@ -195,6 +233,7 @@ TEST_F(SupervisorTest, BufferedCompleteDrainsAfterWorkerExitBeforeNormalProof) {
   EXPECT_TRUE(supervisor->ConfirmNormalExit());
   EXPECT_FALSE(journal->Blocked());
 }
+
 class BadReadyTest : public SupervisorTest,
                      public ::testing::WithParamInterface<int> {};
 TEST_P(BadReadyTest, WrongTruncatedDuplicateOrExtraReadyPoisonsGeneration) {
@@ -229,6 +268,7 @@ TEST_P(BadReadyTest, WrongTruncatedDuplicateOrExtraReadyPoisonsGeneration) {
       record.insert(record.end(), bytes.begin(), bytes.end());
       break;
   }
+
   bootstrap.Send(record.data(), record.size());
   bootstrap.Close(1);
   EXPECT_THROW(
@@ -240,4 +280,5 @@ TEST_P(BadReadyTest, WrongTruncatedDuplicateOrExtraReadyPoisonsGeneration) {
   EXPECT_TRUE(supervisor->Failed());
   EXPECT_THROW(supervisor->Start(request), Error);
 }
+
 INSTANTIATE_TEST_SUITE_P(Malformed, BadReadyTest, ::testing::Range(0, 9));

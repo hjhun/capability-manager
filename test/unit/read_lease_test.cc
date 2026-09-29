@@ -1,20 +1,41 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "api/client.hh"
 #include "api/read_admission.hh"
 #include "catalog/read_lease.hh"
+
 #include <fcntl.h>
+
 #include <future>
+
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 struct Labels : ReadLeaseOperations {
   std::string label = "fixture";
   std::string Label(int) override { return label; }
 };
+
 class LeaseTest : public CatalogTest {
  protected:
   Labels labels;
@@ -36,18 +57,22 @@ class LeaseTest : public CatalogTest {
     Publish(*writer, e.owner, {e});
     Secure();
   }
+
   void TearDown() override {
     writer.reset();
     CatalogTest::TearDown();
   }
+
   void Secure() {
     for (auto suffix : {"", "-wal", "-shm"})
       ASSERT_EQ(chmod((path_ + suffix).c_str(), 0600), 0);
   }
+
   ReadLeasePolicy Policy() {
     return {directory, lock_path, geteuid(), geteuid(), getegid(), getegid(),
             0700,      0600,      0600,      "fixture", "fixture", "fixture"};
   }
+
   auto Lease() { return std::make_unique<CatalogReadLease>(Policy(), &labels); }
   bool Exclusive() {
     int fd = open(lock_path.c_str(), O_RDWR | O_CLOEXEC);
@@ -113,7 +138,9 @@ class LeaseTest : public CatalogTest {
     LeaseTest& test;
   };
 };
-}
+
+}  // namespace
+
 TEST_F(LeaseTest, IndependentReadersExcludeMaintenanceUntilBothRelease) {
   EXPECT_TRUE(Exclusive());
   auto first = Lease(), second = Lease();
@@ -123,6 +150,7 @@ TEST_F(LeaseTest, IndependentReadersExcludeMaintenanceUntilBothRelease) {
   second.reset();
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(LeaseTest, ExclusiveMaintenanceRejectsReadAdmissionWithoutWaiting) {
   int fd = open(lock_path.c_str(), O_RDWR | O_CLOEXEC);
   ASSERT_GE(fd, 0);
@@ -138,6 +166,7 @@ TEST_F(LeaseTest, ExclusiveMaintenanceRejectsReadAdmissionWithoutWaiting) {
   EXPECT_LT(std::chrono::steady_clock::now() - start, 200ms);
   close(fd);
 }
+
 TEST_F(LeaseTest, InvalidPoliciesAndWriterDirectoryLockFailClosed) {
   auto p = Policy();
   p.lock_path = directory + "/lease";
@@ -156,6 +185,7 @@ TEST_F(LeaseTest, InvalidPoliciesAndWriterDirectoryLockFailClosed) {
   EXPECT_THROW(CatalogReadLease(p, &labels), Error);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(LeaseTest, SpecialModesAndMissingSidecarsRejectBeforeHandlePublication) {
   Gate gate(*this);
   for (auto path : {lock_path, path_, path_ + "-wal", path_ + "-shm"}) {
@@ -166,12 +196,14 @@ TEST_F(LeaseTest, SpecialModesAndMissingSidecarsRejectBeforeHandlePublication) {
     ASSERT_EQ(chmod(path.c_str(), 0600), 0);
     EXPECT_TRUE(Exclusive());
   }
+
   ASSERT_EQ(rename((path_ + "-shm").c_str(), (path_ + "-saved").c_str()), 0);
   capmgr_client_h client = nullptr;
   EXPECT_EQ(CreateClient(gate, &client), CAPMGR_ERROR_PERMISSION_DENIED);
   EXPECT_EQ(client, nullptr);
   ASSERT_EQ(rename((path_ + "-saved").c_str(), (path_ + "-shm").c_str()), 0);
 }
+
 TEST_F(LeaseTest, ReplacementAndPolicyFailurePoisonExistingLease) {
   auto lease = Lease();
   labels.label = "different";
@@ -189,6 +221,7 @@ TEST_F(LeaseTest, ReplacementAndPolicyFailurePoisonExistingLease) {
   ASSERT_EQ(rename((lock_path + ".saved").c_str(), lock_path.c_str()), 0);
   EXPECT_THROW(lease->Check(), Error);
 }
+
 TEST_F(LeaseTest, SymlinkOrHardlinkedFilesAreNeverAccepted) {
   auto saved = path_ + "-wal.saved";
   ASSERT_EQ(rename((path_ + "-wal").c_str(), saved.c_str()), 0);
@@ -200,6 +233,7 @@ TEST_F(LeaseTest, SymlinkOrHardlinkedFilesAreNeverAccepted) {
   ASSERT_EQ(unlink((path_ + "-wal").c_str()), 0);
   ASSERT_EQ(rename(saved.c_str(), (path_ + "-wal").c_str()), 0);
 }
+
 TEST_F(LeaseTest, LiveWalCommitsRemainVisibleThroughPublicLocalQueries) {
   Gate gate(*this);
   capmgr_client_h client = nullptr;
@@ -219,6 +253,7 @@ TEST_F(LeaseTest, LiveWalCommitsRemainVisibleThroughPublicLocalQueries) {
   EXPECT_EQ(capmgr_client_destroy(client), 0);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(LeaseTest, PersistentWriterCloseAllowsFreshReadOnlyWalOpen) {
   int persistent = 1;
   ASSERT_EQ(sqlite3_file_control(writer->database().handle(), "main",
@@ -235,9 +270,11 @@ TEST_F(LeaseTest, PersistentWriterCloseAllowsFreshReadOnlyWalOpen) {
     EXPECT_THROW(reader.database().Exec("DELETE FROM capability"), Error);
     EXPECT_FALSE(Exclusive());
   }
+
   lease.reset();
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(LeaseTest, OpenValidationRejectsWriterAndWrongDatabase) {
   auto lease = Lease();
   EXPECT_THROW(lease->Opened(writer->database()), Error);
@@ -246,6 +283,7 @@ TEST_F(LeaseTest, OpenValidationRejectsWriterAndWrongDatabase) {
   Catalog reader(root_ + "/other.db", Database::Access::kReadOnly);
   EXPECT_THROW(lease->Opened(reader.database()), Error);
 }
+
 TEST_F(LeaseTest, QueryRejectsReplacedFileAndLeavesOutputsNull) {
   Gate gate(*this);
   capmgr_client_h client = nullptr;
@@ -273,6 +311,7 @@ TEST_F(LeaseTest, QueryRejectsReplacedFileAndLeavesOutputsNull) {
   EXPECT_EQ(capmgr_client_destroy(client), 0);
   ASSERT_EQ(rename((path_ + "-saved").c_str(), (path_ + "-wal").c_str()), 0);
 }
+
 TEST_F(LeaseTest, DestroyIoRetainsLeaseUntilTrackedWorkerAndSqliteClose) {
   struct Backend : ExecutionBackend {
     std::promise<void> started, release;
@@ -307,6 +346,7 @@ TEST_F(LeaseTest, DestroyIoRetainsLeaseUntilTrackedWorkerAndSqliteClose) {
   EXPECT_EQ(result, 0);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(LeaseTest, InheritedLeaseRejectsUseButChildRetainsMaintenanceLock) {
   auto lease = Lease();
   int commands[2], reply[2];
@@ -329,6 +369,7 @@ TEST_F(LeaseTest, InheritedLeaseRejectsUseButChildRetainsMaintenanceLock) {
     lease.reset();
     _exit(0);
   }
+
   close(commands[0]);
   close(reply[1]);
   char value;
@@ -343,6 +384,7 @@ TEST_F(LeaseTest, InheritedLeaseRejectsUseButChildRetainsMaintenanceLock) {
   close(commands[1]);
   close(reply[0]);
 }
+
 TEST_F(LeaseTest, PostOpenAdmissionFailurePublishesNoHandleAndReleasesLease) {
   class Refused : public ReadAccess {
    public:
@@ -374,6 +416,7 @@ TEST_F(LeaseTest, PostOpenAdmissionFailurePublishesNoHandleAndReleasesLease) {
   EXPECT_EQ(client, nullptr);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(LeaseTest, InheritedClientRejectsEveryCallBeforeDispatcherOrSqliteUse) {
   Gate gate(*this);
   capmgr_client_h client = nullptr;
@@ -437,6 +480,7 @@ TEST_F(LeaseTest, CanonicalDescriptorMatchesOnlyThePinnedFileGeneration) {
     EXPECT_THROW(other->Check(), Error);
   }
 }
+
 TEST_F(LeaseTest,
        HandoffHasOverlappingLeasesThenNoTransportInLocalQueriesOrDestroy) {
   Channel channel(*this);
@@ -456,6 +500,7 @@ TEST_F(LeaseTest,
   EXPECT_EQ(channel.checks, checks);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(LeaseTest,
        HandoffRejectsLossAtEveryObservedValidationPointBeforePublication) {
   int checks = 0;
@@ -467,6 +512,7 @@ TEST_F(LeaseTest,
     checks = channel.checks;
     ASSERT_EQ(capmgr_client_destroy(client), 0);
   }
+
   ASSERT_GT(checks, 0);
   for (int at = 1; at <= checks; ++at) {
     Channel channel(*this);
@@ -480,6 +526,7 @@ TEST_F(LeaseTest,
     EXPECT_TRUE(Exclusive());
   }
 }
+
 TEST_F(LeaseTest, HandoffRejectsReceiptLossMalformedIdentityAndFailedFinish) {
   for (int mode = 0; mode < 4; ++mode) {
     Channel channel(*this);
@@ -495,6 +542,7 @@ TEST_F(LeaseTest, HandoffRejectsReceiptLossMalformedIdentityAndFailedFinish) {
     EXPECT_TRUE(Exclusive());
   }
 }
+
 TEST_F(LeaseTest, ConnectionMustStillBeLiveAfterLocalSqliteOpen) {
   Channel channel(*this);
   LeasedCatalogGate gate(Policy(), channel, &labels);

@@ -18,11 +18,14 @@
 
 #include "launcher/broker_journal.hh"
 #include "launcher/worker_loop.hh"
+
 #include <array>
 #include <memory>
 #include <optional>
 #include <string_view>
+
 namespace capmgr {
+
 struct WorkerEvent {
   WorkerReplyKind kind;
   uint64_t token;
@@ -32,6 +35,7 @@ struct WorkerEvent {
   size_t size = 0;
   std::string_view Data() const noexcept { return {bytes.data(), size}; }
 };
+
 // Private frontend end of one trusted worker generation. NOT an authorization,
 // spawn, public result adapter, worker-death proof or restart mechanism. Exclusive
 // journal ownership is required for this object's lifetime; journal outlives it.
@@ -81,6 +85,7 @@ class WorkerSession {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_SESSION_HH_

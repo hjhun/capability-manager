@@ -17,12 +17,15 @@
 #define CAPABILITY_MANAGER_LAUNCHER_ACTION_EXCHANGE_HH_
 
 #include "launcher/runner.hh"
+
 namespace capmgr {
+
 struct ActionFrame {
   std::string json;
   bool is_event = false;
   bool complete = true;
 };
+
 // Serialized per-execution protocol state, independent of callback thread/transport.
 // The adapter must reserve a unique positive native ID for the connection until
 // complete, and must not retry execution on reconnect. No Action API call occurs here.
@@ -41,6 +44,7 @@ class ActionExchange {
   bool subscription_;
   std::string native_request_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_ACTION_EXCHANGE_HH_

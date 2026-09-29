@@ -18,7 +18,9 @@
 
 #include <stdexcept>
 #include <string>
+
 namespace capmgr {
+
 enum class ErrorCode : int {
   kInvalid = -1,
   kPermission = -2,
@@ -31,6 +33,7 @@ enum class ErrorCode : int {
   kIo = -9,
   kNoMemory = -10
 };
+
 class Error : public std::runtime_error {
  public:
   Error(ErrorCode code, const std::string& message)
@@ -40,6 +43,7 @@ class Error : public std::runtime_error {
  private:
   ErrorCode code_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_COMMON_ERROR_HH_

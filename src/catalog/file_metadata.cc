@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "catalog/file_metadata.hh"
 
 #include <fcntl.h>
@@ -11,10 +25,13 @@
 #include "common/error.hh"
 
 namespace capmgr {
+
 namespace {
+
 void Require(bool okay) {
   if (!okay) throw Error(ErrorCode::kPermission, "Unsafe metadata descriptor");
 }
+
 void Flags(int fd) {
   const int flags = fcntl(fd, F_GETFL);
   const int descriptor = fcntl(fd, F_GETFD);
@@ -33,13 +50,16 @@ void RequireDataPinSupport(int directory) {
     close(probe);  // Directory only: never a SQLite POSIX-lock inode.
     throw;
   }
+
   close(probe);
 }
+
 void ValidateDataPin(int fd) {
   Flags(fd);
   struct stat info{};
   Require(!fstat(fd, &info) && S_ISREG(info.st_mode) && info.st_nlink == 1);
 }
+
 ssize_t MetadataAttribute(int fd, const char* name, void* value, size_t size) {
   const int flags = fcntl(fd, F_GETFL);
   Require(flags >= 0);

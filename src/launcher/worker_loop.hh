@@ -19,11 +19,14 @@
 #include "launcher/namespace_init.hh"
 #include "launcher/owned_children.hh"
 #include "launcher/worker_command.hh"
+
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
+
 namespace capmgr {
+
 // Trusted bounded registration snapshot prepared BEFORE worker admission and
 // copied into the loop. Max256 entries, exact CLI IDs <=1024 bytes and paths
 // <4096 bytes. Lookup performs no I/O, callbacks, locks or allocation. This is
@@ -33,6 +36,7 @@ namespace capmgr {
 struct RegisteredCli {
   std::string id, executable;
 };
+
 class WorkerRegistry {
  public:
   explicit WorkerRegistry(std::vector<RegisteredCli> entries);
@@ -41,6 +45,7 @@ class WorkerRegistry {
  private:
   std::vector<RegisteredCli> entries_;
 };
+
 // Trusted in-process spawn seam, never an IPC/plugin selection. Caller must
 // durably reserve the token before sending START. Single-threaded worker only.
 class WorkerRuntime {
@@ -50,6 +55,7 @@ class WorkerRuntime {
   // may occur after a positive clone return. Default uses NamespaceInit.
   virtual pid_t Spawn(NamespaceInitConfig& config, void* stack_top) noexcept;
 };
+
 enum class WorkerReplyKind : uint16_t {
   Accepted = 1,
   Stdout = 2,
@@ -57,6 +63,7 @@ enum class WorkerReplyKind : uint16_t {
   Complete = 4,
   State = 5
 };
+
 enum class WorkerFailure : uint32_t {
   None = 0,
   Rejected,
@@ -70,6 +77,7 @@ enum class WorkerFailure : uint32_t {
   Backpressure,
   Channel
 };
+
 struct WorkerContext {
   uint64_t generation;
   int command_read, cancel_read, reply_write;
@@ -80,10 +88,12 @@ struct WorkerContext {
   gid_t gid;
   std::string smack_label;
 };
+
 struct WorkerLimits {
   std::chrono::milliseconds runtime{30000}, setup{5000};
   size_t output_bytes = 1024 * 1024;
 };
+
 // Single-threaded fixed worker only, SIGPIPE ignored, SIGCHLD default, no competing
 // reaper. Not a daemon, public endpoint, authorization or resource-control policy.
 // Step uses only the bounded in-memory registry, nonblocking pipe reads/writes
@@ -125,6 +135,7 @@ class WorkerLoop {
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_LOOP_HH_

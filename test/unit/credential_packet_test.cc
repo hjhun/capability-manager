@@ -1,13 +1,30 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "platform/credential_packet.hh"
 #include "platform/remount_ticket.hh"
+
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+
 #include <cstring>
 #include <set>
+
 using namespace capmgr;
 class PacketTest : public CatalogTest {
  protected:
@@ -38,12 +55,14 @@ class PacketTest : public CatalogTest {
     ASSERT_GE(accepted_, 0);
     peer_ = Peer::FromSocket(accepted_);
   }
+
   void TearDown() override {
     peer_.reset();
     for (int fd : {client_, accepted_, listener_})
       if (fd >= 0) close(fd);
     CatalogTest::TearDown();
   }
+
   void Send(const std::string& data) {
     ASSERT_EQ(send(client_, data.data(), data.size(), MSG_NOSIGNAL),
               static_cast<ssize_t>(data.size()));
@@ -51,6 +70,7 @@ class PacketTest : public CatalogTest {
   int listener_ = -1, client_ = -1, accepted_ = -1;
   std::shared_ptr<Peer> peer_;
 };
+
 // The prior positive packet/ticket tests belong to the historical proc-backed
 // experiment. No current API provides its live-task proof; do not replay those
 // tests under a weaker Connected() guard and call the result equivalent.
@@ -66,6 +86,7 @@ TEST_F(PacketTest, PacketRequiresUnavailableTaskProofBeforeReceiving) {
   EXPECT_EQ(recv(accepted_, &byte, 1, MSG_PEEK | MSG_DONTWAIT), 1);
   EXPECT_EQ(byte, 'u');
 }
+
 TEST_F(PacketTest, IssueCannotCreateTicketWithoutTaskProof) {
   RemountTickets tickets;
   try {
@@ -75,6 +96,7 @@ TEST_F(PacketTest, IssueCannotCreateTicketWithoutTaskProof) {
     EXPECT_EQ(error.code(), ErrorCode::kUnsupported);
   }
 }
+
 TEST_F(PacketTest, ConsumeCannotAcceptTicketWithoutTaskProof) {
   RemountTickets tickets;
   Send(std::string(64, 'a'));

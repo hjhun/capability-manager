@@ -1,23 +1,43 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "catalog/generation_lease.hh"
 #include "catalog/file_metadata.hh"
 
 #include <array>
 #include <cerrno>
 #include <filesystem>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
+
 #include <thread>
+
 #include <unistd.h>
 
 namespace capmgr {
+
 namespace {
+
 using Clock = std::chrono::steady_clock;
 void Require(bool value) {
   if (!value)
     throw Error(ErrorCode::kPermission, "Catalog generation policy rejected");
 }
+
 struct Fd {
   int value = -1;
   ~Fd() {
@@ -25,11 +45,13 @@ struct Fd {
     if (value >= 0) close(value);
   }
 };
+
 bool Normal(const std::string& path) {
   return !path.empty() && path[0] == '/' && path.back() != '/' &&
          path.find('\0') == std::string::npos &&
          std::filesystem::path(path).lexically_normal() == path;
 }
+
 void NoAcl(int fd, bool directory) {
   for (const char* name :
        {"system.posix_acl_access", "system.posix_acl_default"}) {
@@ -41,13 +63,15 @@ void NoAcl(int fd, bool directory) {
   }
 }
 GenerationLeaseOperations real_operations;
-}
+}  // namespace
+
 int GenerationLeaseOperations::Lock(int fd, short type) {
   struct flock lock{};
   lock.l_type = type;
   lock.l_whence = SEEK_SET;
   return fcntl(fd, F_OFD_SETLK, &lock);
 }
+
 struct CatalogGenerationLease::Impl {
   ReadLeasePolicy policy;
   Mode mode;
@@ -120,6 +144,7 @@ struct CatalogGenerationLease::Impl {
     RequireDataPinSupport(directory.value);
     Check();
   }
+
   void Verify(int fd, const struct stat& info, uid_t uid, gid_t gid,
               mode_t mode_value, const std::string& label, bool dir) {
     Require((dir ? S_ISDIR(info.st_mode) : S_ISREG(info.st_mode)) &&
@@ -128,6 +153,7 @@ struct CatalogGenerationLease::Impl {
     NoAcl(fd, dir);
     Require(operations.Label(fd) == label);
   }
+
   void CheckOne(int fd, const struct stat& identity, const std::string& name,
                 uid_t uid, gid_t gid, mode_t mode_value,
                 const std::string& label, bool dir) {
@@ -139,6 +165,7 @@ struct CatalogGenerationLease::Impl {
     Require((named.st_mode & 07777) == mode_value && named.st_uid == uid &&
             named.st_gid == gid);
   }
+
   void Check() {
     Require(creator == getpid() && !poisoned);
     try {
@@ -163,6 +190,7 @@ struct CatalogGenerationLease::Impl {
       throw;
     }
   }
+
   void Prepare() {
     Check();
     if (shared) return;
@@ -193,6 +221,7 @@ struct CatalogGenerationLease::Impl {
     }
     Check();
   }
+
   void Seal() {
     Check();
     if (shared) return;
@@ -208,24 +237,29 @@ struct CatalogGenerationLease::Impl {
     Check();
   }
 };
+
 std::unique_ptr<CatalogGenerationLease> CatalogGenerationLease::Acquire(
     ReadLeasePolicy policy, Mode mode, std::chrono::milliseconds budget,
     GenerationLeaseOperations* operations) {
   return std::unique_ptr<CatalogGenerationLease>(new CatalogGenerationLease(
       std::make_unique<Impl>(std::move(policy), mode, budget, operations)));
 }
+
 CatalogGenerationLease::CatalogGenerationLease(std::unique_ptr<Impl> impl)
     : impl_(std::move(impl)) {}
 CatalogGenerationLease::~CatalogGenerationLease() = default;
 const std::string& CatalogGenerationLease::Path() const noexcept {
   return impl_->path;
 }
+
 bool CatalogGenerationLease::Maintenance() const noexcept {
   return impl_->mode == Mode::kMaintenance;
 }
+
 bool CatalogGenerationLease::InCreator() const noexcept {
   return impl_->creator == getpid();
 }
+
 void CatalogGenerationLease::Check() { impl_->Check(); }
 void CatalogGenerationLease::Prepare() { impl_->Prepare(); }
 void CatalogGenerationLease::Seal() { impl_->Seal(); }
@@ -243,4 +277,4 @@ void CatalogGenerationLease::Opened(Database& database) {
     throw;
   }
 }
-}
+}  // namespace capmgr

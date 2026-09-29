@@ -1,17 +1,40 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_command.hh"
 #include "launcher/runner.hh"
 #include "common/error.hh"
+
 #include <algorithm>
 #include <cerrno>
+
 #include <fcntl.h>
+
 #include <limits>
+
 #include <poll.h>
+
 #include <set>
+
 #include <sys/stat.h>
 #include <unistd.h>
+
 namespace capmgr {
+
 namespace {
+
 constexpr size_t kMaxBody = 64 * 1024;
 uint64_t Get(const uint8_t* bytes, size_t count) {
   uint64_t value = 0;
@@ -19,6 +42,7 @@ uint64_t Get(const uint8_t* bytes, size_t count) {
     value |= static_cast<uint64_t>(bytes[i]) << (8 * i);
   return value;
 }
+
 void Put(uint8_t* bytes, uint64_t value, size_t count) {
   for (size_t i = 0; i < count; ++i)
     bytes[i] = static_cast<uint8_t>(value >> (8 * i));
@@ -26,6 +50,7 @@ void Put(uint8_t* bytes, uint64_t value, size_t count) {
 [[noreturn]] void Invalid(const char* message) {
   throw Error(ErrorCode::kInvalid, message);
 }
+
 void Body(WorkerCommandKind kind, const std::string& body) {
   if (body.size() > kMaxBody) Invalid("Worker command exceeds request limit");
   if (kind != WorkerCommandKind::Start) {
@@ -53,12 +78,14 @@ void Body(WorkerCommandKind kind, const std::string& body) {
   } catch (const Json::exception&) {
     Invalid("Malformed worker request");
   }
+
   auto request = ParseRequest(body);
   if (!request.capability_id.starts_with("cli:") ||
       request.capability_id.size() == 4)
     Invalid("Worker only accepts registered CLI identifiers");
 }
-}
+}  // namespace
+
 std::vector<uint8_t> EncodeWorkerCommand(const WorkerCommand& command) {
   if (!command.generation || !command.sequence || !command.token)
     Invalid("Zero worker generation/sequence/token");
@@ -77,6 +104,7 @@ std::vector<uint8_t> EncodeWorkerCommand(const WorkerCommand& command) {
   std::copy(command.request.begin(), command.request.end(), bytes.begin() + 40);
   return bytes;
 }
+
 WorkerCommandReader::WorkerCommandReader(int pipe, uint64_t generation,
                                          bool priority, uint64_t sequence,
                                          ResizeBody resize_body)
@@ -97,6 +125,7 @@ WorkerCommandReader::WorkerCommandReader(int pipe, uint64_t generation,
     Invalid("Worker channel requires a trusted read pipe");
   }
 }
+
 WorkerCommandReader::~WorkerCommandReader() {
   if (fd_ >= 0) close(fd_);
 }
@@ -105,6 +134,7 @@ WorkerCommandReader::~WorkerCommandReader() {
   body_.clear();
   Invalid(message);
 }
+
 std::optional<WorkerCommand> WorkerCommandReader::ReadOne(
     Clock::time_point now) {
   try {
@@ -115,6 +145,7 @@ std::optional<WorkerCommand> WorkerCommandReader::ReadOne(
     throw;
   }
 }
+
 std::optional<WorkerCommand> WorkerCommandReader::ReadImpl(
     Clock::time_point now) {
   if (failed_) Invalid("Worker channel already failed");
@@ -141,6 +172,7 @@ std::optional<WorkerCommand> WorkerCommandReader::ReadImpl(
     if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) return {};
     Reject("Worker command read failed");
   }
+
   if (!count) Reject("Worker command truncated/closed");
   if (!started_) started_ = now;
   if (header) {
@@ -187,4 +219,4 @@ std::optional<WorkerCommand> WorkerCommandReader::ReadImpl(
   started_.reset();
   return command;
 }
-}
+}  // namespace capmgr

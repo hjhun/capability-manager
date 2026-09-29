@@ -1,22 +1,45 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_session.hh"
 #include "common/error.hh"
+
 #include <algorithm>
 #include <cstring>
+
 #include <fcntl.h>
+
 #include <mutex>
+
 #include <poll.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 namespace capmgr {
+
 namespace {
+
 [[noreturn]] void Bad(const char* reason) {
   throw Error(ErrorCode::kIo, reason);
 }
+
 void Require(bool okay, const char* reason) {
   if (!okay) Bad(reason);
 }
+
 struct Fd {
   int value = -1;
   ~Fd() { Close(); }
@@ -25,6 +48,7 @@ struct Fd {
     value = -1;
   }
 };
+
 void Pipe(Fd& fd, int source, int direction) {
   fd.value = fcntl(source, F_DUPFD_CLOEXEC, 3);
   struct stat st{};
@@ -34,20 +58,24 @@ void Pipe(Fd& fd, int source, int direction) {
               !fcntl(fd.value, F_SETFL, flags | O_NONBLOCK),
           "Invalid frontend pipe");
 }
+
 uint64_t Get(const uint8_t* b, size_t size) {
   uint64_t v = 0;
   for (size_t i = 0; i < size; ++i) v |= uint64_t{b[i]} << (i * 8);
   return v;
 }
+
 void Put(uint8_t* b, uint64_t v, size_t size) {
   for (size_t i = 0; i < size; ++i) b[i] = static_cast<uint8_t>(v >> (i * 8));
 }
+
 uint64_t Next(uint64_t v) { return v == UINT64_MAX ? 0 : v + 1; }
 int Signed(uint64_t v) {
   return v <= INT32_MAX ? static_cast<int>(v)
                         : -1 - static_cast<int>(UINT32_MAX - v);
 }
-}
+}  // namespace
+
 struct WorkerSession::Impl {
   struct Job {
     uint64_t token = 0;
@@ -92,6 +120,7 @@ struct WorkerSession::Impl {
             "Frontend journal not clean");
     generation = journal.BeginGeneration();
   }
+
   void Abort() noexcept {
     if (finished) return;
     failed = true;
@@ -103,20 +132,24 @@ struct WorkerSession::Impl {
     } catch (...) {
     }  // active/partial disk state also blocks restart
   }
+
   void Active() {
     if (failed || stopping || closing || finished || journal.Blocked())
       throw Error(ErrorCode::kBusy, "Frontend admission closed");
   }
+
   Job* Find(uint64_t token) {
     for (auto& j : jobs)
       if (j.token == token) return &j;
     return nullptr;
   }
+
   CancelReply* CancellationReply(uint64_t token) {
     for (auto& c : cancel_replies)
       if (c.token == token) return &c;
     return nullptr;
   }
+
   void Write(int fd, const uint8_t* data, size_t size, size_t& offset) {
     ssize_t n = write(fd, data + offset, std::min<size_t>(size - offset, 8192));
     if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
@@ -124,6 +157,7 @@ struct WorkerSession::Impl {
     if (n <= 0) Bad("Frontend command write failed");
     offset += static_cast<size_t>(n);
   }
+
   std::optional<WorkerEvent> Read(Clock::time_point now) {
     if (partial && now - *partial >= std::chrono::seconds(5))
       Bad("Frontend partial reply deadline");
@@ -223,6 +257,7 @@ struct WorkerSession::Impl {
     reply_sequence = Next(reply_sequence);
     return event;
   }
+
   std::optional<WorkerEvent> Step(Clock::time_point now) {
     if (failed || finished || journal.Blocked())
       throw Error(ErrorCode::kBusy, "Frontend session closed");
@@ -277,6 +312,7 @@ struct WorkerSession::Impl {
     }
   }
 };
+
 WorkerSession::WorkerSession(BrokerJournal& j, int c, int p, int r)
     : impl_(std::make_unique<Impl>(j, c, p, r)) {}
 WorkerSession::~WorkerSession() { impl_->Abort(); }
@@ -284,10 +320,12 @@ uint64_t WorkerSession::Generation() const {
   std::lock_guard lock(impl_->mutex);
   return impl_->generation;
 }
+
 bool WorkerSession::Failed() const {
   std::lock_guard lock(impl_->mutex);
   return impl_->failed;
 }
+
 uint64_t WorkerSession::Start(const std::string& request) {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -311,6 +349,7 @@ uint64_t WorkerSession::Start(const std::string& request) {
     s.Abort();
     throw;
   }
+
   Put(command.data() + 24, token, 8);
   slot->token = token;
   slot->command = std::move(command);
@@ -318,6 +357,7 @@ uint64_t WorkerSession::Start(const std::string& request) {
   s.command_sequence = Next(s.command_sequence);
   return token;
 }
+
 void WorkerSession::Cancel(uint64_t token) {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -337,6 +377,7 @@ void WorkerSession::Cancel(uint64_t token) {
     s.Abort();
     throw Error(ErrorCode::kBusy, "Frontend CANCEL correlation exhausted");
   }
+
   auto bytes = EncodeWorkerCommand(
       {WorkerCommandKind::Cancel, s.generation, s.cancel_sequence, token, {}});
   auto& record = s.priority[(s.head + s.count) % s.priority.size()];
@@ -349,14 +390,17 @@ void WorkerSession::Cancel(uint64_t token) {
   s.cancel_sequence = Next(s.cancel_sequence);
   job->cancelled = true;
 }
+
 std::optional<WorkerEvent> WorkerSession::Step(Clock::time_point now) {
   std::lock_guard lock(impl_->mutex);
   return impl_->Step(now);
 }
+
 void WorkerSession::Abort() noexcept {
   std::lock_guard lock(impl_->mutex);
   impl_->Abort();
 }
+
 void WorkerSession::PrepareStop() {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -369,6 +413,7 @@ void WorkerSession::PrepareStop() {
   s.commands.Close();
   s.cancels.Close();
 }
+
 void WorkerSession::ConfirmNormalExit() {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -387,4 +432,4 @@ void WorkerSession::ConfirmNormalExit() {
     throw;
   }
 }
-}
+}  // namespace capmgr

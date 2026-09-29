@@ -1,21 +1,44 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_loop.hh"
 #include "launcher/runner.hh"
+
 #include <algorithm>
 #include <array>
 #include <cerrno>
 #include <cstring>
+
 #include <fcntl.h>
+
 #include <limits>
+
 #include <poll.h>
 #include <sched.h>
 #include <signal.h>
+
 #include <stdexcept>
+
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 namespace capmgr {
+
 namespace {
+
 struct Fd {
   int value = -1;
   Fd() = default;
@@ -27,25 +50,30 @@ struct Fd {
     value = next;
   }
 };
+
 void Check(bool ok, const char* message) {
   if (!ok) throw std::runtime_error(message);
 }
+
 void Nonblocking(int fd) {
   int flags = fcntl(fd, F_GETFL);
   Check(flags >= 0 && fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0,
         "worker nonblocking FD");
 }
+
 void Pipe(Fd& read, Fd& write) {
   int fds[2];
   Check(pipe2(fds, O_CLOEXEC) == 0, "worker pipe");
   read.Reset(fds[0]);
   write.Reset(fds[1]);
 }
+
 int Duplicate(int fd) {
   int value = fcntl(fd, F_DUPFD_CLOEXEC, 3);
   Check(value >= 0, "worker duplicate FD");
   return value;
 }
+
 bool Alive(int anchor) noexcept {
   int fd = openat(anchor, "stat", O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
   if (fd < 0) return false;
@@ -58,13 +86,15 @@ bool Alive(int anchor) noexcept {
   return end && end[1] == ' ' && end[2] && end[2] != 'Z' && end[2] != 'X' &&
          end[2] != 'x';
 }
+
 void Put(uint8_t* out, uint64_t value, size_t size) {
   for (size_t i = 0; i < size; ++i)
     out[i] = static_cast<uint8_t>(value >> (8 * i));
 }
 constexpr size_t kStack = 1024 * 1024, kHeader = 56, kChunk = 4096,
                  kQueue = 128;
-}
+}  // namespace
+
 WorkerRegistry::WorkerRegistry(std::vector<RegisteredCli> entries)
     : entries_(std::move(entries)) {
   Check(entries_.size() <= 256, "worker registry limit");
@@ -81,16 +111,19 @@ WorkerRegistry::WorkerRegistry(std::vector<RegisteredCli> entries)
       Check(entries_[k].id != entry.id, "duplicate worker registry ID");
   }
 }
+
 std::string_view WorkerRegistry::Resolve(std::string_view id) const noexcept {
   for (const auto& entry : entries_)
     if (entry.id == id) return entry.executable;
   return {};
 }
+
 pid_t WorkerRuntime::Spawn(NamespaceInitConfig& config,
                            void* stack_top) noexcept {
   return clone(NamespaceInit, stack_top, CLONE_NEWPID | CLONE_NEWNS | SIGCHLD,
                &config);
 }
+
 struct WorkerLoop::Impl {
   struct Record {
     std::array<uint8_t, kHeader + kChunk> bytes{};
@@ -157,6 +190,7 @@ struct WorkerLoop::Impl {
     mount.Reset(::open("/proc/self/ns/mnt", O_RDONLY | O_CLOEXEC));
     Check(self.value >= 3 && mount.value >= 3, "worker creator anchors");
   }
+
   void Fail(Job& j, WorkerFailure cause, int error = 0) noexcept {
     if (j.failure == WorkerFailure::None) {
       j.failure = cause;
@@ -164,11 +198,13 @@ struct WorkerLoop::Impl {
     }
     j.go.Reset();
   }
+
   void Close(WorkerFailure cause) noexcept {
     open = false;
     for (auto& j : jobs)
       if (j.token) Fail(j, cause);
   }
+
   bool Send(WorkerReplyKind kind, uint64_t token,
             WorkerFailure failure = WorkerFailure::None, int code = -1,
             int signal = 0, int error = 0, const void* data = nullptr,
@@ -198,6 +234,7 @@ struct WorkerLoop::Impl {
     sequence = sequence == UINT64_MAX ? 0 : sequence + 1;
     return true;
   }
+
   void Flush() noexcept {
     if (lost || !count) return;
     auto& front = queue[head];
@@ -218,11 +255,13 @@ struct WorkerLoop::Impl {
       offset = 0;
     }
   }
+
   Job* Find(uint64_t token) noexcept {
     for (auto& j : jobs)
       if (j.token == token) return &j;
     return nullptr;
   }
+
   void Cancel(uint64_t token) noexcept {
     if (auto* job = Find(token)) {
       Fail(*job, WorkerFailure::Cancelled);
@@ -242,6 +281,7 @@ struct WorkerLoop::Impl {
     }
     Send(WorkerReplyKind::State, token, WorkerFailure::Rejected, -1, 0, ENOENT);
   }
+
   void Start(WorkerCommand& command, Clock::time_point now) {
     if (command.token <= last_token)
       throw std::runtime_error("worker duplicate/reordered token");
@@ -334,6 +374,7 @@ struct WorkerLoop::Impl {
       Fail(j, WorkerFailure::Rejected, EINVAL);
     }
   }
+
   void Status(Job& j) noexcept {
     if (j.status_eof || j.status.value < 0) return;
     ssize_t n = read(j.status.value, j.partial.data() + j.used,
@@ -369,6 +410,7 @@ struct WorkerLoop::Impl {
     else
       Fail(j, WorkerFailure::Protocol, EPROTO);
   }
+
   void Output(Job& j, Fd& fd, bool& eof, WorkerReplyKind kind) noexcept {
     if (eof || fd.value < 0) return;
     std::array<uint8_t, kChunk> bytes;
@@ -390,6 +432,7 @@ struct WorkerLoop::Impl {
         !Send(kind, j.token, WorkerFailure::None, -1, 0, 0, bytes.data(), size))
       Fail(j, WorkerFailure::Backpressure);
   }
+
   void Jobs(Clock::time_point now, bool priority_clear) noexcept {
     for (auto& j : jobs)
       if (j.token) {
@@ -456,6 +499,7 @@ struct WorkerLoop::Impl {
         }
       }
   }
+
   void Step(Clock::time_point now) noexcept {
     bool priority_clear = false;
     try {
@@ -505,6 +549,7 @@ struct WorkerLoop::Impl {
     Flush();
   }
 };
+
 WorkerLoop::WorkerLoop(const WorkerContext& c, const WorkerRegistry& registry,
                        WorkerRuntime& r, WorkerLimits l)
     : impl_(std::make_unique<Impl>(c, registry, r, l)) {}
@@ -513,20 +558,24 @@ void WorkerLoop::Step(Clock::time_point now) noexcept { impl_->Step(now); }
 void WorkerLoop::Shutdown() noexcept {
   impl_->Close(WorkerFailure::ParentLost);
 }
+
 bool WorkerLoop::AdmissionOpen() const noexcept { return impl_->open; }
 bool WorkerLoop::Quiescent() const noexcept {
   return !impl_->open && impl_->children.Size() == 0;
 }
+
 bool WorkerLoop::CanExitCleanly() const noexcept {
   return Quiescent() && Jobs() == 0 && !impl_->lost && impl_->count == 0 &&
          impl_->offset == 0;
 }
+
 std::array<int, 6> WorkerLoop::StartupDescriptors() const {
   Check(impl_->open && !impl_->last_token && !Jobs(),
         "worker descriptor witness after admission");
   return {impl_->commands.fd(), impl_->cancels.fd(), impl_->reply.value,
           impl_->parent.value,  impl_->self.value,   impl_->mount.value};
 }
+
 bool WorkerLoop::DeliveryLost() const noexcept { return impl_->lost; }
 size_t WorkerLoop::Jobs() const noexcept {
   size_t n = 0;
@@ -534,4 +583,4 @@ size_t WorkerLoop::Jobs() const noexcept {
     if (j.token) ++n;
   return n;
 }
-}
+}  // namespace capmgr

@@ -1,38 +1,62 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_catalog.hh"
 #include "catalog/catalog.hh"
 #include "catalog/file_metadata.hh"
+
 #include <array>
 #include <cerrno>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/xattr.h>
 #include <unistd.h>
+
 namespace capmgr {
+
 namespace {
+
 [[noreturn]] void Deny() {
   throw Error(ErrorCode::kPermission, "Untrusted worker catalog files");
 }
+
 struct Fd {
   int value = -1;
   ~Fd() {
     if (value >= 0) close(value);
   }
 };
+
 bool NoAcl(int fd, const char* key) {
   if (MetadataAttribute(fd, key, nullptr, 0) >= 0) return false;
   return errno == ENODATA || errno == ENOTSUP;
 }
+
 bool Same(const struct stat& a, const struct stat& b) {
   return a.st_dev == b.st_dev && a.st_ino == b.st_ino;
 }
+
 void CheckFile(const struct stat& st, const WorkerCatalogFilePolicy& policy) {
   mode_t mode = st.st_mode & 07777;
   if (!S_ISREG(st.st_mode) || st.st_uid != policy.writer ||
       st.st_gid != policy.group || st.st_nlink != 1 || mode != policy.file_mode)
     Deny();
 }
-}
+}  // namespace
+
 WorkerCatalogSnapshot LoadWorkerCatalog(int source,
                                         const WorkerCatalogFilePolicy& policy) {
   if ((policy.directory_mode != 0700 && policy.directory_mode != 0750 &&
@@ -125,6 +149,7 @@ WorkerCatalogSnapshot LoadWorkerCatalog(int source,
     ValidateDataPin(files[i].value);
     if (!NoAcl(files[i].value, "system.posix_acl_access")) Deny();
   }
+
   check_resolved();
   struct stat after{};
   if (fstat(directory.value, &after) || !Same(dir, after) ||
@@ -135,4 +160,4 @@ WorkerCatalogSnapshot LoadWorkerCatalog(int source,
     Deny();
   return {revision, std::move(registry)};
 }
-}
+}  // namespace capmgr

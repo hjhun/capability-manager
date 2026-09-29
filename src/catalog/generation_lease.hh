@@ -22,6 +22,7 @@
 #include <memory>
 
 namespace capmgr {
+
 // Trusted internal configuration only. No application-selected maintenance path.
 // Ancestor/mount provenance and external writer cooperation remain image gates.
 struct GenerationLeaseOperations : ReadLeaseOperations {
@@ -54,6 +55,7 @@ class CatalogGenerationLease {
   void Seal();
   std::unique_ptr<Impl> impl_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_CATALOG_GENERATION_LEASE_HH_

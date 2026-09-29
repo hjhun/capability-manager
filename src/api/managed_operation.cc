@@ -1,7 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "api/managed_operation.hh"
 #include "common/error.hh"
+
 namespace capmgr {
+
 ManagedOperation::ManagedOperation(ManagedPublicationOperations* operations)
     : operations_(operations),
       confirmed_(std::make_shared<const Publication>(
@@ -14,6 +30,7 @@ ManagedOperation::ManagedOperation(ManagedPublicationOperations* operations)
 ManagedOperation::~ManagedOperation() {
   if (coordinator_.joinable() || joining_) std::terminate();
 }
+
 void ManagedOperation::Run() {
   std::lock_guard lock(thread_mutex_);
   if (attempted_ || !ClientToken())
@@ -32,6 +49,7 @@ void ManagedOperation::Run() {
     }
   });
 }
+
 ManagedOperation::Snapshot ManagedOperation::PollCleanup() noexcept {
   Snapshot result{publication_.load(std::memory_order_acquire), false};
   std::unique_lock lock(thread_mutex_, std::try_to_lock);
@@ -52,6 +70,7 @@ ManagedOperation::Snapshot ManagedOperation::PollCleanup() noexcept {
   result.publication = publication_.load(std::memory_order_acquire);
   return result;
 }
+
 void ManagedOperation::Publish(Cleanup cleanup,
                                std::shared_ptr<const std::string> terminal) {
   auto old = publication_.load(std::memory_order_acquire);
@@ -74,4 +93,4 @@ void ManagedOperation::Publish(Cleanup cleanup,
       std::move(terminal);  // single write, BEFORE publication
   publication_.store(terminal_publication_, std::memory_order_release);
 }
-}
+}  // namespace capmgr

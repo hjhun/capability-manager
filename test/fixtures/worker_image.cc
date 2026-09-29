@@ -1,16 +1,33 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // No root setup or workload exec. Independent process for fixed FD/argv checks.
 #include <array>
 #include <charconv>
 #include <cstdlib>
 #include <cstring>
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/vfs.h>
 #include <unistd.h>
+
 #include <cstdint>
+
 int main(int argc, char** argv) {
   if (argc != 3 || std::strcmp(argv[1], "--generation")) return 31;
   uint64_t generation = 0;
@@ -29,6 +46,7 @@ int main(int argc, char** argv) {
         actual.st_rdev != expected.st_rdev || !S_ISCHR(actual.st_mode))
       return 36;
   }
+
   for (int i = 3; i < 9; ++i) {
     struct stat st{};
     if (fstat(i, &st)) return 37;
@@ -54,6 +72,7 @@ int main(int argc, char** argv) {
       return 43;
     }
   }
+
   closedir(directory);
   // Fixture emitter only: revision 12 is synthetic, no catalog/root setup.
   std::array<unsigned char, 32> ready{};
@@ -79,6 +98,7 @@ int main(int argc, char** argv) {
     }
     return 0;
   }
+
   if (mode == 'L')
     for (;;) pause();
   return mode == 'E' ? 7 : mode == 'X' ? 127 : 0;

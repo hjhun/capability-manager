@@ -19,7 +19,9 @@
 #include "api/capmgr.h"
 #include "api/managed_operation.hh"
 #include "common/error.hh"
+
 #include <nlohmann/json.hpp>
+
 #include <atomic>
 #include <condition_variable>
 #include <chrono>
@@ -32,12 +34,15 @@
 #include <optional>
 #include <string>
 #include <thread>
+
 namespace capmgr {
+
 // Trusted allocation-failure seam; invoked before map insertion, never from IPC.
 struct DispatcherOperations {
   virtual ~DispatcherOperations() = default;
   virtual void BeforeInsert() {}
 };
+
 // Private async lifetime engine. Transport jobs must observe cancellation and
 // return; platform deadlines bound transport shutdown independently of callbacks.
 class Dispatcher {
@@ -133,6 +138,7 @@ class Dispatcher {
   std::future<void> dispatcher_exited_ = dispatcher_exit_.get_future();
   std::thread dispatcher_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_API_DISPATCHER_HH_

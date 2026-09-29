@@ -1,16 +1,38 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/owned_children.hh"
+
 #include <gtest/gtest.h>
+
 #include <atomic>
 #include <cerrno>
 #include <future>
+
 #include <signal.h>
 #include <sys/wait.h>
+
 #include <thread>
+
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 struct FakeChildren final : ChildOperations {
   ChildExit exit{};
   int observe_error = 0, reap_error = 0, kill_error = 0;
@@ -21,17 +43,21 @@ struct FakeChildren final : ChildOperations {
     result = exit;
     return observe_error;
   }
+
   int Kill(pid_t) noexcept override {
     ++kills;
     return released ? ESRCH : kill_error;
   }
+
   int Reap(pid_t) noexcept override {
     ++reaps;
     if (!reap_error) released = true;
     return reap_error;
   }
 };
-}
+
+}  // namespace
+
 TEST(OwnedChildren, PendingCleanupRetainsCapacityAndCanBeRetried) {
   FakeChildren fake;
   OwnedChildren owner(1, fake);
@@ -55,6 +81,7 @@ TEST(OwnedChildren, PendingCleanupRetainsCapacityAndCanBeRetried) {
   EXPECT_EQ(owner.Size(), 0u);
   EXPECT_THROW(owner.Stop(id), std::out_of_range);
 }
+
 TEST(OwnedChildren, ExitBeforeCancelNeverSignalsAndReapRetryStaysTerminal) {
   FakeChildren fake;
   OwnedChildren owner(1, fake);
@@ -73,6 +100,7 @@ TEST(OwnedChildren, ExitBeforeCancelNeverSignalsAndReapRetryStaysTerminal) {
   EXPECT_EQ(fake.kills, 0);
   EXPECT_EQ(fake.reaps, 3);
 }
+
 TEST(OwnedChildren, FailedObserveDoesNotSignalUnverifiedPid) {
   FakeChildren fake;
   OwnedChildren owner(1, fake);
@@ -87,6 +115,7 @@ TEST(OwnedChildren, FailedObserveDoesNotSignalUnverifiedPid) {
   fake.exit = {true, 0, 0};
   EXPECT_EQ(owner.Inspect(id).state, ChildState::Complete);
 }
+
 TEST(OwnedChildren, IdExhaustionAndValidationDoNotTransferOwnership) {
   FakeChildren fake;
   OwnedChildren owner(2, fake, UINT64_MAX);
@@ -104,6 +133,7 @@ TEST(OwnedChildren, IdExhaustionAndValidationDoNotTransferOwnership) {
   owner.Release(id);
   EXPECT_THROW(owner.Adopt(10), std::runtime_error);  // Never wraps/reuses ID.
 }
+
 TEST(OwnedChildren, ExternalReapingDisablesSignalsAndCannotBeForgotten) {
   ASSERT_EXIT(
       ([] {
@@ -125,6 +155,7 @@ TEST(OwnedChildren, ExternalReapingDisablesSignalsAndCannotBeForgotten) {
       }()),
       ::testing::ExitedWithCode(0), "");
 }
+
 TEST(OwnedChildren, CannotDestroyTableWithUnconfirmedCleanup) {
   ASSERT_DEATH(([] {
                  FakeChildren fake;
@@ -133,6 +164,7 @@ TEST(OwnedChildren, CannotDestroyTableWithUnconfirmedCleanup) {
                }()),
                "");
 }
+
 TEST(OwnedChildren, ConcurrentCancelCannotSignalAcrossReap) {
   struct BlockingReap final : ChildOperations {
     std::promise<void> reaping, release;
@@ -165,6 +197,7 @@ TEST(OwnedChildren, ConcurrentCancelCannotSignalAcrossReap) {
   EXPECT_EQ(cancel.get().state, ChildState::Complete);
   EXPECT_EQ(fake.kills, 0);
 }
+
 TEST(OwnedChildren, RealDirectChildKillWaitAndReap) {
   pid_t child = fork();
   ASSERT_GE(child, 0);
@@ -182,6 +215,7 @@ TEST(OwnedChildren, RealDirectChildKillWaitAndReap) {
   EXPECT_EQ(owner.Stop(id).state, ChildState::Complete);
   owner.Release(id);
 }
+
 TEST(OwnedChildren, RealNormalExitIsObservedWithoutLosingStatus) {
   pid_t child = fork();
   ASSERT_GE(child, 0);
@@ -194,6 +228,7 @@ TEST(OwnedChildren, RealNormalExitIsObservedWithoutLosingStatus) {
     if (status.state == ChildState::Complete) break;
     std::this_thread::sleep_for(1ms);
   }
+
   ASSERT_EQ(status.state, ChildState::Complete);
   EXPECT_EQ(status.exit_code, 17);
   EXPECT_EQ(status.signal, 0);
@@ -219,6 +254,7 @@ TEST(OwnedChildren, BoundedStopRetriesObservationAndSignalFailures) {
   EXPECT_EQ(done.system_error, 0);
   EXPECT_EQ(fake.kills, 2);
 }
+
 TEST(OwnedChildren, PersistentSignalErrorSurvivesInspectionAndKeepsSlot) {
   FakeChildren fake;
   OwnedChildren owner(1, fake);
@@ -264,6 +300,7 @@ TEST(OwnedChildren,
   EXPECT_EQ(owner.Inspect(next).state, ChildState::Complete);
   owner.Release(next);
 }
+
 TEST(OwnedChildren, InvalidAttachOrderingFailsStopWithoutSignals) {
   EXPECT_DEATH(([] {
                  FakeChildren fake;
@@ -293,6 +330,7 @@ TEST(OwnedChildren, InvalidAttachOrderingFailsStopWithoutSignals) {
                }()),
                "");
 }
+
 TEST(OwnedChildren, ReservedAttachmentOwnsRealChildBeforeFirstObservation) {
   OwnedChildren owner;
   auto id = owner.Reserve();
@@ -301,15 +339,18 @@ TEST(OwnedChildren, ReservedAttachmentOwnsRealChildBeforeFirstObservation) {
     owner.AbandonUnspawned(id);
     FAIL() << "fork failed";
   }
+
   if (!child) {
     for (;;) pause();
   }
+
   owner.AttachReserved(id, child);
   auto result = owner.StopAndWait(id, 2s);
   ASSERT_EQ(result.state, ChildState::Complete);
   EXPECT_EQ(result.signal, SIGKILL);
   owner.Release(id);
 }
+
 TEST(OwnedChildren,
      InitialOwnershipUncertaintyRetainsAttachedSlotWithoutSignaling) {
   ASSERT_EXIT(

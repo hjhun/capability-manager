@@ -15,16 +15,21 @@
 
 #include "../fixtures/read_policy_code_image.hh"
 #include "../fixtures/read_policy_context.hh"
+
 #include <gtest/gtest.h>
 #include <sys/wait.h>
+
 #include <array>
 #include <fstream>
 #include <chrono>
 #include <thread>
+
 #include <signal.h>
 
 using capmgr::fixture::realpolicy::CodeImage;
+
 namespace {
+
 struct Owned {
   int fd;
   struct stat identity{};
@@ -32,15 +37,18 @@ struct Owned {
       : fd(open(path, flags)) {
     if (fd < 3 || fstat(fd, &identity)) throw std::runtime_error("test open");
   }
+
   ~Owned() {
     if (fd >= 0) close(fd);
   }
+
   int Take() {
     int value = fd;
     fd = -1;
     return value;
   }
 };
+
 // Each loader experiment has a fresh process: retained mappings and libc's
 // name-based dlopen cache cannot turn a later negative into an earlier image.
 void Isolated(void (*body)()) {
@@ -68,10 +76,12 @@ void Isolated(void (*body)()) {
     FAIL() << "isolated loader experiment timeout";
     return;
   }
+
   ASSERT_EQ(observed, child);
   ASSERT_TRUE(WIFEXITED(status));
   EXPECT_EQ(WEXITSTATUS(status), 0);
 }
+
 TEST(ReadPolicyCodeImage, ClosesOwnedDescriptorBeforeEntry) {
   Isolated([] {
     Owned owned(CAPMGR_LOADER_TEST_IMAGE);
@@ -90,6 +100,7 @@ TEST(ReadPolicyCodeImage, ClosesOwnedDescriptorBeforeEntry) {
     EXPECT_EQ(fcntl(fd, F_GETFD), -1);
   });
 }
+
 TEST(ReadPolicyCodeImage, ContextFailurePrecedesLoading) {
   Isolated([] {
     Owned owned(CAPMGR_LOADER_TEST_IMAGE);
@@ -103,6 +114,7 @@ TEST(ReadPolicyCodeImage, ContextFailurePrecedesLoading) {
     EXPECT_NE(fcntl(fd, F_GETFD), -1);
   });
 }
+
 TEST(ReadPolicyCodeImage, MissingEntryRetainsMappingAndDescriptorUntilExit) {
   Isolated([] {
     Owned owned(CAPMGR_LOADER_NO_ENTRY_IMAGE);
@@ -115,6 +127,7 @@ TEST(ReadPolicyCodeImage, MissingEntryRetainsMappingAndDescriptorUntilExit) {
     EXPECT_NE(fcntl(fd, F_GETFD), -1);
   });
 }
+
 TEST(ReadPolicyCodeImage, InvalidElfKeepsOwnership) {
   Isolated([] {
     Owned owned(CAPMGR_LOADER_INVALID_IMAGE);
@@ -125,6 +138,7 @@ TEST(ReadPolicyCodeImage, InvalidElfKeepsOwnership) {
     EXPECT_NE(fcntl(fd, F_GETFD), -1);
   });
 }
+
 TEST(ReadPolicyCodeImage, MissingDescriptorRejectsBeforeContext) {
   Isolated([] {
     Owned owned(CAPMGR_LOADER_TEST_IMAGE);
@@ -138,6 +152,7 @@ TEST(ReadPolicyCodeImage, MissingDescriptorRejectsBeforeContext) {
     EXPECT_FALSE(called);
   });
 }
+
 TEST(ReadPolicyCodeImage, SubstitutedDescriptorRejectsBeforeContext) {
   Isolated([] {
     Owned owned(CAPMGR_LOADER_TEST_IMAGE), other(CAPMGR_LOADER_NO_ENTRY_IMAGE);
@@ -152,6 +167,7 @@ TEST(ReadPolicyCodeImage, SubstitutedDescriptorRejectsBeforeContext) {
     EXPECT_FALSE(called);
   });
 }
+
 TEST(ReadPolicyCodeImage, NonCloexecRejectsBeforeContext) {
   Isolated([] {
     Owned owned(CAPMGR_LOADER_TEST_IMAGE);
@@ -165,6 +181,7 @@ TEST(ReadPolicyCodeImage, NonCloexecRejectsBeforeContext) {
     EXPECT_FALSE(called);
   });
 }
+
 TEST(ReadPolicyCodeImage, WritableAndPathDescriptorsRejected) {
   Isolated([] {
     Owned writable(CAPMGR_LOADER_TEST_IMAGE, O_RDWR | O_CLOEXEC);
@@ -177,6 +194,7 @@ TEST(ReadPolicyCodeImage, WritableAndPathDescriptorsRejected) {
     EXPECT_EQ(fcntl(pin, F_GETFD), -1);
   });
 }
+
 TEST(ReadPolicyCodeImage, ExtraAliasRejectedBeforeLoader) {
   Isolated([] {
     long limit = sysconf(_SC_OPEN_MAX);
@@ -202,6 +220,7 @@ TEST(ReadPolicyCodeImage, ExtraAliasRejectedBeforeLoader) {
     EXPECT_EQ(dlopen(name.c_str(), RTLD_NOW | RTLD_NOLOAD), nullptr);
   });
 }
+
 TEST(ReadPolicyCodeImage, MissingStdioRejectedBeforeLoader) {
   Isolated([] {
     long limit = sysconf(_SC_OPEN_MAX);
@@ -223,6 +242,7 @@ TEST(ReadPolicyCodeImage, MissingStdioRejectedBeforeLoader) {
     EXPECT_EQ(dlopen(name.c_str(), RTLD_NOW | RTLD_NOLOAD), nullptr);
   });
 }
+
 TEST(ReadPolicyCodeImage, RechecksPinAfterPreloadValidation) {
   Isolated([] {
     Owned owned(CAPMGR_LOADER_TEST_IMAGE);
@@ -240,4 +260,4 @@ TEST(ReadPolicyCodeImage, RechecksPinAfterPreloadValidation) {
   });
 }
 
-}
+}  // namespace

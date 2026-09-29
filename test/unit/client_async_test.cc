@@ -1,11 +1,29 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "api/client.hh"
 #include "launcher/action_exchange.hh"
+
 #include <future>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 class Gate : public AccessGate {
  public:
   explicit Gate(std::string path) : path_(std::move(path)) {}
@@ -14,6 +32,7 @@ class Gate : public AccessGate {
  private:
   std::string path_;
 };
+
 class Backend : public ExecutionBackend {
  public:
   bool deny = false;
@@ -22,6 +41,7 @@ class Backend : public ExecutionBackend {
     if (deny || entry.id != "cli:test")
       throw Error(ErrorCode::kPermission, "Denied fixture");
   }
+
   std::string Execute(const Entry&, const Request& request,
                       const std::atomic<bool>& cancel,
                       const Dispatcher::Emit& event) override {
@@ -34,7 +54,9 @@ class Backend : public ExecutionBackend {
         .dump();
   }
 };
-}
+
+}  // namespace
+
 TEST_F(CatalogTest, PublicAsyncCallbackCancellationAndDestroyLifetime) {
   Catalog writer(path_, Database::Access::kWriter);
   Publish(writer, "pkg.one", {Make("test", "pkg.one", Kind::kCli)});
@@ -80,6 +102,7 @@ TEST_F(CatalogTest, PublicAsyncCallbackCancellationAndDestroyLifetime) {
   } while (status == CAPMGR_ERROR_BUSY);
   EXPECT_EQ(status, 0);
 }
+
 TEST_F(CatalogTest, AdmissionFailureClearsTokenAndNeverCallsBack) {
   Catalog writer(path_, Database::Access::kWriter);
   Publish(writer, "pkg.one", {Make("test", "pkg.one", Kind::kCli)});
@@ -109,6 +132,7 @@ TEST_F(CatalogTest, AdmissionFailureClearsTokenAndNeverCallsBack) {
   EXPECT_EQ(capmgr_client_destroy(client), 0);
   EXPECT_EQ(calls, 0);
 }
+
 TEST_F(CatalogTest, ChangedCallbacksDeduplicateAndUnregisterQuiescesData) {
   Catalog writer(path_, Database::Access::kWriter);
   Gate gate(path_);

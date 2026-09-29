@@ -1,4 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 
 #include <grp.h>
@@ -16,6 +30,7 @@
 #include <exception>
 #include <fstream>
 #include <thread>
+
 #include <poll.h>
 #include <spawn.h>
 
@@ -28,13 +43,15 @@
 extern char** environ;
 
 namespace {
+
 // Only the unit executable interposes prepare. The retained statement is a test
 // violation of the private no-escape invariant, not a production accessor.
 thread_local bool retain_statement = false;
 thread_local sqlite3_stmt* retained_statement = nullptr;
 thread_local bool fail_prepare = false;
 thread_local const char* chmod_on_prepare = nullptr;
-}
+}  // namespace
+
 extern "C" int __real_sqlite3_prepare_v2(sqlite3*, const char*, int,
                                          sqlite3_stmt**, const char**);
 extern "C" int __wrap_sqlite3_prepare_v2(sqlite3* db, const char* sql, int size,
@@ -46,6 +63,7 @@ extern "C" int __wrap_sqlite3_prepare_v2(sqlite3* db, const char* sql, int size,
     const char* name = std::exchange(chmod_on_prepare, nullptr);
     if (chmod(name, 0666) != 0) std::terminate();
   }
+
   if (rc == SQLITE_OK && std::exchange(retain_statement, false)) {
     const int extra = __real_sqlite3_prepare_v2(db, "SELECT 1", -1,
                                                 &retained_statement, nullptr);
@@ -55,6 +73,7 @@ extern "C" int __wrap_sqlite3_prepare_v2(sqlite3* db, const char* sql, int size,
 }
 
 namespace {
+
 using namespace capmgr;
 using Mode = CatalogGenerationLease::Mode;
 using namespace std::chrono_literals;
@@ -71,12 +90,14 @@ struct Labels : GenerationLeaseOperations {
     return GenerationLeaseOperations::Lock(fd, type);
   }
 };
+
 struct HeldFd {
   int value = -1;
   ~HeldFd() {
     if (value >= 0) close(value);
   }
 };
+
 class CoordinatedWriterTest : public CatalogTest {
  protected:
   void SetUp() override {
@@ -92,16 +113,19 @@ class CoordinatedWriterTest : public CatalogTest {
                0700,      0600, 0600,     "Fixture", "Fixture", "Fixture"};
     path_ = directory + "/catalog.db";
   }
+
   std::unique_ptr<CoordinatedCatalogWriter> Writer(
       Mode mode = Mode::kExisting, std::chrono::milliseconds b = 0ms) {
     return std::make_unique<CoordinatedCatalogWriter>(policy_, mode, b,
                                                       &labels_);
   }
+
   void Provision() {
     auto writer = Writer(Mode::kMaintenance);
     EXPECT_EQ(writer->Revision(), 0u);
     writer->Close();
   }
+
   void ExpectError(ErrorCode code, const std::function<void()>& action) {
     try {
       action();
@@ -110,6 +134,7 @@ class CoordinatedWriterTest : public CatalogTest {
       EXPECT_EQ(error.code(), code) << error.what();
     }
   }
+
   bool Wait(pid_t child, int expected) {
     const auto deadline = std::chrono::steady_clock::now() + 2s;
     int status = 0;
@@ -122,6 +147,7 @@ class CoordinatedWriterTest : public CatalogTest {
     waitpid(child, &status, 0);
     return false;
   }
+
   void Probe(const std::string& mode, bool busy) {
     const auto executable =
         std::filesystem::read_symlink("/proc/self/exe").parent_path().string() +
@@ -139,6 +165,7 @@ class CoordinatedWriterTest : public CatalogTest {
               0);
     EXPECT_TRUE(Wait(child, 0)) << mode << " " << expected;
   }
+
   void LoadSnapshot() {
     const int directory =
         open(policy_.directory.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
@@ -151,6 +178,7 @@ class CoordinatedWriterTest : public CatalogTest {
     }
     close(directory);
   }
+
   void PinClose() {
     for (const char* suffix : {"", "-wal", "-shm"}) {
       const int fd =
@@ -173,6 +201,7 @@ TEST_F(CoordinatedWriterTest, OnlyExclusiveBootstrapCreatesCatalog) {
     ASSERT_EQ(stat((path_ + suffix).c_str(), &info), 0);
     EXPECT_EQ(info.st_mode & 07777, 0600u);
   }
+
   auto writer = Writer();
   EXPECT_EQ(writer->Revision(), 0u);
 }
@@ -249,6 +278,7 @@ TEST_F(CoordinatedWriterTest, SchemaMigrationRequiresExclusiveOwnership) {
     Database isolated(path_, Database::Access::kWriter);
     isolated.Exec("DROP TABLE completed; PRAGMA user_version=1");
   }
+
   ExpectError(ErrorCode::kUnsupported, [&] { Writer(); });
   {
     Database read(path_, Database::Access::kReadOnly);
@@ -256,6 +286,7 @@ TEST_F(CoordinatedWriterTest, SchemaMigrationRequiresExclusiveOwnership) {
     ASSERT_TRUE(version.Step());
     EXPECT_EQ(version.Integer(0), 1);
   }
+
   auto maintenance = Writer(Mode::kMaintenance);
   maintenance->Close();
   EXPECT_NO_THROW(Writer());
@@ -271,6 +302,7 @@ TEST_F(CoordinatedWriterTest, FailedConstructorClosesBeforeReleasingLease) {
     Database isolated(path_, Database::Access::kWriter);
     isolated.Exec("PRAGMA user_version=99");
   }
+
   ExpectError(ErrorCode::kUnsupported, [&] { Writer(Mode::kMaintenance); });
   // Rollback/physical close occurred. An independent EX description is available.
   EXPECT_NO_THROW(CatalogGenerationLease::Acquire(policy_, Mode::kMaintenance,
@@ -306,6 +338,7 @@ TEST_F(CoordinatedWriterTest, BusyDestructorFailsBeforeOwnershipIsLost) {
     writer.reset();
     _exit(3);
   }
+
   EXPECT_TRUE(Wait(child, 86));
   EXPECT_NO_THROW(Writer(Mode::kMaintenance));
 }
@@ -332,6 +365,7 @@ TEST_F(CoordinatedWriterTest, InheritedOperationsRejectAndDestructorFailStops) {
     writer.reset();
     _exit(7);
   }
+
   EXPECT_TRUE(Wait(child, 86));
   EXPECT_EQ(writer->Revision(), 0u);
   ExpectError(ErrorCode::kBusy, [&] { Writer(Mode::kMaintenance); });
@@ -354,6 +388,7 @@ TEST_F(CoordinatedWriterTest, ChildCloseOnlyDoesNotUnlockParentDescription) {
       _exit(error.code() == ErrorCode::kBusy ? 0 : 4);
     }
   }
+
   EXPECT_TRUE(Wait(child, 0));
   ExpectError(ErrorCode::kBusy, [&] { Writer(Mode::kMaintenance); });
   lease.reset();
@@ -436,6 +471,7 @@ TEST_F(CoordinatedWriterTest, ActionImportCommitsBeforeNotifyWithSharedReader) {
     insert.Bind(2, action.dump());
     insert.Step();
   }
+
   auto writer = Writer();
   auto lease = std::make_unique<CatalogReadLease>(policy_, &labels_);
   Catalog reader(path_, Database::Access::kReadOnly);
@@ -450,6 +486,7 @@ TEST_F(CoordinatedWriterTest, ActionImportCommitsBeforeNotifyWithSharedReader) {
   EXPECT_FALSE(SynchronizeActions(*writer, source_path, changed));
   EXPECT_EQ(notifications, 2);
 }
+
 TEST_F(CoordinatedWriterTest, PostOpenMismatchFailsBeforeWriterPublication) {
   Provision();
   const auto sidecar = path_ + "-shm";
@@ -477,6 +514,7 @@ TEST_F(CoordinatedWriterTest, ForkRetentionBlocksUntilLastInheritedClose) {
     lease.reset();
     _exit(0);
   }
+
   close(release[0]);
   lease.reset();
   ExpectError(ErrorCode::kBusy, [&] { Writer(Mode::kMaintenance); });
@@ -539,6 +577,7 @@ TEST_F(CoordinatedWriterTest, AccessAclAndUnsafeSidecarRejectAdmission) {
   ASSERT_EQ(chmod((path_ + "-shm").c_str(), 0600), 0);
   EXPECT_NO_THROW(Writer());
 }
+
 TEST_F(CoordinatedWriterTest,
        MetadataClosePreservesActiveWalWriteAndMainLocks) {
   Provision();
@@ -551,6 +590,7 @@ TEST_F(CoordinatedWriterTest,
   {
     CatalogReadLease temporary(policy_, &labels_);
   }
+
   Probe("begin", true);
   Probe("exclusive", true);
   auto second = Writer();
@@ -593,6 +633,7 @@ TEST_F(CoordinatedWriterTest,
   {
     CatalogReadLease temporary(policy_, &labels_);
   }
+
   Probe("checkpoint", true);
   auto second = Writer();
   second->Close();
@@ -656,6 +697,7 @@ TEST_F(CoordinatedWriterTest,
     EXPECT_EQ(getenv("CAPMGR_REQUIRE_METADATA_TESTS"), nullptr)
         << "Required native SMACK metadata unavailable";
   }
+
   ASSERT_EQ(chmod(path_.c_str(), 0000), 0);
   if (getuid() == 0) {
     // Only an already-created O_PATH metadata pin survives; all SQLite was
@@ -688,6 +730,7 @@ TEST_F(CoordinatedWriterTest,
         -1);
     EXPECT_EQ(errno, EACCES);
   }
+
   ASSERT_EQ(chmod(path_.c_str(), 0600), 0);
   const int bad_flags = open(path_.c_str(), O_PATH | O_CLOEXEC);
   ASSERT_GE(bad_flags, 0);
@@ -715,6 +758,7 @@ TEST_F(CoordinatedWriterTest,
   EXPECT_NO_THROW(RequireDataPinSupport(directory));
   close(directory);
 }
+
 TEST_F(CoordinatedWriterTest, LoaderRejectionsPreserveActiveWalWriterLocks) {
   Provision();
   // Declare raw metadata descriptors BEFORE SQLite so all unwind paths physically
@@ -780,6 +824,7 @@ TEST_F(CoordinatedWriterTest, LoaderRejectionsPreserveRetainedReadSnapshot) {
     EXPECT_GE(fcntl(fd, F_GETFD), 0);
     Probe("checkpoint", true);
   }
+
   ExpectError(ErrorCode::kUnsupported, [&] {
     LoadWorkerCatalog(directory.value, {getuid(), getgid(), 0700, 0600});
   });

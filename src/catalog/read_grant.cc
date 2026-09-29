@@ -1,13 +1,33 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "catalog/read_grant.hh"
+
 #include <cerrno>
+
 #include <sys/random.h>
+
 namespace capmgr {
+
 namespace {
+
 bool Hex(std::string_view value) {
   return value.find_first_not_of("0123456789abcdef") == std::string_view::npos;
 }
-}
+}  // namespace
+
 CatalogGrantReceipt ParseCatalogGrant(std::string_view value) {
   if (value.size() != 235 || value.substr(0, 5) != "CMG1:" ||
       value[69] != ':' || !Hex(value.substr(5, 64)) ||
@@ -15,6 +35,7 @@ CatalogGrantReceipt ParseCatalogGrant(std::string_view value) {
     throw Error(ErrorCode::kPermission, "Malformed catalog grant");
   return {std::string(value.substr(5, 64)), std::string(value.substr(70))};
 }
+
 bool CatalogGrantBudget::Reserve() noexcept {
   auto count = count_.load();
   while (count < kLimit) {
@@ -22,9 +43,11 @@ bool CatalogGrantBudget::Reserve() noexcept {
   }
   return false;
 }
+
 CatalogGrantOperations::Time CatalogGrantOperations::Now() noexcept {
   return std::chrono::steady_clock::now();
 }
+
 std::array<unsigned char, 32> CatalogGrantOperations::Random() {
   std::array<unsigned char, 32> bytes{};
   size_t offset = 0;
@@ -38,6 +61,7 @@ std::array<unsigned char, 32> CatalogGrantOperations::Random() {
   }
   return bytes;
 }
+
 CatalogReadGrant::CatalogReadGrant(CatalogGrantBudget& budget,
                                    CatalogGrantOperations* operations)
     : budget_(budget), operations_(operations ? operations : &defaults_) {}
@@ -54,6 +78,7 @@ void CatalogReadGrant::Clear() noexcept {
     budget_.Release();
   }
 }
+
 std::string CatalogReadGrant::Issue(std::unique_ptr<CatalogReadLease> lease) {
   std::lock_guard lock(mutex_);
   try {
@@ -80,6 +105,7 @@ std::string CatalogReadGrant::Issue(std::unique_ptr<CatalogReadLease> lease) {
     throw;
   }
 }
+
 void CatalogReadGrant::Confirm(std::string_view nonce) {
   std::lock_guard lock(mutex_);
   try {
@@ -95,12 +121,14 @@ void CatalogReadGrant::Confirm(std::string_view nonce) {
     throw;
   }
 }
+
 void CatalogReadGrant::Expire() {
   std::lock_guard lock(mutex_);
   if (state_ == State::kPending && operations_->Now() >= expires_) Clear();
 }
+
 void CatalogReadGrant::Revoke() {
   std::lock_guard lock(mutex_);
   Clear();
 }
-}
+}  // namespace capmgr

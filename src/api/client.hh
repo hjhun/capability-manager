@@ -18,9 +18,12 @@
 
 #include <memory>
 #include <string>
+
 #include "api/capmgr.h"
 #include "catalog/read_access.hh"
+
 namespace capmgr {
+
 // Private injection seam. Never installed or exported in libcapmgr.
 class AccessGate {
  public:
@@ -32,12 +35,15 @@ class AccessGate {
   // during create. No IPC state may leak into bounded client destruction.
   virtual std::unique_ptr<ReadAccess> AuthorizeReadAccess();
 };
+
 int CreateClient(AccessGate& gate, capmgr_client_h* client) noexcept;
-}
+}  // namespace capmgr
 
 #include "api/dispatcher.hh"
 #include "launcher/runner.hh"
+
 namespace capmgr {
+
 class ExecutionBackend {
  public:
   // Destruction is nonblocking; execution/cleanup belongs to tracked work.
@@ -53,6 +59,7 @@ class ExecutionBackend {
                                                               const Request&) {
     return {};
   }
+
   virtual std::string Execute(const Entry& entry, const Request& request,
                               const std::atomic<bool>& cancelled,
                               const Dispatcher::Emit& event) {
@@ -74,9 +81,10 @@ class ExecutionBackend {
     emit({std::move(result), false, true});
   }
 };
+
 int CreateClient(AccessGate& gate, std::shared_ptr<ExecutionBackend> backend,
                  capmgr_client_h* client) noexcept;
 void NotifyChanged(capmgr_client_h client, uint64_t revision);
-}
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_API_CLIENT_HH_

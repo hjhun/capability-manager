@@ -20,9 +20,11 @@
 #include <chrono>
 #include <cstdint>
 #include <mutex>
+
 #include <sys/types.h>
 
 namespace capmgr {
+
 // Private broker state. These are not C API error values.
 enum class ChildState {
   Running,
@@ -32,17 +34,20 @@ enum class ChildState {
   Uncertain,
   Reserved
 };
+
 struct ChildStatus {
   ChildState state = ChildState::Running;
   int exit_code = -1;
   int signal = 0;
   int system_error = 0;
 };
+
 struct ChildExit {
   bool exited = false;
   int code = -1;
   int signal = 0;
 };
+
 // Return zero or a positive errno. Observe MUST use WNOWAIT; Reap MUST be
 // nonblocking. Injection is for failure-path tests, not an IPC/plugin surface.
 class ChildOperations {
@@ -52,6 +57,7 @@ class ChildOperations {
   virtual int Kill(pid_t pid) noexcept = 0;
   virtual int Reap(pid_t pid) noexcept = 0;
 };
+
 ChildOperations& LinuxChildOperations();
 
 // Owns ONLY exclusive, unreaped direct children created by the broker's
@@ -102,6 +108,7 @@ class OwnedChildren {
   mutable std::mutex mutex_;
   std::array<Job, 64> jobs_{};
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_OWNED_CHILDREN_HH_

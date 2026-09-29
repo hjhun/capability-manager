@@ -1,26 +1,48 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "platform/peer.hh"
 #include "platform/authorization.hh"
+
 #include <gmock/gmock.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+
 #include <cstring>
 #include <cstdlib>
+
 #include <fcntl.h>
+
 using namespace capmgr;
+
 namespace {
+
 struct Fd {
   int value = -1;
   explicit Fd(int fd = -1) : value(fd) {}
   ~Fd() {
     if (value >= 0) close(value);
   }
+
   Fd(const Fd&) = delete;
   Fd& operator=(const Fd&) = delete;
 };
+
 struct LocalConnection {
   Fd listener{socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0)}, client, accepted;
   explicit LocalConnection(const std::string& path) {
@@ -43,6 +65,7 @@ struct LocalConnection {
     if (accepted.value < 0) throw std::runtime_error("accept");
   }
 };
+
 bool SecurityLabelsAvailable(int fd) {
   char label[4096];
   socklen_t size = sizeof(label);
@@ -60,7 +83,9 @@ class MockPolicy : public ConnectionPolicy {
  public:
   MOCK_METHOD(PolicyDecision, CheckSocket, (int), (override));
 };
+
 }
+
 TEST(Peer, RejectsInvalidRegularAndNonUnixDescriptors) {
   EXPECT_THROW(Peer::FromSocket(-1),
                Error);  // also the generated -e default FD
@@ -71,6 +96,7 @@ TEST(Peer, RejectsInvalidRegularAndNonUnixDescriptors) {
   ASSERT_GE(network.value, 0);
   EXPECT_THROW(Peer::FromSocket(network.value), Error);
 }
+
 TEST_F(CatalogTest, UnixConnectionCredentialsAndDisconnect) {
   LocalConnection connection(root_ + "/peer.sock");
   REQUIRE_SOCKET_LABEL(connection.accepted.value);
@@ -85,6 +111,7 @@ TEST_F(CatalogTest, UnixConnectionCredentialsAndDisconnect) {
   connection.client.value = -1;
   EXPECT_FALSE(peer->Connected());
 }
+
 TEST_F(CatalogTest, InheritedEndpointRetainsConnectorIdentityNotCurrentSender) {
   LocalConnection connection(root_ + "/peer.sock");
   REQUIRE_SOCKET_LABEL(connection.accepted.value);
@@ -106,6 +133,7 @@ TEST_F(CatalogTest, InheritedEndpointRetainsConnectorIdentityNotCurrentSender) {
   EXPECT_EQ(peer->pid(), getpid());
   EXPECT_TRUE(peer->Connected());
 }
+
 TEST_F(CatalogTest, RightsRecipientKeepsConnectionButCannotProveLiveTask) {
   Fd listener(socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0));
   ASSERT_GE(listener.value, 0);
@@ -146,6 +174,7 @@ TEST_F(CatalogTest, RightsRecipientKeepsConnectionButCannotProveLiveTask) {
     if (read(child_control.value, &byte, 1) != 1) _exit(95);
     _exit(0);
   }
+
   close(child_control.value);
   child_control.value = -1;
   Fd accepted(accept4(listener.value, nullptr, nullptr, SOCK_CLOEXEC));
@@ -173,6 +202,7 @@ TEST_F(CatalogTest, RightsRecipientKeepsConnectionButCannotProveLiveTask) {
     EXPECT_EQ(peer->pid(), child);
     EXPECT_TRUE(peer->Connected());
   }
+
   ASSERT_EQ(write(recipient.value, "r", 1), 1);
   ASSERT_EQ(read(accepted.value, &byte, 1), 1);
   ASSERT_EQ(write(control.value, "x", 1), 1);
@@ -193,6 +223,7 @@ TEST_F(CatalogTest, RightsRecipientKeepsConnectionButCannotProveLiveTask) {
   }  // Reaping does not revoke the transferred endpoint or its credentials.
   REQUIRE_SOCKET_LABEL(accepted.value);
 }
+
 TEST_F(CatalogTest, PolicyNeverBypassesSystemUidAndOnlyAllowsConfirmedGrant) {
   LocalConnection connection(root_ + "/peer.sock");
   REQUIRE_SOCKET_LABEL(connection.accepted.value);
@@ -207,6 +238,7 @@ TEST_F(CatalogTest, PolicyNeverBypassesSystemUidAndOnlyAllowsConfirmedGrant) {
         .WillOnce(testing::Return(decision));
     EXPECT_THROW(RequirePlatformPrivilege(*peer, policy), Error);
   }
+
   close(connection.client.value);
   connection.client.value = -1;
   EXPECT_THROW(RequirePlatformPrivilege(*peer, policy),

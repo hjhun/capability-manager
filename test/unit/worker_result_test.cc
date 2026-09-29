@@ -1,19 +1,41 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <gtest/gtest.h>
+
 #include "launcher/worker_result.hh"
+
 #include <cstring>
+
 #include <signal.h>
+
 using namespace capmgr;
+
 namespace {
+
 std::string RequestText(std::string id = "1") {
   return "{\"jsonrpc\":\"2.0\",\"id\":" + id +
          ",\"method\":\"tools/call\",\"params\":{\"name\":\"cli:fixture\",\"arguments\":{}}}";
 }
+
 WorkerEvent Event(WorkerReplyKind kind,
                   WorkerFailure failure = WorkerFailure::None, int code = -1,
                   int signal = 0, int error = 0) {
   return {kind, 42, failure, code, signal, error, {}, 0};
 }
+
 void Feed(WorkerResult& result, const std::string& text,
           WorkerReplyKind kind = WorkerReplyKind::Stdout) {
   for (size_t at = 0; at < text.size();) {
@@ -24,17 +46,20 @@ void Feed(WorkerResult& result, const std::string& text,
     EXPECT_FALSE(result.Accept(event));
   }
 }
+
 RunResult Finish(WorkerResult& result, int code = 0) {
   auto value = result.Accept(
       Event(WorkerReplyKind::Complete, WorkerFailure::None, code));
   EXPECT_TRUE(value);
   return value.value();
 }
+
 std::string Cause(const RunResult& result) {
   return Json::parse(result.response)["error"]["data"]["cause"]
       .get<std::string>();
 }
-}
+}  // namespace
+
 TEST(WorkerResult, ConstructBeforeAdmissionBindBeforeEventsAndCorrelateTokens) {
   auto text = RequestText();
   WorkerResult result(7, text);
@@ -55,6 +80,7 @@ TEST(WorkerResult, ConstructBeforeAdmissionBindBeforeEventsAndCorrelateTokens) {
   EXPECT_THROW(result.Accept(Event(WorkerReplyKind::Complete)), Error);
   EXPECT_THROW(result.Accept(Event(WorkerReplyKind::Stdout)), Error);
 }
+
 TEST(WorkerResult, RequestDuplicateKeysDepthAndIdentityAreRejectedBeforeStart) {
   EXPECT_THROW(WorkerResult(0, RequestText()), Error);
   EXPECT_THROW(
@@ -79,6 +105,7 @@ TEST(WorkerResult, RequestDuplicateKeysDepthAndIdentityAreRejectedBeforeStart) {
   text.replace(text.find("cli:fixture"), 11, "cli:");
   EXPECT_THROW(WorkerResult(7, text), Error);
 }
+
 TEST(WorkerResult, NativeBytesAndIsErrorSurviveNonzeroExitFromEitherStream) {
   for (auto kind : {WorkerReplyKind::Stdout, WorkerReplyKind::Stderr}) {
     WorkerResult result(7, RequestText());
@@ -91,6 +118,7 @@ TEST(WorkerResult, NativeBytesAndIsErrorSurviveNonzeroExitFromEitherStream) {
     EXPECT_EQ(done.response, native);
     EXPECT_EQ(done.exit_code, 7);
   }
+
   WorkerResult result(7, RequestText());
   ASSERT_TRUE(result.Bind(42));
   std::string native =
@@ -100,6 +128,7 @@ TEST(WorkerResult, NativeBytesAndIsErrorSurviveNonzeroExitFromEitherStream) {
   EXPECT_TRUE(done.native);
   EXPECT_EQ(done.response, native);
 }
+
 TEST(WorkerResult, FormattingObjectOrderAndStringEscapesDeduplicateLosslessly) {
   WorkerResult result(7, RequestText("0"));
   ASSERT_TRUE(result.Bind(42));
@@ -113,6 +142,7 @@ TEST(WorkerResult, FormattingObjectOrderAndStringEscapesDeduplicateLosslessly) {
   ASSERT_TRUE(done.native) << done.response;
   EXPECT_EQ(done.response, first);
 }
+
 TEST(WorkerResult, HighPrecisionAndConservativeNumericLexemeConflicts) {
   for (auto values : std::vector<std::pair<std::string, std::string>>{
            {"1.234567890123456789", "1.234567890123456788"},
@@ -131,6 +161,7 @@ TEST(WorkerResult, HighPrecisionAndConservativeNumericLexemeConflicts) {
     EXPECT_EQ(Cause(done), "conflicting responses");
   }
 }
+
 TEST(WorkerResult, InvalidSecondStreamCannotBeIgnoredAndWhitespaceCan) {
   for (const auto& second :
        {std::string("log"),
@@ -142,6 +173,7 @@ TEST(WorkerResult, InvalidSecondStreamCannotBeIgnoredAndWhitespaceCan) {
     Feed(result, second, WorkerReplyKind::Stderr);
     EXPECT_EQ(Cause(Finish(result)), "invalid response");
   }
+
   WorkerResult result(7, RequestText());
   ASSERT_TRUE(result.Bind(42));
   Feed(result, " \t\n");
@@ -149,6 +181,7 @@ TEST(WorkerResult, InvalidSecondStreamCannotBeIgnoredAndWhitespaceCan) {
        WorkerReplyKind::Stderr);
   EXPECT_TRUE(Finish(result).native);
 }
+
 TEST(WorkerResult, MalformedDuplicateKeysDepthAndNumericRangeFailClosed) {
   for (
       const auto& text : std::vector<std::string>{
@@ -165,6 +198,7 @@ TEST(WorkerResult, MalformedDuplicateKeysDepthAndNumericRangeFailClosed) {
     EXPECT_FALSE(done.native);
   }
 }
+
 TEST(WorkerResult, SignedIntegerAndUtf8StringIdsRemainExact) {
   for (const std::string id :
        {"-9223372036854775808", "9223372036854775807", "\"한글\""}) {
@@ -173,11 +207,13 @@ TEST(WorkerResult, SignedIntegerAndUtf8StringIdsRemainExact) {
     Feed(result, "{\"jsonrpc\":\"2.0\",\"id\":" + id + ",\"result\":true}");
     EXPECT_TRUE(Finish(result).native);
   }
+
   WorkerResult result(7, RequestText("\"1\""));
   ASSERT_TRUE(result.Bind(42));
   Feed(result, R"({"jsonrpc":"2.0","id":1,"result":true})");
   EXPECT_FALSE(Finish(result).native);
 }
+
 TEST(WorkerResult, OverflowRequestsCancelButNoResultUntilComplete) {
   WorkerResult result(7, RequestText());
   ASSERT_TRUE(result.Bind(42));
@@ -195,6 +231,7 @@ TEST(WorkerResult, OverflowRequestsCancelButNoResultUntilComplete) {
   EXPECT_EQ(Cause(done), "output limit");
   EXPECT_FALSE(result.NeedsCancellation());
 }
+
 TEST(WorkerResult, WorkerFailureAndSignalWinOverProvisionalNativeBytes) {
   for (auto failure : {WorkerFailure::Cancelled, WorkerFailure::Timeout,
                        WorkerFailure::Setup, WorkerFailure::Backpressure}) {
@@ -209,6 +246,7 @@ TEST(WorkerResult, WorkerFailureAndSignalWinOverProvisionalNativeBytes) {
     EXPECT_EQ(json["error"]["data"]["systemError"], EIO);
     EXPECT_EQ(json["error"]["data"]["signal"], SIGKILL);
   }
+
   WorkerResult result(7, RequestText());
   ASSERT_TRUE(result.Bind(42));
   Feed(result, R"({"jsonrpc":"2.0","id":1,"result":true})");
@@ -217,6 +255,7 @@ TEST(WorkerResult, WorkerFailureAndSignalWinOverProvisionalNativeBytes) {
   ASSERT_TRUE(done);
   EXPECT_EQ(Cause(*done), "signal termination");
 }
+
 TEST(WorkerResult, SessionLossRetainsUncertaintyWithoutTerminalOrReset) {
   WorkerResult result(7, RequestText());
   ASSERT_TRUE(result.Bind(42));
@@ -228,7 +267,9 @@ TEST(WorkerResult, SessionLossRetainsUncertaintyWithoutTerminalOrReset) {
   EXPECT_THROW(result.Accept(Event(WorkerReplyKind::Complete)), Error);
   EXPECT_FALSE(result.Complete());
 }
+
 namespace {
+
 struct BuildFault : WorkerResultOperations {
   WorkerResultBuildStage stage = WorkerResultBuildStage::Parse;
   int type = 1;
@@ -241,7 +282,9 @@ struct BuildFault : WorkerResultOperations {
     throw std::out_of_range("injected comparison range");
   }
 };
-}
+
+}  // namespace
+
 TEST(WorkerResult, TerminalAllocationFailureRetainsProofAndRetriesExactlyOnce) {
   for (auto stage :
        {WorkerResultBuildStage::Parse, WorkerResultBuildStage::Compare,
@@ -285,6 +328,7 @@ TEST(WorkerResult, TerminalAllocationFailureRetainsProofAndRetriesExactlyOnce) {
     }
   }
 }
+
 TEST(WorkerResult,
      ComparisonRangeFailureBecomesOneSyntheticTerminalAfterProof) {
   BuildFault fault;

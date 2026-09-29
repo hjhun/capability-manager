@@ -1,20 +1,43 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "launcher/worker_session.hh"
 #include "launcher/worker_result.hh"
+
 #include <fcntl.h>
+
 #include <fstream>
+
 #include <signal.h>
+
 #include <thread>
+
 #include <sys/stat.h>
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 void Put(std::vector<uint8_t>& b, size_t at, uint64_t v, size_t size) {
   for (size_t i = 0; i < size; ++i)
     b[at + i] = static_cast<uint8_t>(v >> (i * 8));
 }
+
 std::vector<uint8_t> Reply(uint64_t token, uint64_t seq,
                            WorkerReplyKind kind = WorkerReplyKind::Complete,
                            WorkerFailure failure = WorkerFailure::Rejected,
@@ -35,24 +58,29 @@ std::vector<uint8_t> Reply(uint64_t token, uint64_t seq,
   std::copy(body.begin(), body.end(), b.begin() + 56);
   return b;
 }
+
 struct Pipe {
   int fds[2]{-1, -1};
   Pipe() {
     if (pipe2(fds, O_CLOEXEC | O_NONBLOCK)) throw std::runtime_error("pipe");
   }
+
   ~Pipe() {
     Close(0);
     Close(1);
   }
+
   void Close(int n) {
     if (fds[n] >= 0) close(fds[n]);
     fds[n] = -1;
   }
+
   void Send(const std::vector<uint8_t>& bytes) {
     ASSERT_EQ(write(fds[1], bytes.data(), bytes.size()),
               static_cast<ssize_t>(bytes.size()));
   }
 };
+
 struct Fault : JournalOperations {
   bool fail = false;
   int mode = 0, syncs = 0;
@@ -63,6 +91,7 @@ struct Fault : JournalOperations {
     }
     return LinuxJournalOperations().Write(fd, b, n);
   }
+
   int Sync(int fd) noexcept override {
     ++syncs;
     if (fail || mode == 2 || (mode == 4 && syncs == 2)) {
@@ -71,6 +100,7 @@ struct Fault : JournalOperations {
     }
     return LinuxJournalOperations().Sync(fd);
   }
+
   int Replace(int fd) noexcept override {
     if (mode == 3) {
       errno = EIO;
@@ -79,6 +109,7 @@ struct Fault : JournalOperations {
     return LinuxJournalOperations().Replace(fd);
   }
 };
+
 class SessionTest : public CatalogTest {
  protected:
   Pipe commands, cancel, replies;
@@ -107,6 +138,7 @@ class SessionTest : public CatalogTest {
     cancel.Close(1);
     replies.Close(0);
   }
+
   void TearDown() override {
     session.reset();
     journal.reset();
@@ -114,6 +146,7 @@ class SessionTest : public CatalogTest {
     sigaction(SIGPIPE, &saved, nullptr);
     CatalogTest::TearDown();
   }
+
   void SendStart(uint64_t token) {
     WorkerCommandReader reader(commands.fds[0], 1);
     std::optional<WorkerCommand> received;
@@ -125,6 +158,7 @@ class SessionTest : public CatalogTest {
     EXPECT_EQ(received->token, token);
     EXPECT_EQ(received->request, request);
   }
+
   std::optional<WorkerEvent> Receive(const std::vector<uint8_t>& bytes) {
     replies.Send(bytes);
     for (int i = 0; i < 5; ++i) {
@@ -134,7 +168,9 @@ class SessionTest : public CatalogTest {
     return {};
   }
 };
-}
+
+}  // namespace
+
 TEST_F(SessionTest, ReservePrecedesFirstByteAndOnlyCompleteReleasesCapacity) {
   auto token = session->Start(request);
   EXPECT_EQ(journal->Reservations(), std::vector<uint64_t>{token});
@@ -162,6 +198,7 @@ TEST_F(SessionTest, ReservePrecedesFirstByteAndOnlyCompleteReleasesCapacity) {
   session->ConfirmNormalExit();
   EXPECT_FALSE(journal->Blocked());
 }
+
 TEST_F(SessionTest,
        BufferedCompleteBeforeEofRequiresIndependentNormalExitProof) {
   auto token = session->Start(request);
@@ -179,6 +216,7 @@ TEST_F(SessionTest,
   EXPECT_TRUE(journal->Blocked());
   EXPECT_THROW(session->ConfirmNormalExit(), Error);
 }
+
 TEST_F(SessionTest, CleanBufferedCompletionAndExitCanFinishGeneration) {
   auto token = session->Start(request);
   SendStart(token);
@@ -191,6 +229,7 @@ TEST_F(SessionTest, CleanBufferedCompletionAndExitCanFinishGeneration) {
   session->ConfirmNormalExit();
   EXPECT_FALSE(journal->Blocked());
 }
+
 TEST_F(SessionTest, FragmentedHeadersAndBodiesHavePermanentDeadlineFailure) {
   auto token = session->Start(request);
   SendStart(token);
@@ -212,6 +251,7 @@ TEST_F(SessionTest, FragmentedHeadersAndBodiesHavePermanentDeadlineFailure) {
   EXPECT_TRUE(journal->Blocked());
   EXPECT_EQ(journal->Reservations().size(), 1u);
 }
+
 TEST_F(SessionTest, EofWithPartialFrameOrMissingCompleteKeepsReservation) {
   auto token = session->Start(request);
   SendStart(token);
@@ -226,6 +266,7 @@ TEST_F(SessionTest, EofWithPartialFrameOrMissingCompleteKeepsReservation) {
   EXPECT_TRUE(journal->Blocked());
   EXPECT_EQ(journal->Reservations(), std::vector<uint64_t>{token});
 }
+
 TEST_F(SessionTest,
        CompletePersistenceFailureNeverExposesCompletionOrFreesSlot) {
   auto token = session->Start(request);
@@ -239,6 +280,7 @@ TEST_F(SessionTest,
   EXPECT_THROW(session->Start(request), Error);
   EXPECT_TRUE(std::filesystem::exists(root_ + "/state.next"));
 }
+
 TEST_F(SessionTest, ReservePersistenceFailureWritesNoCommandBytes) {
   fault.fail = true;
   EXPECT_THROW(session->Start(request), Error);
@@ -248,6 +290,7 @@ TEST_F(SessionTest, ReservePersistenceFailureWritesNoCommandBytes) {
   EXPECT_EQ(read(commands.fds[0], &byte, 1), 0);
   EXPECT_TRUE(std::filesystem::exists(root_ + "/state.next"));
 }
+
 TEST_F(SessionTest, CancelOvertakesLargePartialStartOnIndependentPipe) {
   auto json = Json::parse(request);
   json["params"]["arguments"]["large"] = std::string(50000, 'x');
@@ -261,6 +304,7 @@ TEST_F(SessionTest, CancelOvertakesLargePartialStartOnIndependentPipe) {
     session->Step();
     received = reader.ReadOne();
   }
+
   ASSERT_TRUE(received);
   EXPECT_EQ(received->token, token);
   EXPECT_EQ(received->kind, WorkerCommandKind::Cancel);
@@ -270,6 +314,7 @@ TEST_F(SessionTest, CancelOvertakesLargePartialStartOnIndependentPipe) {
   EXPECT_THROW(session->Step(), Error);
   EXPECT_EQ(journal->Reservations().size(), 1u);
 }
+
 TEST_F(SessionTest, CapacityInvalidInputAndConcurrentStartsAreSerialized) {
   EXPECT_THROW(session->Start("not-json"), Error);
   EXPECT_TRUE(journal->Reservations().empty());
@@ -291,6 +336,7 @@ TEST_F(SessionTest, CapacityInvalidInputAndConcurrentStartsAreSerialized) {
   EXPECT_EQ(journal->Reservations().size(), 4u);
   EXPECT_FALSE(session->Failed());
 }
+
 TEST_F(SessionTest, UnsentTokenCannotBeCompleted) {
   auto json = Json::parse(request);
   json["params"]["arguments"]["large"] = std::string(50000, 'x');
@@ -300,6 +346,7 @@ TEST_F(SessionTest, UnsentTokenCannotBeCompleted) {
   EXPECT_TRUE(journal->Blocked());
   EXPECT_EQ(journal->Reservations().size(), 1u);
 }
+
 TEST_F(SessionTest, DuplicateCompletePoisonsEvenAfterFirstDurableRelease) {
   auto token = session->Start(request);
   SendStart(token);
@@ -308,6 +355,7 @@ TEST_F(SessionTest, DuplicateCompletePoisonsEvenAfterFirstDurableRelease) {
   EXPECT_TRUE(journal->Blocked());
   EXPECT_TRUE(journal->Reservations().empty());
 }
+
 TEST_F(SessionTest, SignalExitIsAnObservedTerminalNotAProtocolError) {
   auto token = session->Start(request);
   SendStart(token);
@@ -319,6 +367,7 @@ TEST_F(SessionTest, SignalExitIsAnObservedTerminalNotAProtocolError) {
   EXPECT_EQ(event->signal, 9);
   EXPECT_TRUE(journal->Reservations().empty());
 }
+
 TEST_F(SessionTest, MalformedReplyDoesNotClearDurableReservation) {
   auto token = session->Start(request);
   SendStart(token);
@@ -329,6 +378,7 @@ TEST_F(SessionTest, MalformedReplyDoesNotClearDurableReservation) {
   EXPECT_EQ(journal->Reservations().size(), 1u);
   EXPECT_THROW(session->Step(), Error);
 }
+
 TEST_F(SessionTest, ClosingSessionWithOutstandingJobBlocksReopen) {
   session->Start(request);
   session.reset();
@@ -338,6 +388,7 @@ TEST_F(SessionTest, ClosingSessionWithOutstandingJobBlocksReopen) {
   EXPECT_EQ(restart.Reservations().size(), 1u);
   EXPECT_THROW(restart.BeginGeneration(), Error);
 }
+
 TEST_F(SessionTest,
        ActualWorkerLoopNoCloneCompletionUsesJournalAndIndependentChannels) {
   struct NoClone : WorkerRuntime {
@@ -358,6 +409,7 @@ TEST_F(SessionTest,
     if (event && event->kind == WorkerReplyKind::Complete) terminal = event;
     worker.Step();
   }
+
   ASSERT_TRUE(terminal);
   EXPECT_EQ(terminal->token, token);
   EXPECT_EQ(terminal->failure, WorkerFailure::Clone);
@@ -379,6 +431,7 @@ TEST_F(SessionTest, SaturatedStartHasDeadlineAndCannotReplayFromBeginning) {
   EXPECT_EQ(journal->Reservations(), std::vector<uint64_t>{token});
   EXPECT_THROW(session->Step(), Error);
 }
+
 class SessionPersistenceTest : public SessionTest,
                                public ::testing::WithParamInterface<int> {};
 TEST_P(SessionPersistenceTest, FailedReservationNeverReachesWorker) {
@@ -390,6 +443,7 @@ TEST_P(SessionPersistenceTest, FailedReservationNeverReachesWorker) {
   EXPECT_TRUE(journal->Blocked());
   EXPECT_TRUE(session->Failed());
 }
+
 TEST_P(SessionPersistenceTest, FailedCompletionNeverReturnsTerminal) {
   auto token = session->Start(request);
   SendStart(token);
@@ -401,6 +455,7 @@ TEST_P(SessionPersistenceTest, FailedCompletionNeverReturnsTerminal) {
   EXPECT_EQ(journal->Reservations(), std::vector<uint64_t>{token});
   EXPECT_TRUE(session->Failed());
 }
+
 INSTANTIATE_TEST_SUITE_P(Persistence, SessionPersistenceTest,
                          ::testing::Values(1, 2, 3, 4));
 class SessionMalformedTest : public SessionTest,
@@ -441,10 +496,12 @@ TEST_P(SessionMalformedTest, BadFramingOrStatePreservesReservation) {
       Put(b, 40, 256, 4);
       break;
   }
+
   EXPECT_THROW(Receive(b), Error);
   EXPECT_TRUE(journal->Blocked());
   EXPECT_EQ(journal->Reservations(), std::vector<uint64_t>{token});
 }
+
 INSTANTIATE_TEST_SUITE_P(Invalid, SessionMalformedTest,
                          ::testing::Range(0, 10));
 
@@ -458,6 +515,7 @@ TEST_F(SessionTest, StateWithoutActualCancelAfterCompleteIsProtocolFailure) {
   EXPECT_TRUE(session->Failed());
   EXPECT_TRUE(journal->Blocked());
 }
+
 TEST_F(SessionTest, SentCancelAllowsExactlyOneLateStateForThatToken) {
   auto token = session->Start(request);
   SendStart(token);
@@ -474,6 +532,7 @@ TEST_F(SessionTest, SentCancelAllowsExactlyOneLateStateForThatToken) {
                Error);
   EXPECT_TRUE(session->Failed());
 }
+
 TEST_F(SessionTest, ConsumedCancellationCannotAuthorizeAnotherLateState) {
   auto token = session->Start(request);
   SendStart(token);
@@ -486,6 +545,7 @@ TEST_F(SessionTest, ConsumedCancellationCannotAuthorizeAnotherLateState) {
                Error);
   EXPECT_TRUE(journal->Blocked());
 }
+
 TEST_F(SessionTest,
        AmbiguousCancelConsumptionCannotOverflowBoundedCorrelation) {
   uint64_t sequence = 1;
@@ -499,6 +559,7 @@ TEST_F(SessionTest,
     ASSERT_GT(read(cancel.fds[0], bytes, sizeof(bytes)), 0);
     ASSERT_TRUE(Receive(Reply(token, sequence++)));
   }
+
   auto last = session->Start(request);
   EXPECT_THROW(session->Cancel(last), Error);
   EXPECT_TRUE(session->Failed());

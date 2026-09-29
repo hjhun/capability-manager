@@ -31,12 +31,14 @@
 #include <string_view>
 
 namespace capmgr::fixture::leasedbootstrap {
+
 struct Paths {
   std::string scope;
   std::string catalog;
   std::string lock_parent;
   std::string lock;
 };
+
 inline void Require(bool okay, const char* why) {
   if (!okay) throw std::runtime_error(why);
 }
@@ -59,7 +61,9 @@ inline Paths ParseCatalogLink(std::string_view path) {
   result.lock = result.lock_parent + "/generation.lock";
   return result;
 }
+
 namespace detail {
+
 class Directory {
  public:
   explicit Directory(const std::string& path)
@@ -67,9 +71,11 @@ class Directory {
                  O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)) {
     Require(fd_ >= 0, "leased bootstrap ancestry open");
   }
+
   ~Directory() {
     if (fd_ >= 0) close(fd_);
   }
+
   Directory(const Directory&) = delete;
   Directory& operator=(const Directory&) = delete;
   int Get() const { return fd_; }
@@ -82,6 +88,7 @@ class Directory {
  private:
   int fd_;
 };
+
 // Ancestry/backing only. The caller's captured WorkerInitialNamespaces supplies
 // the initial-namespace premise; never reopen /proc/1 after capability reduction.
 inline struct stat InspectDirectory(const std::string& path, mode_t mode) {
@@ -105,6 +112,7 @@ inline struct stat InspectDirectory(const std::string& path, mode_t mode) {
                 (errno == ENODATA || errno == ENOTSUP),
             "leased bootstrap directory ACL");
   }
+
   directory.Close();
   return held;
 }

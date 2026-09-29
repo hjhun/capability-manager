@@ -17,15 +17,19 @@
 #define CAPABILITY_MANAGER_PLATFORM_REMOUNT_TICKET_HH_
 
 #include "platform/peer.hh"
+
 #include <chrono>
 #include <functional>
 #include <map>
 #include <mutex>
+
 namespace capmgr {
+
 struct RemountRequest {
   std::string destination;
   std::shared_ptr<Peer> principal;
 };
+
 // Issue/Consume are disabled with NOT_SUPPORTED without a verified live-task API.
 // Internal correlation only: Issue requires already-authorized TIDL MAIN peer.
 // Consume receives/verifies a whole credential packet, matches the same live
@@ -53,6 +57,7 @@ class RemountTickets {
   std::mutex mutex_;
   std::map<std::string, Ticket> tickets_;
 };
-}
+
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_PLATFORM_REMOUNT_TICKET_HH_

@@ -1,26 +1,49 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "launcher/worker_supervisor.hh"
 #include "common/error.hh"
+
 #include <cstring>
+
 #include <fcntl.h>
+
 #include <mutex>
+
 #include <poll.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 namespace capmgr {
+
 namespace {
+
 uint64_t Get(const uint8_t* b, size_t n) {
   uint64_t v = 0;
   for (size_t i = 0; i < n; ++i) v |= uint64_t{b[i]} << (8 * i);
   return v;
 }
+
 void Put(uint8_t* b, uint64_t v, size_t n) {
   for (size_t i = 0; i < n; ++i) b[i] = static_cast<uint8_t>(v >> (8 * i));
 }
 [[noreturn]] void Bad(const char* message) {
   throw Error(ErrorCode::kIo, message);
 }
-}
+}  // namespace
+
 std::array<uint8_t, 32> EncodeWorkerReady(uint64_t generation,
                                           uint64_t revision) {
   if (!generation || revision > INT64_MAX)
@@ -33,6 +56,7 @@ std::array<uint8_t, 32> EncodeWorkerReady(uint64_t generation,
   Put(b.data() + 16, revision, 8);
   return b;
 }
+
 struct WorkerSupervisor::Impl {
   std::unique_ptr<WorkerSession> session;
   OwnedChildren& children;
@@ -62,9 +86,11 @@ struct WorkerSupervisor::Impl {
       Bad("Invalid bootstrap pipe");
     }
   }
+
   ~Impl() {
     if (fd >= 0) close(fd);
   }
+
   void Abort() noexcept {
     if (finished) return;
     failed = true;
@@ -72,15 +98,18 @@ struct WorkerSupervisor::Impl {
     if (fd >= 0) close(fd);
     fd = -1;
   }
+
   void Open() {
     if (failed || finished)
       throw Error(ErrorCode::kBusy, "Worker supervisor closed");
   }
+
   void Live() {
     auto status = children.Inspect(worker);
     if (status.state != ChildState::Running || status.system_error)
       Bad("Worker not live at admission");
   }
+
   bool Poll(Clock::time_point now) {
     Open();
     if (ready) return true;
@@ -127,6 +156,7 @@ struct WorkerSupervisor::Impl {
     }
   }
 };
+
 WorkerSupervisor::WorkerSupervisor(std::unique_ptr<WorkerSession> s,
                                    OwnedChildren& c, uint64_t worker, int fd,
                                    Clock::time_point now)
@@ -136,12 +166,14 @@ bool WorkerSupervisor::PollStartup(Clock::time_point now) {
   std::lock_guard lock(impl_->mutex);
   return impl_->Poll(now);
 }
+
 uint64_t WorkerSupervisor::CatalogRevision() const {
   std::lock_guard lock(impl_->mutex);
   impl_->Open();
   if (!impl_->ready) throw Error(ErrorCode::kBusy, "Worker not READY");
   return impl_->revision;
 }
+
 uint64_t WorkerSupervisor::Start(const std::string& request) {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -163,6 +195,7 @@ uint64_t WorkerSupervisor::Start(const std::string& request) {
     throw;
   }
 }
+
 void WorkerSupervisor::Cancel(uint64_t token) {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -174,6 +207,7 @@ void WorkerSupervisor::Cancel(uint64_t token) {
     throw;
   }
 }
+
 std::optional<WorkerEvent> WorkerSupervisor::Step(Clock::time_point now) {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -187,6 +221,7 @@ std::optional<WorkerEvent> WorkerSupervisor::Step(Clock::time_point now) {
     throw;
   }
 }
+
 void WorkerSupervisor::PrepareStop() {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -194,6 +229,7 @@ void WorkerSupervisor::PrepareStop() {
   s.session->PrepareStop();
   s.stopping = true;
 }
+
 bool WorkerSupervisor::ConfirmNormalExit() {
   auto& s = *impl_;
   std::lock_guard lock(s.mutex);
@@ -215,12 +251,14 @@ bool WorkerSupervisor::ConfirmNormalExit() {
     throw;
   }
 }
+
 void WorkerSupervisor::Abort() noexcept {
   std::lock_guard lock(impl_->mutex);
   impl_->Abort();
 }
+
 bool WorkerSupervisor::Failed() const {
   std::lock_guard lock(impl_->mutex);
   return impl_->failed;
 }
-}
+}  // namespace capmgr

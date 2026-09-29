@@ -1,15 +1,35 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "api/dispatcher.hh"
 #include "launcher/worker_result.hh"
 #include "fixture.hh"
+
 #include <fcntl.h>
+
 #include <fstream>
+
 #include <signal.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 const std::string native =
     R"( {"jsonrpc":"2.0","id":1,"result":{"isError":true}} )";
 class ScriptOperation : public ManagedOperation {
@@ -20,6 +40,7 @@ class ScriptOperation : public ManagedOperation {
   void Confirm(std::shared_ptr<const std::string> terminal = {}) {
     Publish(Cleanup::kConfirmedComplete, std::move(terminal));
   }
+
   void Uncertain() { Publish(Cleanup::kUncertain); }
   bool Cancelled() const { return CancellationRequested(); }
 
@@ -27,12 +48,15 @@ class ScriptOperation : public ManagedOperation {
   void Coordinate() override { script_(*this); }
   std::function<void(ScriptOperation&)> script_;
 };
+
 bool Ready(std::future<void>& f) {
   return f.wait_for(1s) == std::future_status::ready;
 }
+
 void NoCallback(uint64_t, const char*, bool, void* p) {
   ++*static_cast<std::atomic<int>*>(p);
 }
+
 Dispatcher::CloseResult CloseAfterCallback(Dispatcher& dispatcher) {
   Dispatcher::CloseResult status;
   do {
@@ -40,7 +64,8 @@ Dispatcher::CloseResult CloseAfterCallback(Dispatcher& dispatcher) {
   } while (status == Dispatcher::CloseResult::kBusy);
   return status;
 }
-}
+}  // namespace
+
 TEST(ManagedDispatcher,
      ReturnAndThrowWithoutProofNeverSynthesizeTerminalOrRelease) {
   for (bool throws : {false, true}) {
@@ -70,6 +95,7 @@ TEST(ManagedDispatcher,
         testing::ExitedWithCode(0), "");
   }
 }
+
 TEST(ManagedDispatcher,
      ConfirmedTerminalStillRetainsCapacityUntilCoordinatorExit) {
   ASSERT_EXIT(
@@ -118,6 +144,7 @@ TEST(ManagedDispatcher,
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(ManagedDispatcher, CoordinatorTlsCannotSelfPublishQuiescence) {
   ASSERT_EXIT(
       ([] {
@@ -155,6 +182,7 @@ TEST(ManagedDispatcher, CoordinatorTlsCannotSelfPublishQuiescence) {
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(ManagedDispatcher,
      MaterializationRetryPublishesOnceWithoutSecondComplete) {
   ASSERT_EXIT(
@@ -233,6 +261,7 @@ TEST(ManagedDispatcher,
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(ManagedDispatcher, CallbackCancelRecordsRequestOutsideSessionIo) {
   ASSERT_EXIT(
       ([] {
@@ -272,6 +301,7 @@ TEST(ManagedDispatcher, CallbackCancelRecordsRequestOutsideSessionIo) {
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(ManagedDispatcher, ReuseAndInvalidTerminalFailClosed) {
   ASSERT_EXIT(
       ([] {
@@ -310,6 +340,7 @@ TEST(ManagedDispatcher, ReuseAndInvalidTerminalFailClosed) {
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(ManagedDispatcher,
      TerminalPublicationAllocationFailureKeepsCoherentProofForRetry) {
   ASSERT_EXIT(([] {
@@ -360,7 +391,9 @@ TEST(ManagedDispatcher,
               }()),
               testing::ExitedWithCode(0), "");
 }
+
 namespace {
+
 struct SyncGate : JournalOperations {
   std::atomic<bool> block = false;
   bool fail = false;
@@ -369,9 +402,11 @@ struct SyncGate : JournalOperations {
   ssize_t Write(int fd, const void* b, size_t n) noexcept override {
     return LinuxJournalOperations().Write(fd, b, n);
   }
+
   int Replace(int fd) noexcept override {
     return LinuxJournalOperations().Replace(fd);
   }
+
   int Sync(int fd) noexcept override {
     if (block.exchange(false)) {
       entered.set_value();
@@ -384,6 +419,7 @@ struct SyncGate : JournalOperations {
     return LinuxJournalOperations().Sync(fd);
   }
 };
+
 std::vector<uint8_t> RejectedComplete(uint64_t token) {
   std::vector<uint8_t> b(56);
   std::copy_n("CWR1", 4, b.begin());
@@ -400,7 +436,8 @@ std::vector<uint8_t> RejectedComplete(uint64_t token) {
   put(40, UINT32_MAX, 4);
   return b;
 }
-}
+}  // namespace
+
 TEST_F(CatalogTest, ManagedDestroyDoesNotWaitOnConfirmJobGoneFsyncOrItsMutex) {
   for (bool fail : {false, true}) {
     ASSERT_EXIT(
@@ -499,6 +536,7 @@ TEST_F(CatalogTest, ManagedDestroyDoesNotWaitOnConfirmJobGoneFsyncOrItsMutex) {
     std::filesystem::remove(root_ + "/lock");
   }
 }
+
 TEST(ManagedDispatcher, RetainedOwnerDestructionRunsOutsideDispatcherMutex) {
   ASSERT_EXIT(([] {
                 alarm(5);
@@ -534,6 +572,7 @@ TEST(ManagedDispatcher, RetainedOwnerDestructionRunsOutsideDispatcherMutex) {
               }()),
               testing::ExitedWithCode(0), "");
 }
+
 TEST(ManagedDispatcher,
      ConcurrentPublicationAndCloseNeverDowngradeObservedProof) {
   ASSERT_EXIT(
@@ -556,6 +595,7 @@ TEST(ManagedDispatcher,
       }()),
       testing::ExitedWithCode(0), "");
 }
+
 TEST(ManagedDispatcher,
      UnconfirmedQuiescentOwnersKeepGlobalCapacityAndCannotInferProof) {
   ASSERT_EXIT(([] {
@@ -591,6 +631,7 @@ TEST(ManagedDispatcher,
               }()),
               testing::ExitedWithCode(0), "");
 }
+
 TEST(ManagedDispatcher,
      InsertionAllocationFailureReleasesOwnerOutsideLockAndRollsBackCapacity) {
   ASSERT_EXIT(([] {

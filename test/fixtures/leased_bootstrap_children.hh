@@ -19,6 +19,7 @@
 #include "launcher/owned_children.hh"
 
 #include <unistd.h>
+
 #include <array>
 #include <chrono>
 #include <iostream>
@@ -27,6 +28,7 @@
 #include <string_view>
 
 namespace capmgr::fixture::leasedbootstrap {
+
 // Fixed private fixture records. No operational child admission or recovery API.
 // A timeout/failed ownership observation permanently forbids scope deletion.
 struct Children {
@@ -68,6 +70,7 @@ struct Children {
       throw std::runtime_error(reason);
     }
   }
+
   void DeadlineFailure(std::string_view reason) {
     // Fixed existing Supervisor/Session messages; include every Session budget
     // even though START/CANCEL are structurally excluded by this fixture.
@@ -93,6 +96,7 @@ struct Children {
     }
     CheckDeadline(deadline, now(), reason);
   }
+
   ChildStatus Observe(size_t slot) {
     try {
       const auto status = owned.Inspect(records.at(slot));
@@ -104,6 +108,7 @@ struct Children {
       throw;
     }
   }
+
   ChildStatus Wait(size_t slot, std::chrono::seconds budget) {
     const auto deadline = std::chrono::steady_clock::now() + budget;
     while (std::chrono::steady_clock::now() < deadline) {
@@ -120,6 +125,7 @@ struct Children {
     uncertain = true;
     throw std::runtime_error("fixture child wait deadline");
   }
+
   void CleanupKnown() noexcept {
     for (auto& record : records) {
       if (!record) continue;
@@ -136,9 +142,11 @@ struct Children {
       }
     }
   }
+
   bool Empty() const {
     return !owned.Size() && records == std::array<uint64_t, 3>{};
   }
+
   bool CleanupEligible() const { return !uncertain && Empty(); }
   ~Children() {
     CleanupKnown();
@@ -161,6 +169,7 @@ bool CleanupScope(Children& children, VerifyAbsence&& verify_absence,
     children.uncertain = true;
     throw;
   }
+
   if (!children.CleanupEligible()) return false;
   remove_scope();
   return true;

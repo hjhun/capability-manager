@@ -1,22 +1,42 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // Explicit root development fixture; no unit, global policy or operational DB.
 #include "catalog/catalog.hh"
 #include "trusted_fixture.hh"
 #include "launcher/worker_spawn.hh"
 #include "launcher/worker_supervisor.hh"
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 using namespace capmgr;
 using namespace std::chrono_literals;
+
 namespace {
+
 void Check(bool ok, const char* why) {
   if (!ok) throw std::runtime_error(why);
 }
+
 struct Pipe {
   int fd[2]{-1, -1};
   Pipe() { Check(!pipe2(fd, O_CLOEXEC), "pipe"); }
@@ -24,11 +44,13 @@ struct Pipe {
     for (int value : fd)
       if (value >= 0) close(value);
   }
+
   void Close(int side) {
     if (fd[side] >= 0) close(fd[side]);
     fd[side] = -1;
   }
 };
+
 struct Scope {
   char path[64] = "/opt/usr/capmgr-bootstrap-fixture-XXXXXX";
   bool uncertain = false, done = false;
@@ -60,6 +82,7 @@ struct Scope {
     }
     if (anchor >= 0) close(anchor);
   }
+
   void Cleanup() {
     if (done) return;
     try {
@@ -90,12 +113,14 @@ struct Scope {
     std::cout << "REMOVED_SCOPE=" << path << std::endl;
   }
 };
+
 struct Fd {
   int value = -1;
   ~Fd() {
     if (value >= 0) close(value);
   }
 };
+
 struct Child {
   OwnedChildren children{1};
   uint64_t token = 0;
@@ -110,6 +135,7 @@ struct Child {
     }
   }
 };
+
 void Run(const std::string& mode) {
   Scope scope;
   std::string catalog = std::string(scope.path) + "/catalog",
@@ -220,10 +246,12 @@ void Run(const std::string& mode) {
             "clean owned worker exit");
     }
   }
+
   scope.Cleanup();
   std::cout << "BOOTSTRAP_CASE_PASS mode=" << mode << std::endl;
 }
-}
+}  // namespace
+
 int main(int argc, char** argv) {
   if (argc != 2 || std::string(argv[1]) != "--run-root-fixture") return 2;
   try {

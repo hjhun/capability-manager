@@ -1,12 +1,32 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "fixture.hh"
 #include "catalog/read_grant.hh"
+
 #include <fcntl.h>
+
 #include <future>
+
 #include <sys/stat.h>
 #include <unistd.h>
+
 using namespace capmgr;
+
 namespace {
+
 struct GrantOperations : CatalogGrantOperations {
   Time now{};
   unsigned char sequence = 0;
@@ -19,6 +39,7 @@ struct GrantOperations : CatalogGrantOperations {
     return bytes;
   }
 };
+
 struct GrantLabels : ReadLeaseOperations {
   GrantOperations* operations = nullptr;
   bool advance = false;
@@ -28,6 +49,7 @@ struct GrantLabels : ReadLeaseOperations {
     return label;
   }
 };
+
 class GrantTest : public CatalogTest {
  protected:
   CatalogGrantBudget budget;
@@ -51,16 +73,19 @@ class GrantTest : public CatalogTest {
     for (auto suffix : {"", "-wal", "-shm"})
       ASSERT_EQ(chmod((path_ + suffix).c_str(), 0600), 0);
   }
+
   void TearDown() override {
     writer.reset();
     CatalogTest::TearDown();
   }
+
   auto Lease() {
     ReadLeasePolicy policy{directory, lock_path, geteuid(), geteuid(),
                            getegid(), getegid(), 0700,      0600,
                            0600,      "fixture", "fixture", "fixture"};
     return std::make_unique<CatalogReadLease>(policy, &labels);
   }
+
   bool Exclusive() {
     int fd = open(lock_path.c_str(), O_RDWR | O_CLOEXEC);
     if (fd < 0) return false;
@@ -72,7 +97,9 @@ class GrantTest : public CatalogTest {
     return result == 0;
   }
 };
-}
+
+}  // namespace
+
 TEST_F(GrantTest, ReceiptIsCanonicalBoundedAndSeparateFromNonce) {
   CatalogReadGrant grant(budget, &ops);
   auto text = grant.Issue(Lease());
@@ -89,6 +116,7 @@ TEST_F(GrantTest, ReceiptIsCanonicalBoundedAndSeparateFromNonce) {
   EXPECT_EQ(budget.Outstanding(), 0u);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(GrantTest, IndependentClientLeaseOverlapsConsumeThenDuplicateDenies) {
   CatalogReadGrant grant(budget, &ops);
   auto receipt = ParseCatalogGrant(grant.Issue(Lease()));
@@ -103,6 +131,7 @@ TEST_F(GrantTest, IndependentClientLeaseOverlapsConsumeThenDuplicateDenies) {
   client.reset();
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(GrantTest, MatchingGenerationDoesNotAuthorizeAnotherInstanceOrOldNonce) {
   CatalogReadGrant a(budget, &ops), b(budget, &ops);
   auto first = ParseCatalogGrant(a.Issue(Lease())),
@@ -119,6 +148,7 @@ TEST_F(GrantTest, MatchingGenerationDoesNotAuthorizeAnotherInstanceOrOldNonce) {
   EXPECT_EQ(budget.Outstanding(), 0u);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(GrantTest,
        ConfirmationDeadlineAndDelayedExpiryHaveExplicitAvailabilityLimit) {
   CatalogReadGrant grant(budget, &ops);
@@ -139,6 +169,7 @@ TEST_F(GrantTest,
   EXPECT_EQ(budget.Outstanding(), 0u);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(GrantTest, DeadlineIsRecheckedAfterPotentiallySlowMetadataValidation) {
   CatalogReadGrant grant(budget, &ops);
   auto receipt = ParseCatalogGrant(grant.Issue(Lease()));
@@ -147,6 +178,7 @@ TEST_F(GrantTest, DeadlineIsRecheckedAfterPotentiallySlowMetadataValidation) {
   EXPECT_EQ(budget.Outstanding(), 0u);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(GrantTest, MetadataFailureRevokesInsteadOfConfirmingStaleGeneration) {
   CatalogReadGrant grant(budget, &ops);
   auto receipt = ParseCatalogGrant(grant.Issue(Lease()));
@@ -155,6 +187,7 @@ TEST_F(GrantTest, MetadataFailureRevokesInsteadOfConfirmingStaleGeneration) {
   EXPECT_EQ(budget.Outstanding(), 0u);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(GrantTest, BudgetBoundsAllInstancesAndEveryFailureReleasesOnce) {
   std::vector<std::unique_ptr<CatalogReadGrant>> grants;
   for (unsigned i = 0; i < CatalogGrantBudget::kLimit; ++i) {
@@ -162,6 +195,7 @@ TEST_F(GrantTest, BudgetBoundsAllInstancesAndEveryFailureReleasesOnce) {
     grant->Issue(Lease());
     grants.push_back(std::move(grant));
   }
+
   EXPECT_EQ(budget.Outstanding(), 64u);
   CatalogReadGrant excess(budget, &ops);
   EXPECT_THROW(excess.Issue(Lease()), Error);
@@ -176,6 +210,7 @@ TEST_F(GrantTest, BudgetBoundsAllInstancesAndEveryFailureReleasesOnce) {
   EXPECT_EQ(budget.Outstanding(), 0u);
   EXPECT_TRUE(Exclusive());
 }
+
 TEST_F(GrantTest, RealEntropyGeneratesDistinctGrantsForSameDescriptor) {
   CatalogReadGrant a(budget), b(budget);
   auto x = ParseCatalogGrant(a.Issue(Lease())),

@@ -1,6 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "api/client.hh"
 #include "catalog/catalog.hh"
+
 #include <atomic>
 #include <cstdlib>
 #include <cstring>
@@ -8,7 +23,9 @@
 #include <new>
 #include <string>
 #include <vector>
+
 #include <unistd.h>
+
 struct capmgr_read_catalog {
   explicit capmgr_read_catalog(std::unique_ptr<capmgr::ReadAccess> admission)
       : access(std::move(admission)),
@@ -19,6 +36,7 @@ struct capmgr_read_catalog {
   std::unique_ptr<capmgr::ReadAccess> access;
   capmgr::Catalog catalog;
 };
+
 struct capmgr_client : capmgr_read_catalog {
   explicit capmgr_client(std::unique_ptr<capmgr::ReadAccess> admission)
       : capmgr_read_catalog(std::move(admission)) {}
@@ -27,13 +45,17 @@ struct capmgr_client : capmgr_read_catalog {
   capmgr::Dispatcher dispatcher;
   std::shared_ptr<capmgr::ExecutionBackend> backend;
 };
+
 struct capmgr_search_results {
   std::vector<std::string> items;
 };
+
 namespace {
+
 bool SameProcess(capmgr_client_h client) noexcept {
   return client->creator == getpid();
 }
+
 template <class F>
 int Guard(F&& function) noexcept {
   try {
@@ -49,6 +71,7 @@ int Guard(F&& function) noexcept {
     return CAPMGR_ERROR_IO;
   }
 }
+
 class PlatformAccessGate final : public capmgr::AccessGate {
  public:
   std::string AuthorizeAndGetDatabase() override {
@@ -57,9 +80,13 @@ class PlatformAccessGate final : public capmgr::AccessGate {
                         "Platform authorization is not configured");
   }
 };
-}
+
+}  // namespace
+
 namespace capmgr {
+
 namespace {
+
 class LegacyReadAccess final : public ReadAccess {
  public:
   explicit LegacyReadAccess(std::string path) : path_(std::move(path)) {}
@@ -70,13 +97,17 @@ class LegacyReadAccess final : public ReadAccess {
  private:
   std::string path_;
 };
-}
+
+}  // namespace
+
 std::unique_ptr<ReadAccess> AccessGate::AuthorizeReadAccess() {
   return std::make_unique<LegacyReadAccess>(AuthorizeAndGetDatabase());
 }
+
 int CreateClient(AccessGate& gate, capmgr_client_h* client) noexcept {
   return CreateClient(gate, {}, client);
 }
+
 int CreateClient(AccessGate& gate, std::shared_ptr<ExecutionBackend> backend,
                  capmgr_client_h* client) noexcept {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
@@ -91,15 +122,17 @@ int CreateClient(AccessGate& gate, std::shared_ptr<ExecutionBackend> backend,
     *client = out.release();
   });
 }
+
 void NotifyChanged(capmgr_client_h client, uint64_t revision) {
   if (client && SameProcess(client)) client->dispatcher.Changed(revision);
 }
-}
+}  // namespace capmgr
 extern "C" {
 int capmgr_client_create(capmgr_client_h* client) {
   PlatformAccessGate gate;
   return capmgr::CreateClient(gate, client);
 }
+
 int capmgr_client_destroy(capmgr_client_h client) {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
@@ -112,6 +145,7 @@ int capmgr_client_destroy(capmgr_client_h client) {
     delete client;
   });
 }
+
 int capmgr_client_foreach_capability(capmgr_client_h client, capmgr_kind_t kind,
                                      capmgr_foreach_cb callback, void* data) {
   if (!client || !callback) return CAPMGR_ERROR_INVALID_ARGUMENT;
@@ -132,6 +166,7 @@ int capmgr_client_foreach_capability(capmgr_client_h client, capmgr_kind_t kind,
     client->access->Check();
   });
 }
+
 int capmgr_client_search_capabilities(capmgr_client_h client, const char* query,
                                       capmgr_kind_t kind,
                                       capmgr_search_results_h* results) {
@@ -148,9 +183,11 @@ int capmgr_client_search_capabilities(capmgr_client_h client, const char* query,
     *results = out.release();
   });
 }
+
 void capmgr_search_results_free(capmgr_search_results_h results) {
   delete results;
 }
+
 int capmgr_search_results_count(capmgr_search_results_h results,
                                 size_t* count) {
   if (count) *count = 0;
@@ -158,6 +195,7 @@ int capmgr_search_results_count(capmgr_search_results_h results,
   *count = results->items.size();
   return CAPMGR_OK;
 }
+
 int capmgr_search_results_item(capmgr_search_results_h results, size_t index,
                                const char** json) {
   if (json) *json = nullptr;
@@ -166,6 +204,7 @@ int capmgr_search_results_item(capmgr_search_results_h results, size_t index,
   *json = results->items[index].c_str();
   return CAPMGR_OK;
 }
+
 int capmgr_client_get_capability(capmgr_client_h client, const char* id,
                                  char** detail) {
   if (detail) *detail = nullptr;
@@ -183,6 +222,7 @@ int capmgr_client_get_capability(capmgr_client_h client, const char* id,
     *detail = out;
   });
 }
+
 int capmgr_client_execute(capmgr_client_h client, const char* request,
                           capmgr_result_cb callback, void* data,
                           capmgr_request_token_t* token) {
@@ -225,11 +265,13 @@ int capmgr_client_execute(capmgr_client_h client, const char* request,
         std::move(id), callback, data, supports_cancel, protocol);
   });
 }
+
 int capmgr_client_cancel(capmgr_client_h client, capmgr_request_token_t token) {
   if (!client || !token) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&] { client->dispatcher.Cancel(token); });
 }
+
 int capmgr_client_remount_resources(capmgr_client_h client,
                                     const char* destination) {
   if (!client || !destination || destination[0] != '/')
@@ -237,6 +279,7 @@ int capmgr_client_remount_resources(capmgr_client_h client,
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
   return CAPMGR_ERROR_NOT_SUPPORTED;
 }
+
 int capmgr_client_set_changed_callback(capmgr_client_h client,
                                        capmgr_changed_cb callback, void* data) {
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;

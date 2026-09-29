@@ -17,7 +17,9 @@
 #define CAPABILITY_MANAGER_LAUNCHER_WORKER_SPAWN_HH_
 
 #include "launcher/owned_children.hh"
+
 namespace capmgr {
+
 // Private fixed-image exec primitive. No executable, argv, environment, UID or
 // namespace is selected through a request. Production image path is compiled in;
 // this checkpoint does not install/activate that image. Catalog provenance,
@@ -29,6 +31,7 @@ struct WorkerInheritedFds {
   int catalog_directory;  // trusted catalog parent, NOT a DB FD (WAL needs names)
   int ready_write;  // dedicated bootstrap pipe, closed by worker before admission
 };
+
 // Sources are duplicated above fixed targets BEFORE file actions. Child receives
 // only null stdio and 3=command,4=cancel,5=reply,6=parent proc,7=catalog directory,
 // 8=bootstrap READY write;
@@ -42,6 +45,6 @@ struct WorkerInheritedFds {
 // frontend journal uncertainty and must not automatically restart a generation.
 uint64_t SpawnFixedWorker(OwnedChildren&, uint64_t generation,
                           const WorkerInheritedFds&);
-}
+}  // namespace capmgr
 
 #endif  // CAPABILITY_MANAGER_LAUNCHER_WORKER_SPAWN_HH_

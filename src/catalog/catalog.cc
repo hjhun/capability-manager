@@ -1,11 +1,30 @@
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "catalog/catalog.hh"
+
 #include <cctype>
 #include <set>
 #include <sstream>
+
 #include "catalog/generation_lease.hh"
+
 namespace capmgr {
+
 namespace {
+
 constexpr int kSchemaVersion = 2;
 std::string Encode(const std::string& value) {
   constexpr char hex[] = "0123456789ABCDEF";
@@ -22,10 +41,12 @@ std::string Encode(const std::string& value) {
   }
   return out;
 }
+
 void CheckFilter(Kind kind) {
   if (kind < Kind::kAll || kind > Kind::kAction)
     throw Error(ErrorCode::kInvalid, "Invalid kind filter");
 }
+
 Json Summary(const Entry& e) {
   if (e.kind < Kind::kSkill || e.kind > Kind::kAction || e.id.empty() ||
       e.name.empty())
@@ -35,6 +56,7 @@ Json Summary(const Entry& e) {
           {"desc", e.desc},
           {"kind", KindName(e.kind)}};
 }
+
 Json Serialize(const Entry& e) {
   return {{"id", e.id},
           {"name", e.name},
@@ -48,12 +70,14 @@ Json Serialize(const Entry& e) {
           {"executable", e.executable},
           {"key", e.key}};
 }
+
 Json ParseStored(const std::string& text, bool array = false) {
   Json value = Json::parse(text, nullptr, false);
   if (value.is_discarded() || (array ? !value.is_array() : !value.is_object()))
     throw Error(ErrorCode::kDatabase, "Corrupt stored catalog JSON");
   return value;
 }
+
 Entry Deserialize(const Json& j) {
   try {
     return {j.at("id"),
@@ -71,7 +95,8 @@ Entry Deserialize(const Json& j) {
     throw Error(ErrorCode::kDatabase, "Corrupt pending catalog payload");
   }
 }
-}
+}  // namespace
+
 const char* KindName(Kind kind) {
   switch (kind) {
     case Kind::kSkill:
@@ -86,6 +111,7 @@ const char* KindName(Kind kind) {
       throw Error(ErrorCode::kInvalid, "Invalid kind");
   }
 }
+
 std::string CanonicalId(Kind kind, const std::string& name,
                         const std::string& app_id) {
   try {
@@ -94,6 +120,7 @@ std::string CanonicalId(Kind kind, const std::string& name,
   } catch (const Json::exception&) {
     throw Error(ErrorCode::kInvalid, "Identity must be valid UTF-8");
   }
+
   if (name.empty() || name.size() > 512 ||
       name.find('\0') != std::string::npos ||
       (kind == Kind::kAppSkill && (app_id.empty() || app_id.size() > 512 ||
@@ -102,11 +129,13 @@ std::string CanonicalId(Kind kind, const std::string& name,
   return std::string(KindName(kind)) + ":" +
          (kind == Kind::kAppSkill ? Encode(app_id) + ":" : "") + Encode(name);
 }
+
 Catalog::Catalog(const std::string& path, Database::Access access)
     : db_(path, access), writer_(access == Database::Access::kWriter) {
   if (writer_) Migrate();
   ValidateVersion();
 }
+
 Catalog::Catalog(std::unique_ptr<CatalogGenerationLease> generation)
     : db_(std::move(generation)), writer_(true) {
   if (db_.Maintenance()) Migrate();
@@ -114,12 +143,14 @@ Catalog::Catalog(std::unique_ptr<CatalogGenerationLease> generation)
   // Schema validation and complete file policy precede releasing EX ownership.
   db_.SealGeneration();
 }
+
 void Catalog::ValidateVersion() {
   Statement q(db_.handle(), "PRAGMA user_version");
   if (!q.Step() || q.Integer(0) != kSchemaVersion)
     throw Error(ErrorCode::kUnsupported, "Unsupported catalog schema");
   db_.Revision();
 }
+
 void Catalog::Migrate() {
   Transaction tx(db_);
   Statement version(db_.handle(), "PRAGMA user_version");
@@ -160,8 +191,10 @@ void Catalog::Migrate() {
   } else if (version.Integer(0) != kSchemaVersion) {
     throw Error(ErrorCode::kUnsupported, "Unsupported writer schema");
   }
+
   tx.Commit();
 }
+
 void Catalog::Validate(const std::string& owner,
                        const std::vector<Entry>& entries) {
   if (!writer_) throw Error(ErrorCode::kPermission, "Read-only catalog");
@@ -186,6 +219,7 @@ void Catalog::Validate(const std::string& owner,
     }
   }
 }
+
 void Catalog::Replace(const std::string& owner,
                       const std::vector<Entry>& entries) {
   Validate(owner, entries);
@@ -208,6 +242,7 @@ void Catalog::Replace(const std::string& owner,
     add.Bind(11, e.key);
     add.Step();
   }
+
   db_.Revision();  // Reject malformed stored revision before arithmetic.
   db_.Exec(
       "UPDATE catalog_state SET revision=revision+1 "
@@ -215,6 +250,7 @@ void Catalog::Replace(const std::string& owner,
   if (sqlite3_changes(db_.handle()) != 1)
     throw Error(ErrorCode::kLimit, "Catalog revision exhausted");
 }
+
 bool Catalog::PublishActions(const std::vector<Entry>& entries) {
   Transaction tx(db_);
   for (const auto& entry : entries)
@@ -235,10 +271,12 @@ bool Catalog::PublishActions(const std::vector<Entry>& entries) {
     tx.Commit();
     return false;
   }
+
   Replace("@action-source", entries);
   tx.Commit();
   return true;
 }
+
 void Catalog::Stage(const std::string& operation, const std::string& owner,
                     const std::vector<Entry>& entries) {
   if (operation.empty())
@@ -260,6 +298,7 @@ void Catalog::Stage(const std::string& operation, const std::string& owner,
     tx.Commit();
     return;
   }
+
   Statement busy(db_.handle(), "SELECT 1 FROM pending WHERE owner=?");
   busy.Bind(1, owner);
   if (busy.Step())
@@ -271,6 +310,7 @@ void Catalog::Stage(const std::string& operation, const std::string& owner,
   add.Step();
   tx.Commit();
 }
+
 void Catalog::Finalize(const std::string& operation, bool success) {
   Transaction tx(db_);
   Statement done(db_.handle(),
@@ -285,6 +325,7 @@ void Catalog::Finalize(const std::string& operation, bool success) {
     tx.Commit();
     return;
   }
+
   Statement read(db_.handle(),
                  "SELECT owner,payload FROM pending WHERE operation=?");
   read.Bind(1, operation);
@@ -304,6 +345,7 @@ void Catalog::Finalize(const std::string& operation, bool success) {
   complete.Step();
   tx.Commit();
 }
+
 void Catalog::Foreach(Kind filter,
                       const std::function<bool(const Json&)>& callback) {
   CheckFilter(filter);
@@ -324,6 +366,7 @@ void Catalog::Foreach(Kind filter,
     if (!callback(Summary(e))) break;
   }
 }
+
 Entry Catalog::GetPrivate(const std::string& id) {
   Statement q(
       db_.handle(),
@@ -348,6 +391,7 @@ Entry Catalog::GetPrivate(const std::string& id) {
           q.Text(9),
           q.Text(10)};
 }
+
 Json Catalog::Get(const std::string& id) {
   Entry e = GetPrivate(id);
   Json result = Summary(e);
@@ -361,6 +405,7 @@ Json Catalog::Get(const std::string& id) {
   }
   return result;
 }
+
 std::vector<Json> Catalog::Search(const std::string& query, Kind filter) {
   CheckFilter(filter);
   if (query.size() > 4096)
@@ -395,6 +440,7 @@ std::vector<Json> Catalog::Search(const std::string& query, Kind filter) {
     exact.Bind(5, query);
     collect(exact);
   }
+
   std::istringstream words(query);
   std::string word, match;
   while (words >> word) {
@@ -406,6 +452,7 @@ std::vector<Json> Catalog::Search(const std::string& query, Kind filter) {
     }
     match += '"';
   }
+
   if (!match.empty() && results.size() < 5) {
     Statement ranked(
         db_.handle(),
@@ -418,7 +465,8 @@ std::vector<Json> Catalog::Search(const std::string& query, Kind filter) {
     ranked.Bind(3, static_cast<int64_t>(filter));
     collect(ranked);
   }
+
   snapshot.Commit();
   return results;
 }
-}
+}  // namespace capmgr
