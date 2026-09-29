@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: Apache-2.0 */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 #ifndef CAPABILITY_MANAGER_API_CAPMGR_H_
 #define CAPABILITY_MANAGER_API_CAPMGR_H_
@@ -30,23 +30,29 @@ extern "C" {
 typedef struct capmgr_client* capmgr_client_h;
 typedef struct capmgr_search_results* capmgr_search_results_h;
 typedef uint64_t capmgr_request_token_t;
-typedef int32_t capmgr_kind_t;
-#define CAPMGR_KIND_ALL ((capmgr_kind_t)0)
-#define CAPMGR_KIND_SKILL ((capmgr_kind_t)1)
-#define CAPMGR_KIND_APP_SKILL ((capmgr_kind_t)2)
-#define CAPMGR_KIND_CLI ((capmgr_kind_t)3)
-#define CAPMGR_KIND_ACTION ((capmgr_kind_t)4)
-#define CAPMGR_OK 0
-#define CAPMGR_ERROR_INVALID_ARGUMENT (-1)
-#define CAPMGR_ERROR_PERMISSION_DENIED (-2)
-#define CAPMGR_ERROR_DATABASE (-3)
-#define CAPMGR_ERROR_NOT_FOUND (-4)
-#define CAPMGR_ERROR_CONFLICT (-5)
-#define CAPMGR_ERROR_NOT_SUPPORTED (-6)
-#define CAPMGR_ERROR_BUSY (-7)
-#define CAPMGR_ERROR_LIMIT (-8)
-#define CAPMGR_ERROR_IO (-9)
-#define CAPMGR_ERROR_OUT_OF_MEMORY (-10)
+typedef enum _capmgr_kind {
+  CAPMGR_KIND_ALL = 0,
+  CAPMGR_KIND_SKILL = 1,
+  CAPMGR_KIND_APP_SKILL = 2,
+  CAPMGR_KIND_CLI = 3,
+  CAPMGR_KIND_ACTION = 4
+} capmgr_kind_e;
+typedef capmgr_kind_e capmgr_kind_t;
+
+typedef enum _capmgr_error {
+  CAPMGR_OK = 0,
+  CAPMGR_ERROR_INVALID_ARGUMENT = -1,
+  CAPMGR_ERROR_PERMISSION_DENIED = -2,
+  CAPMGR_ERROR_DATABASE = -3,
+  CAPMGR_ERROR_NOT_FOUND = -4,
+  CAPMGR_ERROR_CONFLICT = -5,
+  CAPMGR_ERROR_NOT_SUPPORTED = -6,
+  CAPMGR_ERROR_BUSY = -7,
+  CAPMGR_ERROR_LIMIT = -8,
+  CAPMGR_ERROR_IO = -9,
+  CAPMGR_ERROR_OUT_OF_MEMORY = -10
+} capmgr_error_e;
+
 /* JSON pointers are borrowed for callback duration. Copy to retain. */
 typedef bool (*capmgr_foreach_cb)(const char* summary_json, void* user_data);
 typedef void (*capmgr_result_cb)(capmgr_request_token_t token,

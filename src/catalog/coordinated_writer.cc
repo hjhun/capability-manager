@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// SPDX-License-Identifier: Apache-2.0
 
 #include "catalog/coordinated_writer.hh"
 
@@ -78,6 +78,14 @@ uint64_t CoordinatedCatalogWriter::Revision() {
   const auto revision = impl_->catalog.Revision();
   impl_->Check();
   return revision;
+}
+
+void CoordinatedCatalogWriter::CheckIntegrity() {
+  impl_->Check();
+  Statement check(impl_->catalog.db_.handle(), "PRAGMA quick_check");
+  if (!check.Step() || check.Text(0) != "ok" || check.Step())
+    throw Error(ErrorCode::kDatabase, "Catalog integrity check failed");
+  impl_->Check();
 }
 
 void CoordinatedCatalogWriter::Close() {

@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// SPDX-License-Identifier: Apache-2.0
 
 #include "api/client.hh"
 #include "catalog/catalog.hh"
+#include "common/logging.hh"
 
 #include <atomic>
 #include <cstdlib>
@@ -50,6 +51,7 @@ struct capmgr_search_results {
   std::vector<std::string> items;
 };
 
+
 namespace {
 
 bool SameProcess(capmgr_client_h client) noexcept {
@@ -62,12 +64,16 @@ int Guard(F&& function) noexcept {
     function();
     return CAPMGR_OK;
   } catch (const capmgr::Error& e) {
+    capmgr::logging::Failure("C API request failed", e.what());
     return static_cast<int>(e.code());
-  } catch (const capmgr::Json::exception&) {
+  } catch (const capmgr::Json::exception& error) {
+    capmgr::logging::Failure("C API JSON failure", error.what());
     return CAPMGR_ERROR_DATABASE;
   } catch (const std::bad_alloc&) {
+    capmgr::logging::Failure("C API request failed", "allocation failure");
     return CAPMGR_ERROR_OUT_OF_MEMORY;
   } catch (...) {
+    capmgr::logging::Failure("C API request failed", "unknown exception");
     return CAPMGR_ERROR_IO;
   }
 }

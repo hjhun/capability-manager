@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 Name:           capability-manager
 Version:        0.1.0
-Release:        15
+Release:        16
 Summary:        Capability catalog and client library
 License:        Apache-2.0 AND MIT
 URL:            https://github.com/hjhun/capability-manager
 
 %global capmgr_builddir _build
+%global amd_modules_dir %{_datadir}/amd
 %global capmgr_libexecdir %{_libexecdir}/capmgr
 
 Source0:        %{name}-%{version}.tar.gz
@@ -21,6 +22,8 @@ BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  pkgconfig(gtest)
 BuildRequires:  pkgconfig(gmock)
 %if 0%{?capmgr_tizen}
+BuildRequires:  pkgconfig(amd)
+BuildRequires:  pkgconfig(libtzplatform-config)
 BuildRequires:  tidl
 BuildRequires:  pkgconfig(rpc-port)
 BuildRequires:  pkgconfig(bundle)
@@ -50,6 +53,18 @@ Requires:       %{name} = %{version}-%{release}
 Administrative staging and explicit outcome replay for an offline image catalog.
 This is not a production installer finalizer or an automatically registered plugin.
 
+%if 0%{?capmgr_tizen}
+%package -n amd-mod-capability-manager
+Summary:        AMD capability catalog maintenance and Action import module
+Requires:       amd
+Requires:       %{name} = %{version}-%{release}
+
+%description -n amd-mod-capability-manager
+AMD loader module for catalog initialization and existing Action DB import.
+Disabled by default until an administrator provisions the catalog generation
+policy and enables the protected configuration. No file or label repair is run.
+%endif
+
 %package tests
 Summary:        Capability Manager unit and C ABI tests
 Requires:       python3
@@ -69,9 +84,12 @@ cmake -S . -B %{capmgr_builddir} \
   -DCMAKE_CXX_FLAGS_RELEASE="-O1 -DNDEBUG" \
   -DCMAKE_INSTALL_PREFIX=%{_prefix} \
   -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
+  -DCMAKE_INSTALL_SYSCONFDIR=%{_sysconfdir} \
   -DCAPMGR_JSON_SOURCE=$PWD/json-3.11.3 \
   -DBUILD_TESTING=ON \
   %{?capmgr_dependency_prefix:-DCMAKE_PREFIX_PATH=%{capmgr_dependency_prefix}} \
+  -DAMD_MODULES_DIR=%{amd_modules_dir} \
+  -DCAPMGR_BUILD_AMD_MODULE=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF} \
   -DCAPMGR_REQUIRE_TIDL=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF} \
   -DCAPMGR_REQUIRE_CYNARA=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF} \
   -DCAPMGR_BUILD_TIDL_TRANSPORT=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF}
@@ -157,3 +175,10 @@ install -D -m 644 json-3.11.3/LICENSE.MIT \
 %{capmgr_libexecdir}/run_bounded.py
 %{capmgr_libexecdir}/package_tool_test.py
 %doc tools/README.md
+
+%if 0%{?capmgr_tizen}
+%files -n amd-mod-capability-manager
+%license LICENSE
+%{amd_modules_dir}/mod/libamd-mod-capability-manager.so
+%config(noreplace) %{_sysconfdir}/capmgr/amd.json
+%endif

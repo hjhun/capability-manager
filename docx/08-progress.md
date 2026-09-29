@@ -5985,3 +5985,667 @@ with a separate pure fixed eight-rule plan/schema checkpoint before durable
 journal/real Authorize-Confirm/catalog integration. No policy/runtime execution
 or original different-subject/direct-read-subset acceptance follows from that
 development direction.
+
+### LAUNCH-SESSION published / next pure P06 plan review
+
+Exact reviewed6 session checkpoint committed/pushed as
+c189386349a0e7fe302eaadb8919e6d4caae9b3a; actual remote main equality verified.
+The selected index/full212 map matched the reviewed publication tree plus
+permitted append-only final07/08 disposition; worktree clean immediately after
+push. Published07 fb3a42155213ee319454dccb69b1d35e0c2e9dec35b8c689233375d767ec88b9
+and08 64116214326919414337f0946bf2f2e1cc0fb52b599f273ba35d72ae6f67a1fb
+are preserved before this owner report. No unrelated WIP was staged.
+
+Continued authorized P06 same-subject/object development as temporary pure
+value/schema source2 outside Git/current imports/CMake/native methods. Fixed
+version2 system301-platform-objects-v1, fixed System301/groups10212/User::Shell
+principals, exact eight old-subject/fresh-object permissions, fixed paths/labels,
+bounded JSON/duplicate/type/uint64 rejection and independent returned references.
+Host final13/13 PASS0.004s; earlier12 PASS retained. No filesystem/lock/load2/
+label/credential/SQL/RPC operation is implemented or executed. Numbers alone are
+not metadata provenance/freshness/lock authority. Temporary frozen source manifest
+542ab7bb9835eff960830b9424c5376738173213b73b1c8f480579bb35f18f12 and
+archive5006d7624b1c4ef9a632b7846b713bd7036ed61b3d0577e007d4325d26d26573
+sent to independent reviewer as P06-READ-OBJECT-PLAN-r1. Source review pending;
+no native/root/policy/publication request. Durable journal and actual catalog
+Authorize/Confirm/local-access integration remain separately frozen future work.
+Original different-subject/direct-read-subset gate BLOCKED; retained P06 readers
+and all historical failures remain untouched. Overall product is incomplete.
+
+### P06 object-plan OP-01 / frozen temporary r2 awaiting review
+
+Reviewer returned CHANGES_REQUESTED on r1 decoder error normalization: bounded
+JSON can still raise parser RecursionError or integer-conversion ValueError.
+No runtime/policy issue was inferred. Exact r1 source2/hash/archive/host evidence
+remain unchanged. Temporary r2 preserves explicit InvalidPlan and normalizes
+UnicodeError/RecursionError/ValueError only in the parsing block, with causes
+retained; no byte/schema relaxation, BaseException catch or global parser change.
+
+Two new bounded negatives exercise nested32767-byte JSON and integer4301-byte
+token with host limits1000/4300. Initial host-r3 failed the expected recursion
+cause assertion because1050 nesting levels parsed successfully; log retained.
+Final deeper bounded input and host-r4 yield15/15 PASS0.005s/no skips. Tests have
+explicit deterministic parser-error fallback only under high/disabled settings;
+both real parser-error branches ran here. Frozen r2 manifest
+73007b786b9beb700f3e6b1b53f4ccec7755a49b0114e23aca2662f65459ccae and
+safe2 archivecf7de271b3828ddf2ad8a80dc86016091361c30238f6a1570a3789743bb92612
+sent for independent re-review; OP-01 remains open until reviewer disposition.
+Temporary source has no project/CMake/CLI/native/root/policy integration.
+All original blocked/retained-scope/product limits remain unchanged.
+
+### P06 object-plan r2 accepted / temporary journal mechanics r1 review
+
+Independent reviewer accepted exact temporary source2/host15 object-plan-r2;
+OP-01 CLOSED. Prior pending paragraphs are historical. Accepted manifest
+73007b786b9beb700f3e6b1b53f4ccec7755a49b0114e23aca2662f65459ccae
+and archivecf7de271b3828ddf2ad8a80dc86016091361c30238f6a1570a3789743bb92612
+remain preserved. No integration, native/root/policy/publication follows.
+
+Continued separate temporary journal mechanics with exact accepted plan helper,
+mandatory unselected trusted operations, durable fixed plan/receipt publication,
+real host flock exclusion and retry, fake eight-rule callbacks and empty known
+host-scope cleanup. Final host-r3 actual25/25 PASS0; earlier18/24 logs retained.
+Tests include partial/zero write, sync/close faults, unsafe metadata/substitution,
+receipt retry and same-process alias lifetime. No child/global policy/CLI/SQL/RPC
+or native/root image runs. Close-fault mocks physically close then report EIO,
+not unresolved FD ownership. No root backend/inventory or runnable recovery CLI
+is implemented; future integration must separately bind these authorities and
+prove owned-child absence. Temporary3 manifest
+21466a185895b2a1efe199b2c2f7c93d849fddeaff4293fe906f557877d88801
+and archive1fa65d71b3a07f8fec07190be28f19c2098a833932358cc99ef2a263b2708e0c
+frozen for P06-READ-OBJECT-JOURNAL-r1 independent local source/fault review.
+Source review pending; no project import/CMake/staging/publication. Original
+blocked different-subject gate, retained readers and product limits unchanged.
+
+### P06 temporary object-journal r1 accepted / inventory value boundary r1
+
+Independent reviewer accepted temporary journal3 mechanics and host25 only,
+manifest21466a185895b2a1efe199b2c2f7c93d849fddeaff4293fe906f557877d88801
+and archive1fa65d71b3a07f8fec07190be28f19c2098a833932358cc99ef2a263b2708e0c.
+Prior pending wording is historical. Mandatory Operations remains unselected;
+no runnable root backend/CLI/project/native/policy/publication acceptance follows.
+
+Next temporary inventory2 is pure value validation plus sticky two-role cleanup
+facts. Fixed eleven-key metadata/explicit absence and bottom-up path order,
+strict types/modes/owner/groups/labels/transmutation/ACL/capability/identity,
+wrong PID/nonzero reap/conflicts and permanent uncertainty are host tested.
+Host16/16 PASS0 with no files/children/policy launched. Observations are fabricated;
+this does not prove scanner completeness, provenance or kernel wait/absence.
+Source manifest/archive and evidence are frozen outside Git under
+/tmp/capmgr-read-object-inventory-r1 for independent local contract/source review.
+Actual trusted inventory scanner/delete adapter, complete coordinator ledger,
+root backend/source-pinned CLI and execution methods remain separate future work.
+Accepted plan/journal bytes unchanged; original gate BLOCKED and retained readers
+untouched. No project/CMake import/staging/publication in this increment.
+
+### P06 inventory value r1 accepted / temporary held-object scanner r1
+
+Independent reviewer accepted exact inventory2 pure metadata/ledger source and
+host16 only; manifest03ea6875dba2fe3647e510690d1c9eae47a97c44bdcccb1afc5b50f7b14bdcae
+and archived4b96e91a1d70b8d891d20a790a3e1e26b889066bbb2e6c1fe557729ea1e00cc
+remain unchanged. Prior pending statements are historical; no cleanup authority
+or kernel facts were inferred from supplied values.
+
+Continued temporary scanner3 with exact accepted inventory helper, mandatory
+unselected root trust/metadata backend, held directory/O_PATH object binding,
+bounded complete fixed inventory, SAME sticky ledger before/during bottom-up
+fixed unlink/rmdir, final parent fsync/absence/checked close. Host14/14 PASS0 uses
+actual own scratch trees and kernel file metadata with explicit virtual logical
+root/groups/labels/ACL values and supplied no-spawn/absence facts; no child,
+SQLite data FD, root/native image, policy/RPC/SQL or target metadata proof.
+Unexpected entries before first mutation, substitution/type/label, enum/metadata/
+unlink errors, poison during removal and close-error all-owned-close cases covered.
+Close mocks physically close then EIO; no unresolved-FD cleanup model. Partial
+removal on later failure stays failed/poisoned, not rolled back or called clean.
+Frozen scanner source/evidence under /tmp/capmgr-read-object-scanner-r1 pending
+independent review. Root xattr/ancestry backend, deadline/coordinator wait adapter,
+journal/CLI integration and native methods remain separate; original gates and
+retained readers unchanged. No staging/publication in this increment.
+
+### P06 scanner SC-01/SC-02 / temporary r2 awaiting review
+
+Independent reviewer requested changes to local scanner-r1: eligibility could be
+poisoned during validation or terminal completion without blocking mutation/return;
+parent CURRENT held/named comparison did not pin the initial safe authority or
+reread backend trust. Exact r1 source3/archive/host14 remains preserved as historical.
+No target/native failure was inferred and no root backend was selected.
+
+Temporary r2 retains accepted inventory bytes. SAME ledger now gates after complete
+validation, immediately before and after every mutation, through final enumeration/
+absence/fsync and after all successful owned closes. Initial parent authority
+binding is retained; named+held samples must match before/after mandatory backend
+trust revalidation. Own removal size/time/nlink changes do not alter that binding.
+Final host22/22 PASS0 covers prior14 plus callback poison at mutation and terminal
+root removal/fsync/enumeration/last close, same-inode parent chmod, backend rejection
+and parent change during trust. Close attempts all descriptors; actual removal is
+not rolled back and terminal poison prevents success even if root is already gone.
+Frozen temporary scanner-r2 source3/evidence sent for explicit re-review; SC-01/SC-02
+remain open until reviewer disposition. No CLI/journal/project/native/root/policy
+integration/publication or retained-reader access. Original product gates unchanged.
+
+### P06 scanner-r2 accepted / temporary guarded integration-r1
+
+Independent reviewer accepted exact temporary scanner3/r2 and host22; SC-01 and
+SC-02 CLOSED. Manifestbd4bd1d329b21dffbb32ab50d892c6ec6fc2f43b73df8cb302947a4864aa7f12
+and archive65869e4bc1a60e534ad58ab7dbc0ab986e40240e3dd60055edbf596b48bdc0bd
+preserved; pending paragraphs are historical. Root backend/topology/native gates
+remain separate.
+
+Continued temporary six-file host integration with four accepted helpers unchanged
+and new guarded composition/tests. SAME retirement ledger gates before/after
+recovery, including absent scope; every scanner path closes. Scanner failure still
+attempts all8 fake revokes but cannot return guarded success. Receipts remain
+non-authoritative; late close poison can reject after mechanics receipt publication.
+Host9/9 PASS0 includes real owned direct-child SH contention after parent owner
+close, exact bounded waitpid normal0 and release, independently for two fixed slots.
+These are same inert host code, not target reader/server/FD4/adoption/module/TLS.
+Actual host xattrs use own pinned FD proc links; labels/groups/root remain virtual.
+No child-absence inference from EX; remaining no-spawn/endpoint facts are supplied
+for this closed test topology. Mocked no-launch retention resets only a proven
+no-child harness flag, never actual ownership uncertainty. Root/native/policy/SQL/
+CLI/project integration/publication NOT_RUN. New temporary integration freeze/evidence
+sent for independent local source/lifetime review; no staging and target retained
+scopes untouched. Original different-subject/product gates remain BLOCKED/open.
+
+### P06 host integration-r1 accepted / metadata prerequisite-r1 review
+
+Independent reviewer accepted exact temporary integration6 and host9 only;
+manifest354d255e3caecd05a0c75dd496c574d0f95bff77864239bc32bcc7a592b63013
+and archiveeb3f3f246937498e92ecfda064b855f0cef28925b4bf7da79e085008e3bc73ee
+preserved. Two inert direct children, virtual fixture labels/groups and all prior
+limits remain distinct from target reader/server/adoption/TLS/root evidence.
+
+Continued separate temporary metadata3 prerequisite with exact inventory helper,
+raw held FD ownership/type/access/CLOEXEC/xattrs, explicit root User::Shell/IDs and
+creator/self namespace witness, fixed ancestor binding and bounded exact ext4
+mount-description checks. Root Backend is prospective and remains unselected by
+all accepted defaults; no actual root callback/PID1 capture or target metadata run.
+Host22/22 PASS0 uses own pins plus injected SMACK/root context/ancestor/namespace
+facts and pure mount parsing; one own ACL/capability absence case uses real host
+xattrs. No policy/SQL/RPC/native or child run in this metadata checkpoint. Root
+namespace capture is privileged-only future reviewed preparation; subsequent
+verification never reopens PID1. Errors reject, no permissions/policy repair.
+Frozen temporary metadata source/evidence sent for independent source/fault review.
+Root integration/full topology/deadlines/target Python and O_PATH/xattr/proc behavior,
+CLI/provisioning/methods and publication remain pending separate gates. Existing
+accepted helpers, original blocked gate and retained target readers unchanged.
+
+### P06 metadata-r1 accepted / execution boundary-r1 source review
+
+Independent reviewer accepted exact temporary metadata3 prerequisite and host22;
+manifest340a2c9a62af615c3dff033cae958e22f598bdebd2a2201f5cd2641393915828
+and archive7308040f278706be847f3854518ede0127a055c1d1577b1df23ee7ec7e3f7dd2
+preserved. Root context/namespace/ancestor/SMACK observations remain injected;
+prospective RootBackend unselected and no operational root capture occurred.
+
+Next temporary execution3 applies SAME sticky ledger, creator-before-callback,
+mandatory unselected topology and one fixed30s absolute budget before/after normal
+metadata callbacks. Exceptions preserve original errors, late successes reject;
+known owned cleanup remains attemptable after expiry but cannot finish normally.
+Constructor/clock/creator errors poison; same poisoned ledger cannot restart via
+new guard. Host18/18 PASS0 uses fake clocks/topology/close/metadata callbacks only,
+not actual OS resource retirement or target timing. No selected root backend,
+actual own FD/task verifier, journal/scanner/runtime wiring, CLI/policy/native/root
+or project/publication operation follows. Frozen execution source/evidence pending
+independent source/fault review; accepted helpers/gates and retained readers unchanged.
+
+### P06 execution-r1 accepted / own topology-r1 source review
+
+Independent reviewer accepted exact temporary execution3 and host18 only;
+manifest656165a61277be2145e4e07662e1c2b9a98d4b829576ca5522e5d5e3d0c06aa4
+and archive3bb9d1cb928d355da8aac501c0b2b95e3be7935dd5772a9ccf839aa1974bb587
+preserved. Known cleanup callback result remains no normal completion/absence proof;
+actual bookkeeping/full topology/runtime gates remain separate.
+
+Next temporary topology4 copies inventory/execution exactly, adds bounded own task/
+FD verifier against explicit owned registry and host tests. Creator-first, single
+own task, raw signature/flags and stable registry checks account only one live own
+proc FD enumeration-directory handle with post-close EBADF; no unknown FD closure,
+admission fallback or OFD-identity claim. Host15/15 PASS0 includes actual own-table/
+alias/extra procdir/status flag/substitution/thread rejection and same ExecutionGuard
+sticky failure; post-scan EIO/live observation are injected. Physical fd absence is
+not separately observed closedir return/errno. Actual scanner ownership-registry
+hooks, metadata/root/journal/CLI composition and target interpreter/procfs behavior
+remain next separate review. No child, root backend, policy/native or project/run
+selection/publication. Frozen topology source/evidence pending independent review;
+all accepted scopes, original gates and retained target readers unchanged.
+
+### P06 topology-r1 accepted / registry-r1 source review
+
+Independent reviewer accepted exact temporary topology4 and host15 only;
+manifestdb5bb9e5efb7b1ff975dc4cebe863a9fe55fb446cb8a509215a19fa3260dcda7
+and archive171e5aef539a805470bebef4a359eafbbe91ffdc5a8f561a6267b1e5e4e33455
+preserved. Own metadata signatures and post-enumeration EBADF are not OFD identity
+or raw closedir-return proof. Target runtime/topology selection remains separate.
+
+Next temporary registry5 copies inventory/execution/topology exactly and adds a
+preallocated own-FD owner plus host fault tests. Reservation precedes opening;
+actual returned FD is recorded before pin/post-budget work. Successful close is
+recorded before post-clock failure. UNKNOWN close outcomes are never retried;
+cleanup attempts every independently known descriptor while preserving first error.
+RESERVED/UNKNOWN records and SAME ledger poison prevent completion; later empty
+snapshots never repair eligibility. Borrowed stdio is never closed. Private trusted
+scalar opener/registry, exclusive stable FD table and guard bound to this registry
+remain premises, not hostile-caller isolation or OFD/absence authority.
+
+Host-r1 FAIL1: the pin-fault test rejected topology's transient enumeration FD
+before the opener; its expected OPENED state was therefore wrong. Corrected test
+injects only after actual owned OPENED recording. Host-r2 PASS14 preceded final
+first-error cleanup adjustment; final host-r3 PASS14/14, no skips, includes actual
+own O_PATH pin/close cases, fake late budgets, constructor/creator/guard faults,
+unknown close/no-retry and all-known close attempts after a clock error. Mock close
+errors do not establish unresolved-FD cleanup. No child or target scope involved.
+Frozen registry manifest5c67a1c401aa768951c965ea0de2b34846847b7578b72fc6151143e0ab8aeda8
+and archivece1b05c43a170328c6882bff5257a5797b0b707533c4d99601e4cad10e5f9ade
+sent for independent local source/fault review. No scanner/journal/root/backend/CLI
+integration, native/policy run, project publication or product completion follows.
+All earlier accepted scopes, original blocked subset and retained readers unchanged.
+
+### P06 registry-r1 RG-01 / registry-r2 revised review
+
+Independent reviewer requested RG-01: duplicate returned-number detection made only
+the new record UNKNOWN, leaving an existing LIVE owned record eligible for close
+on the same ambiguous number. R1 manifest/archive and host14 evidence remain
+historical; stdio-only duplicate coverage did not exercise this owned-alias path.
+
+Temporary r2 changes only registry/test. Before raising, every matching owned
+record is invalidated UNKNOWN; borrowed stdio remains BORROWED. New causal LIVE
+alias plus distinct LIVE descriptor verifies no ambiguous-number close, actual
+independent retirement, both records retained, and poisoned completion after
+harness-only known mock-resource retirement and later empty snapshot. Final host-r5
+15/15 PASS0 includes explicit borrowed-state assertion; host-r4 PASS15 is earlier.
+Frozen manifest7f2f8ba886958a6fdc02bd2659ffc875a8bda4ab9b3dd153cb61a8aaf5d44c9e
+and archiveb50240c00aabaaaf8954fd91fa49a06b193d9164140c4f042190c36b369d4eb3
+submitted for independent re-review; RG-01 not self-closed. Three accepted helper
+copies unchanged. No scanner/journal/root/CLI/native/policy/project/publication
+selection; retained target readers and original blocked gate untouched.
+
+### P06 registry-r2 accepted / local runtime-r1 composition review
+
+Independent reviewer accepted exact temporary registry5 and host15; RG-01 CLOSED
+for manifest7f2f8ba886958a6fdc02bd2659ffc875a8bda4ab9b3dd153cb61a8aaf5d44c9e
+and archiveb50240c00aabaaaf8954fd91fa49a06b193d9164140c4f042190c36b369d4eb3.
+Scope-only historical r1 host-r3 wording clarified against final r2 host-r5; no
+accepted source bytes changed. Private opener/exclusive table premises and no
+unresolved-resource absence authority remain explicit.
+
+Next temporary runtime6 composes exact accepted inventory/execution/topology/
+registry copies with new private one-shot LocalRuntime/tests. One budget begins
+before borrowed pin capture; actual owned registry supplies topology. Callback
+runs under SAME guard, all known cleanup attempts follow error/expiry, then actual
+registry completion precedes result. Original functional exception wins while
+cleanup failure remains separately recorded. No descriptor/child created during
+factory construction; no destructor/retry/unknown adoption. Trusted callback must
+register each scalar descriptor and return no live resources; Python privacy is
+not hostile no-escape enforcement. Local completion is no durable recovery receipt,
+OFD/child/job absence, scanner/backend or namespace authority.
+
+Final host-r2 12/12 PASS0 includes actual own pin/close lifetime, two-close cleanup
+with injected post-close error, late callback/final close, RESERVED/reentry/extra
+FD poison, inherited and constructor clock faults. Host-r1 PASS9 is earlier subset.
+No target/root/metadata/child/policy operation. Frozen runtime6/evidence sent for
+independent local source review; scanner/journal/root/backend/CLI/project/native/
+policy/publication integration remains unselected. Retained readers and historical
+failures/original blocked subset unchanged.
+
+### P06 runtime-r1 accepted / scan-lifetime-r1 local inspection review
+
+Independent reviewer accepted temporary runtime6 and host12 for manifest
+8046bf3112f18d4af7262203105827c47ea2bc53fb2adb6e3deafecc539e6bf4,
+archive8eafb51ba2e8e56d71cfa6edcc0e83a3fc9764ac453777437e39ab80e32dba10.
+No resource-escape/OFD/receipt/child authority follows; trusted scalar callback
+premises remain. Prior nine-case host subset stays separate.
+
+Next temporary scan-lifetime9 supplies optional fixed owned descriptor transitions
+in a private scanner variant and a read-only inspect function over SAME runtime.
+Parent plus11 fixed objects reserve slots3..14; actual open is registered before
+scanner map assignment/pin/post-budget. Partial constructor failures retire known
+registry pins even when scanner never received the return. Explicit scan close
+and outer runtime attempt every independently known cleanup; UNKNOWN never retry.
+Original functional exception survives cleanup errors, retained separately.
+Value copies return only after all known retirement and successful runtime finish.
+Selected inspection never invokes deletion; exported legacy delete budget/journal/
+root composition remains separate. Six accepted helper/test copies unchanged.
+
+Final host-r2 29/29 PASS0 = new inspection7 + unchanged legacy scanner22; r1 PASS29
+is earlier diagnostic-retention variant. Actual own scratch pin/close cases and
+mocked time/signature/error/virtual root labels remain distinct. Legacy22 own-tree
+mutations are not new inspection deletion authority. No native/root/backend
+capture/policy/journal/CLI/project/publication selection; frozen source/evidence
+sent for independent review. All earlier failures/retained readers/original
+blocked gate preserved.
+
+### P06 scan-lifetime SL-01 / revised r2 source review
+
+Independent review requested SL-01a/b on r1: pre-owner-close creator/identity hook
+errors could evade retained diagnostic; outer runtime cleanup overwrote an earlier
+scanner cleanup error. Prior r1 manifest/archive/host29 remain historical, not
+accepted. R2 catches the entire close hook while creator validation remains first;
+forwarding and revised runtime cleanup preserve only the first diagnostic.
+Original functional exception remains original and every known cleanup is attempted.
+
+R2 freezes10: prior9 plus exact accepted runtime12-test file. Hook/runtime/lifecycle
+test changed; scanner variant unchanged from reviewed r1, six accepted helper/test
+copies exact. Runtime helper revision explicitly supersedes its accepted byte-copy
+claim only in this temporary composition; earlier runtime-r1 snapshot preserved.
+New one-time creator error and DISTINCT scanner/orphan close error cases assert
+original/first exception identity, known actual retirement attempts, UNKNOWN no
+retry, failed return and SAME poison. Final host-r4 43/43 PASS0 = new inspection9,
+legacy scanner22, runtime12; earlier r3 PASS31 remains distinct. Frozen manifest
+79ed44936384f2d4cdaf159ab6480e619fbab4a6c504358f899cb22ae87b70ab and archive
+000d7f9bcbaf7885dcb98ec831ee06133bcdd01aa84297609418f33cf035c00a
+sent for re-review; SL-01 not self-closed. No selected deletion/root/backend/journal/
+CLI/native/policy/project/publication work; retained target readers untouched.
+
+### P06 scan-lifetime-r2 accepted / retirement-r1 local composition review
+
+Independent reviewer accepted temporary scan-lifetime10 and host43; SL-01a/b CLOSED
+for manifest79ed44936384f2d4cdaf159ab6480e619fbab4a6c504358f899cb22ae87b70ab,
+archive000d7f9bcbaf7885dcb98ec831ee06133bcdd01aa84297609418f33cf035c00a.
+First cleanup diagnostic and original functional identity are separate, not a
+complete error trace/unknown-resource authority. Selected inspection stays no-delete.
+
+Next temporary retirement12 changes only scanner per-action seam and adds fixed
+retire_scope/tests; other9 accepted copies exact. SAME runtime guard brackets each
+unlink/rmdir/fsync before and after actual operation, preserving existing inventory/
+eligibility gates. Expiry/poison halts further mutations and rejects completion;
+actual partial/full removal remains actual (no rollback/retained-path fiction).
+Known registered pins retire despite expiry; first diagnostic remains retained,
+UNKNOWN never retry. Default-null legacy actions and no-delete inspection unchanged.
+
+Final host-r2 51/51 PASS0 = retirement8 + inspection9 + scanner22 + runtime12.
+Actual own scratch12 pins/deletion/close distinct from virtual metadata/no-child
+facts and fake clocks/error callbacks. Historical host-r1 FAIL1 assumed first
+removal was SHM; corrected test counts six remaining fixed regular objects without
+inventing order. Late first unlink/root rmdir/parent fsync and final close error
+cannot return success even after actual removal. Frozen source/evidence sent for
+independent local review. No root capture/backend/provisioning/journal/CLI/native/
+policy/project/publication integration; retained readers/original gate unchanged.
+
+### P06 retirement-r1 accepted / journal-reader-r1 local lifetime review
+
+Independent reviewer accepted temporary retirement12 and host51 for manifest
+0b495f542229de55a336c6c8ce97fef77b6b41e56422530b34d3a643777411b1,
+archive016c02077a93e61cca2461a17ccb1c0a6184d0d255c0e5675eb701c4572dfdff.
+Boundary classification remains separate from physical partial/full removal;
+virtual authority/supplied no-child facts confer no operational root authority.
+
+Next temporary journal-reader11 copies nine accepted helpers/tests exactly and
+adds registered immutable-plan SH reader/tests. NEW runtime registers directory/
+lock/plan slots3/4/5; exact named/held metadata, fixed paths, bounded READONLY plan
+read/schema/key and journal/parent/lock identity revalidate under SAME guard.
+Actual SH|NB stays through validation until known physical closes; no unlock or
+lease/value-resource escape. Descriptive snapshot only; no producer install,
+recover, receipt/policy/delete callbacks selected by the reader.
+
+Final host-r2 46/46 PASS0 = reader9 + runtime12 + journal25; historical r1 PASS45
+is earlier subset. Own inert journal provisioned before separate read budget,
+producer physically closed. Actual same-process independent EX contention during
+read and EX availability after closes are not exec/child/TLS/adoption evidence.
+Late full read/SH, zero/corrupt/substituted plan and reported close/read faults
+reject result, retain first diagnostic/original exception and attempt all known
+closes. Host trust/path/UID/GID remain supplied own-scratch premises; root SMACK/
+namespace/provenance/operational capture unselected. Frozen source/evidence sent
+for independent local review; full producer/recovery registration, journal/CLI/
+policy/target methods and publication remain separate. Retained readers and
+original blocked different-subject gate unchanged.
+
+### P06 journal-reader-r1 accepted / registered producer-r1 local review
+
+Independent reviewer accepted temporary journal-reader11 and host46 for manifest
+7fe0f6a98ef3d438d768745c840cad66d9f36e2981f6edec967f0bf62d9ccba8,
+archivecea5f87ce15d909244821dec76a54db1e86cd5374121a2726b9e2b34dd471df9.
+Registered SH read lifetime remains no role/TLS/receipt/child-absence authority.
+
+Next temporary producer13 copies those11 exactly, adds fixed one-call producer/
+tests. SAME runtime registers parent/journal/SH lock/pending plan/completed readback
+slots3..7. Durable bounded write/fsync/checked physical close/no-overwrite link/
+unlink/directory+parent fsync and readback equality precede descriptive future argv
+and all8 fake callbacks. SH held throughout, known descriptors retire before value
+return; no unlock/recovery/revoke/receipt or automatic artifact cleanup selected.
+Partial write/link and callback failures retain actual pending/complete artifacts,
+stop normal work and reject result; nlink2 late-link artifacts are not repaired.
+
+Final host-r2 55/55 PASS0 = producer9 + reader9 + runtime12 + journal25. Earlier
+host-r1 PASS54 predates registered readback and first explicit-close diagnostic
+amendments; preserved as historical. Ordinary own scratch publication/modes/actual
+closes and same-process EX contention distinguished from virtual trust/fake writes,
+mock clocks/close errors. False write-progress readback rejects before callbacks;
+reported physical temp-close EIO still attempts other known closes without retry.
+Frozen source/evidence sent for independent local review. No root/backend capture/
+recovery/CLI/native/policy/project/publication or target role selection. Original
+blocked subset and retained readers unchanged.
+
+### P06 producer-r1 accepted / registered receipt-r1 local review
+
+Independent reviewer accepted producer13/host55 for manifest
+96892138b87b9dfd1af74e131f20d04dca151eb186598cb881635306bafc3d20 and archive
+02573317202423b704baad3e30c5ec0272edbaaf4b0215c51a95d13a1cbb6686.
+SH retirement/value result remains no transferable role lease or recovery authority.
+
+Full recovery composition raised a concrete contract question: accepted normal
+guard poison prevents continuing callbacks, while cleanup_call is FD/reap only.
+Independent development direction now permits separate exact8 RevokeSweep best
+effort across ordinary scope/revoke failures ONLY while original authority/budget
+remain valid; expiry/clock/authority loss stops new policy callbacks, late actual
+callback is attempted-late/unknown, fixed remaining rows retained for later admission.
+No budget renewal or cleanup_call policy reuse. Design only; source/runtime pending.
+
+Independent temporary receipt15 copies producer13 exactly and adds nested registered
+publisher/tests. Supplied EX/full provenance remain caller premises, not helper
+inference. Caller directory3/lock7, stale/prior receipt4/5 and pending6 register
+actual transitions; trusted named/held0600 singlelink/attributes before removal,
+bounded write/fsync/physical close/replace/fsync guarded before/after. Late mutations
+preserve actual artifacts but reject completion; first close diagnostic and all
+known retirement retained. Receipt bytes descriptive and never authority; helper
+has no recovery/revoke/scope delete or plan rewrite. Future diagnostic receipt
+following failed sweep requires separate admitted guard/budget, no bypass implied.
+
+Host-r1 62/62 PASS0 = receipt7 + producer9 + reader9 + runtime12 + journal25; own
+scratch EX driver/artifacts distinct from virtual trust/no-child/provenance facts.
+Frozen source/evidence pending local review; separate sweep implementation proceeds
+under design-only direction. No root/backend/CLI/native/policy/project/publication
+selected, retained readers and blocked subset unchanged.
+
+### P06 receipt-r1 accepted / fixed RevokeSweep-r1 local fault review
+
+Independent reviewer accepted temporary receipt15/host62 for manifest
+10404e27d8ba8f520725ff539351777d08cc37494b300b400a6615cbb2aa3d02,
+archivef191f72d6ce37f9a6b809acb48786a7918178e473cbe4dfdbb3ee317441f9259.
+Caller EX/full provenance are premises; poisoned/expired recovery cannot publish
+through this ordinary guard or infer authority from physically published bytes.
+
+Next temporary sweep5 implements separate accepted development contract, with
+inventory/execution/plan copies exact. Clean original admission preallocates exact8
+private fixed------ rows and captures original budget; mandatory independent
+Authority remains unselected. Creator/topology/time/authority checks before/after
+attempts; ordinary scope/row exceptions poison but permit later fixed best effort
+ONLY within independent authority/budget. Expiry/clock/EX/provenance/unknown
+retirement loss starts no further callback; late attempted rows UNKNOWN/not retried,
+remaining NOT_ATTEMPTED retained for later independent admission. Final report
+construction budget checked. No cleanup_call policy reuse/budget renewal/ledger
+clear, no receipt or authoritative final recovery result. Diagnostic-only caller
+retirement-error hook preserves first error without performing/authorizing cleanup.
+
+Final host-r5 19/19 PASS0 uses fake clock/topology/authority/callbacks/close-report
+objects only, NO FD/EX/child/root/policy operation. Historical r1 FAIL1 miscounted
+admission checks, corrected with causal row-state expiry; r2 ERROR16 misplaced
+retirement field in slotted Row, fixed; r3 PASS16/r4 PASS18 earlier subsets. Source/
+fault evidence frozen and sent for independent review. Concrete exact-plan/EX/
+namespace/provider verifier, actual known cleanup and complete journal/receipt
+composition remain separate; no native/project/publication selection. Retained
+readers/original blocked subset unchanged.
+
+### P06 RevokeSweep RS-01 / revised r2 local fault review
+
+Independent review requested RS-01 on frozen r1: generic shared ExecutionFailure
+could mean on-time authority/retirement loss, so exception type alone mislabeled
+ATTEMPTED_LATE_UNKNOWN. R1 manifest/archive/host19 remain historical, not accepted.
+R2 changes only sweep/test: dedicated SweepDeadline from actual sweep clock expiry
+selects LATE; all other boundary failures UNKNOWN. Original identity/stop/poison/
+no-retry behavior preserved. Accepted copies3 unchanged and no resource selection.
+
+Final host-r7 21/21 PASS0 includes on-time authority and retirement ExecutionFailure
+objects/clock0, identity, one attempt/no later callback and UNKNOWN, plus explicit
+true last-row expiry SweepDeadline/LATE control. Host-r6 PASS21 predates added
+control assertion. Frozen manifest6effdab8d43173dd10aa262fc723d9317b95ba1c74fc8d6813dbe4b7f6280188
+and archive4fd3a5344cfd88af9f482abe9be6f1311e511731fd9d71a1a3ae57beaa4d6eab
+sent for independent re-review; RS-01 not self-closed. Fake clock/authority/error
+objects only; no EX/FD/child/root/backend/journal/CLI/policy/native/publication.
+Retained target readers and original blocked subset unchanged.
+
+### P06 RevokeSweep-r2 accepted / registered recovery-admission-r1 local review
+
+Independent reviewer accepted sweep5/host21, RS-01 CLOSED for manifest
+6effdab8d43173dd10aa262fc723d9317b95ba1c74fc8d6813dbe4b7f6280188,
+archive4fd3a5344cfd88af9f482abe9be6f1311e511731fd9d71a1a3ae57beaa4d6eab.
+Dedicated local clock expiry alone means LATE; generic authority/retirement failure
+remains UNKNOWN. Fake admission remained no EX/resource/provenance authority.
+
+Next temporary recovery-admission13 copies eleven accepted journal/runtime/sweep
+helpers/tests exactly, adds local EX/immutable-plan binding and tests. NEW runtime
+owns directory/EX lock/plan3..5; private captured exact bytes and registered LIVE
+pins are rechecked around every fixed revoke through OwnTopology, held/named
+journal/lock/plan/parent metadata and mandatory Provenance (default UNSELECTED).
+Actual local read/EX lifetime bound to exact8 ordered------ fake callbacks; ordinary
+scope/row errors retain poison and later attempts only within independent original
+budget/authority. No scope deletion or receipt selected. Metadata identity is not
+OFD proof; exclusive table/no-unlock/no-conversion remains prerequisite.
+
+Final host-r3 72/72 PASS0 = admission14 + sweep21 + runtime12 + journal25; r1 PASS67
+and r2 PASS71 earlier subsets. Ordinary own EX/plan/pins/proc checks distinct from
+fake provenance/revokes/supplied scope error. Actual EX record retirement/unknown
+known-test alias/change of admitted bytes stops after first callback; runtime never
+closes unknown alias, harness alone retires its known mock resource. First final
+close and original scope object retained; secondary diagnostic failure cannot mask
+original functional error. Mock EX contention/error objects are not role/child/
+root/policy evidence. Frozen source/evidence pending independent local review.
+Concrete root capture/backend/provider/namespace/retirement admission, scanner
+scope deletion and receipt/CLI/full recovery composition remain separate. No native/
+policy/project publication or retained-reader access; original gate unchanged.
+
+### P06 recovery-admission-r1 accepted / full LOCAL composition-r1 review
+
+Independent reviewer accepted temporary admission13/host72 for manifest
+6722176c48128330fada90b79873c0ca4bb1b51950451910052b8daee46cfb77,
+archive aed3a03f0dc9b690a22bf4226eca0790857eed3a687e106b9e90783ee1b89af8.
+EX/immutable plan/owned pins now bind fixed revokes locally; provenance remains
+UNSELECTED/mock, no root/child/policy/CLI/project publication authority.
+
+Next temporary recovery-composition23: twenty accepted copies exact, new local
+composition/test plus fixed receipt recovery slots20..22 (standalone4..6 retained).
+One original NEW runtime/guard budget owns journal3..5, scanner8..19 and receipt20..22.
+Initial/repeated supplied known retirement facts and sticky OwnTopology failures
+bind independent sweep authority; transient observation cannot be repaired later.
+Scope deletion uses prior bounded scanner, closes all known scanner pins/orphans
+without releasing journal EX, retains original scope/first close diagnostic and
+unknown records. Ordinary scope/row failure allows fixed best effort only within
+independent original authority/budget; unknown/late failures stop new callbacks.
+Observed absent scope creates no opener/reservation. Full durable plan retained.
+
+Only clean phases may publish explicitly BLOCKED/authority=NONE diagnostic receipt
+through ordinary guard, stating final known retirement pending. No receipt through
+poison/expiry, no renewed diagnostic budget or authoritative success receipt.
+Physical publication followed by late/final-close failure remains non-authoritative;
+LOCAL_PHASES_COMPLETED returned only after runtime known closes/finish, not root
+recovery/policy enumeration. No root metadata/provider/namespace/backend selected.
+
+Final host-r6 actual134/134 OK/no skips/exit0: composition16 + admission14 + receipt7
++ retirement8 + inspection9 + scanner22 + sweep21 + runtime12 + journal25. Actual
+own scratch/EX/preads/pins/deletion/receipt/proc facts remain separate from virtual
+metadata/fake callbacks/clock/error/supplied no-child facts. New cases include
+ordinary unlink failure then8; failed row then8; late actual unlink/no callbacks;
+transient topology/changed absence refusal; scanner close-then-error/all15 closes;
+original scope plus distinct close object; already absent scope; stale/prior fixed
+receipt slots; late replace and final-close failure retaining only BLOCKED diagnostic;
+creator-query cleanup failure retained through later known closes. Historical r1
+PASS12 subset, r2 FAILED1/133 test-harness root-before-children removal error, fixed
+harness r3/r4/r5 PASS133 remain preserved, never relabeled.
+
+Frozen manifest698814edf9971acaa7f8189a1b42d62b66999cbc6befef5024dce59baa1591c9,
+archive4c9225c812922e1e2ba4283c39837513ee9328e43cd54f254c010458279f268a,
+full logSHA c8b7397586aa81e342ec92823bd28ed7b58c19ea5f14f0be9fc42c6006076d71
+and exact scope/diff/evidence sent for independent local review, pending disposition.
+No native/root/policy/CLI/project publication run, no operational provenance or
+hostile-race/OFD/child absence/hard-preemption proof. Retained iCNk4Q/B29oJu/Vmiui5
+untouched, original different-subject gate BLOCKED, published HEAD unchanged.
+
+### P06 recovery-composition-r1 RC-01/RC-02 / revised LOCAL r2 review
+
+Independent reviewer returned CHANGES_REQUESTED for frozen r1/host134: creator
+query was outside StickyTopology latch; failed actual absence observation poisoned
+common ledger but left prior True flags intact, allowing independent sweep checks
+to mistake restored facts for valid admission. R1 source/archive/log preserved.
+RC-01/RC-02 remain pending explicit reviewer confirmation, not author self-closed.
+
+R2 temporary24 changes inventory variant/composition/test, adds exact accepted
+inventory16 test file. Other21 r1 members unchanged, receipt20..22/default4..6
+unchanged. Inventory explicitly revised: retirement_failure captures FIRST role
+attach/no-spawn/reap/absence validation error via existing require/poison semantics;
+ordinary scope/revoke poison remains separate. Later successful known observations
+or different errors cannot erase/replace that reason. Known record-release behavior
+unchanged. RecoveryAuthority rejects retained retirement reason before current facts.
+Topology creator validation enters SAME first-error try while remaining before
+record/underlying observation. Restored query/original empty topology cannot repair.
+
+Final host-r2 153/153 OK/no skips/exit0 = composition19 + inventory16 + admission14
++ receipt7 + retirement8 + inspection9 + scanner22 + sweep21 + runtime12 + journal25.
+RC causal cases: one-time owner creator error at actual scanner guard observation;
+actual confirm_absence(False,True) after successful initial admission with/without
+later successful confirm. All retain exact first error/poison, five known closes,
+zero revokes/receipt/local result. Subsequent success/different absence error still
+cannot repair. Ordinary scope unlink EIO ->8 and unknown inventory ->8 controls
+assert no invented retirement error. Host-r1 PASS153 precedes extra explicit
+control/first-error assertions. Host facts remain scratch/EX/pins and fake provenance/
+virtual labels/supplied child absence; no kernel-child/operational/root authority.
+
+Frozen manifest2a87413b5a1ee023f5df420a7965c34e200d939f4b01908fba1b73b872505eb6,
+archive5568b7537d77df26961a900bc117ecb5ee01da866ecdce7df5be07d440351794,
+logSHA9e0b841526c1c93940ddd4bfd55f285f3a3746d494a079f06bcf7eebd80327ad
+plus scope/diff/evidence sent for independent re-review. Diagnostic BLOCKED/authority
+NONE receipt stays clean-only and non-authoritative before final known retirement.
+No native/root/backend/CLI/policy/project publication, retained target scopes untouched,
+original different-subject gate BLOCKED, HEAD unchanged.
+
+## AMD-PLUGIN-r1 — functional source/host checkpoint ACCEPTED
+
+Owned optional AMD worker initializes/checks/imports the existing Action DB and
+reconciles every five seconds. Existing generations use guarded SH (AMD-01);
+missing DB initialization uses EX. Failed initial source readiness retains the
+worker and retries a fresh service (AMD-02), with stop/join before fini/unload.
+Default fixed configuration is disabled; real app_fw/layout/label provisioning and
+actual public-create authorization remain prerequisites. Periodic fallback is not
+SYNC-01. CAPMGR stream dlog, public named error/kind enums, API pc location, RPM
+module/config payload and concise AGENTS updates are included. Source notice-only
+changes are separately identified; no invented attribution or dummy service/socket.
+
+Host `/tmp/capmgr-amd-host-r1`: final focused20/20 (11 module +2 config +7 import),
+including recorded missing-source failure then actual retry/import after5033ms;
+full CTest29/29 PASS17.31s. C/C++ default enum width/value checks and pure C consumer
+pass. testing-OFF configure/build/install-staging PASS; ELF12 CAPMGR_0 exports and
+SONAME0, unchanged pc template bytes/Name/filename. Host/Tizen rpmspec parse PASS.
+Evidence `/tmp/capmgr-evidence/amd-plugin-host-focused-r2.log`,
+`amd-plugin-host-check-r2.log`, `amd-plugin-host-off-*-r1.log`,
+`amd-plugin-exports-r1.txt`, and `amd-plugin-*-spec-r2.txt`. No RPM built/installed.
+Earlier focused20 passed before the retry test had causal synchronization; final
+test waits for actual startup failure. Initial fullcheck failed from a test edit
+and integer-to-enum C++ arguments; fixed with CAPMGR_KIND_ALL before final check.
+
+Platform option configuration rejects missing host pkgconfig amd. Local official
+header syntax stops at missing generated tzplatform_variables.h (initially also
+missing tizen_error include); no substituted headers. Dlog implementation syntax
+with actual local dlog/common headers PASS. Optional module link/AMD loading/native
+activation NOT_RUN; no privileged/device/policy work. SpecRelease16 is source-only;
+installedRelease15 unchanged. Existing retained target readers remain untouched.
+
+Recovery-composition-r2 is explicitly DEFERRED/UNREVIEWED, not resumed or accepted;
+RC-01/RC-02 remain OPEN. Prior153-test/frozen24 report is pending owner evidence,
+not reviewer-verified closure. Preserve all preceding history. No publication yet;
+request ordinary feature-sized peer review before scoped commits.
+
+Independent reviewer accepted the stable AMD feature/source/host/docs/instruction
+checkpoint and closed AMD-01/AMD-02. Prior review-pending wording above records the
+historical request state. Notice-only commit a95f027 is separate; feature publication
+follows this disposition. Next: actual native AMD dependency/build validation and
+connected public-create authorization integration, with privileged methods reviewed
+when required. Native activation/SYNC-01 and deferred RC-01/RC-02 remain open.

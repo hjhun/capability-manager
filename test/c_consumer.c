@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: Apache-2.0 */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 #include <capmgr.h>
 #include <stdio.h>
@@ -27,6 +27,9 @@
 
 _Static_assert(sizeof(capmgr_request_token_t) == 8, "token width");
 _Static_assert(sizeof(capmgr_kind_t) == 4, "kind width");
+_Static_assert(sizeof(capmgr_error_e) == 4, "default error enum width");
+_Static_assert(CAPMGR_KIND_ACTION == 4 && CAPMGR_ERROR_OUT_OF_MEMORY == -10,
+               "public enum values");
 int main(void) {
   capmgr_client_h client = NULL;
   CHECK(capmgr_client_create(NULL) == CAPMGR_ERROR_INVALID_ARGUMENT);

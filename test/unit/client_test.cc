@@ -18,6 +18,11 @@
 
 #include <gmock/gmock.h>
 
+static_assert(sizeof(capmgr_kind_t) == 4);
+static_assert(sizeof(capmgr_error_e) == 4);
+static_assert(CAPMGR_KIND_ACTION == 4);
+static_assert(CAPMGR_ERROR_OUT_OF_MEMORY == -10);
+
 using namespace capmgr;
 class MockGate : public AccessGate {
  public:
@@ -49,7 +54,7 @@ TEST_F(CatalogTest, ClientQueriesAreLocalAndResultsOutliveClient) {
   free(detail);
   int count = 0;
   EXPECT_EQ(capmgr_client_foreach_capability(
-                client, 0,
+                client, CAPMGR_KIND_ALL,
                 [](const char*, void* data) {
                   ++*static_cast<int*>(data);
                   return false;
@@ -58,7 +63,7 @@ TEST_F(CatalogTest, ClientQueriesAreLocalAndResultsOutliveClient) {
             0);
   EXPECT_EQ(count, 1);
   capmgr_search_results_h results = nullptr;
-  ASSERT_EQ(capmgr_client_search_capabilities(client, "picture", 0, &results),
+  ASSERT_EQ(capmgr_client_search_capabilities(client, "picture", CAPMGR_KIND_ALL, &results),
             0);
   EXPECT_EQ(capmgr_client_destroy(client), 0);
   size_t size = 0;
@@ -95,7 +100,7 @@ TEST_F(CatalogTest, ForeachDestroyReturnsBusyAndKeepsHandleAlive) {
   capmgr_client_h client = nullptr;
   ASSERT_EQ(CreateClient(gate, &client), 0);
   EXPECT_EQ(capmgr_client_foreach_capability(
-                client, 0,
+                client, CAPMGR_KIND_ALL,
                 [](const char*, void* data) {
                   EXPECT_EQ(
                       capmgr_client_destroy(static_cast<capmgr_client_h>(data)),

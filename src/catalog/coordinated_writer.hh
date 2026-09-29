@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: Apache-2.0
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// SPDX-License-Identifier: Apache-2.0
 
 #ifndef CAPABILITY_MANAGER_CATALOG_COORDINATED_WRITER_HH_
 #define CAPABILITY_MANAGER_CATALOG_COORDINATED_WRITER_HH_
@@ -38,6 +38,8 @@ class CoordinatedCatalogWriter final : public CatalogWriter {
   void Finalize(const std::string&, bool) override;
   bool PublishActions(const std::vector<Entry>&) override;
   uint64_t Revision() override;
+  // Integrity check under the same generation lease, without exposing SQLite.
+  void CheckIntegrity();
   // An internal SQLite close BUSY retains the DB AND lease for retry. Destruction
   // fail-stops on that invariant violation; public client destroy is unchanged.
   void Close();

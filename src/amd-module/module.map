@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+{
+  global:
+    AMD_MOD_INIT;
+    AMD_MOD_FINI;
+  local: *;
+};

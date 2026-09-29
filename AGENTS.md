@@ -5,7 +5,8 @@
 Read this file and applicable parent instructions before editing. Then read
 `docx/README.md`, `docx/01-requirements.md`,
 `docx/07-decisions-and-open-items.md`, and the contracts relevant to the task.
-The current project is documented but not implemented. Do not interpret a plan,
+Implementation is in progress; completed checkpoints and remaining gates are
+recorded in the progress board. Do not interpret a plan,
 fixture description, or reference-project result as completed CapMgr work.
 
 Before product implementation, the implementation owner and independent reviewer
@@ -18,7 +19,8 @@ as code. Keep this file concise; detailed contracts belong in `docx/`.
 ## Product constraints
 
 - Implement in C++20 with a public `capmgr_` C API, RPM packaging, and TIDL IPC.
-  Follow verified Tizen Watcher conventions; keep private writer headers private.
+  Use tizen-action AMD module, C API and logging patterns and verified Watcher
+  source/build layout. Keep private writer headers private.
 - `client_create` prepares authorization and read-only DB access. Resource mounts
   require an explicit remount request with the caller's destination path.
 - Catalog enumeration, search, and detail queries read the local SQLite catalog
@@ -87,6 +89,17 @@ Watcher-derived Google/2-space layout. Preserve C++20, the public C ABI, explici
 target/install paths and fail-closed contracts. Keep mechanical formatting,
 build/package restructuring and behavior changes in separate review checkpoints.
 Do not copy Watcher's service activation or platform policy as a style change.
+
+Start project-owned native files with the full manual Apache notice block;
+place SPDX within/after it, preserve genuine attribution, and never invent Samsung
+ownership. Use `LOG(LEVEL) << ...` with actual runtime `LOG_TAG="CAPMGR"` and the
+Action basename/function/line presentation. Keep .pc templates with their API
+component, packaging resources under packaging, and install only runnable units.
+
+Prefer feature-sized implementation/diff/review and meaningful functional tests.
+Ordinary reversible host development needs no per-helper manifest/freeze or
+pre-execution review ceremony. Preserve actual privileged/device safety reviews,
+file ownership and scope isolation. Direct user direction takes precedence.
 
 Follow P00–P09 in `docx/04-implementation-plan.md` and the acceptance matrix in
 `docx/05-verification.md`. Establish Google Test/Google Mock, CTest/RPM checks, and a

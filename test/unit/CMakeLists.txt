@@ -90,6 +90,7 @@ TARGET_LINK_OPTIONS(capmgr-unit-tests PRIVATE
 SET(CAPMGR_ADAPTER_TEST_SOURCES
   "${PROJECT_SOURCE_DIR}/test/unit/parser_test.cc"
   "${PROJECT_SOURCE_DIR}/test/unit/action_import_test.cc"
+  "${PROJECT_SOURCE_DIR}/test/unit/amd_module_test.cc"
   "${PROJECT_SOURCE_DIR}/test/unit/runner_test.cc"
   "${PROJECT_SOURCE_DIR}/test/unit/action_exchange_test.cc"
   "${PROJECT_SOURCE_DIR}/test/unit/owned_children_test.cc"

@@ -238,3 +238,12 @@ unsupported, subscription cancellation, result/event envelopes),
 `src/action/action_request_handler.cc` (provider/default setters and package events),
 `src/pkgmgr_plugin_parser/sqlite_db.cc` and `src/action/sqlite_db.cc` (DB/FTS).
 These are source observations, not completed CapMgr integrations.
+
+## Public enum presentation (AMD functional checkpoint)
+
+`capmgr_kind_e` (also aliased as `capmgr_kind_t`) and `capmgr_error_e` are named
+`typedef enum` types. Existing CAPMGR identifiers and numeric values are retained;
+API returns remain `int`, handles remain opaque pointers and tokens remain uint64_t.
+Primary default C/C++ builds check four-byte enums. This does not promise compatibility
+with `-fshort-enums` or unchanged C++ source conversions: use CAPMGR_KIND constants
+instead of implicit integer-to-enum arguments.

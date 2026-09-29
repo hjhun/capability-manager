@@ -1418,3 +1418,20 @@ is historical. Reviewed actual-tree application, affected host29 and fixed
 ordinary native14 are ACCEPTED. Native PID=PGID=SID/group-before-leader-reap
 evidence closes this fixed RunCli session increment only; all stated broader
 containment, worker/namespace/remount/product authority limits remain open.
+
+## AMD functional checkpoint — source/host ACCEPTED
+
+The optional AMD module uses Action INIT/FINI and loader discovery under amd/mod,
+with fixed protected disabled configuration, actual app_fw identity and coordinated
+writer admission. Missing catalog initialization uses EX; existing current-schema
+restart/check/import uses SH. Unsupported existing schemas require explicit maintenance.
+The owned asynchronous worker retries initial Action DB readiness every five seconds,
+then reconciles snapshots; fini stops and joins before unload. This fallback leaves
+SYNC-01 comprehensive postcommit notifications open. No permission or label repair.
+
+Runtime diagnostics use CAPMGR and Action LOG presentation. Public error/kind values
+are named enums; int returns and twelve exports remain. The pc template lives in
+src/api; actual RPM resources stay in packaging, with no placeholder service/socket.
+Platform module linkage/AMD activation and actual public-create authorization remain
+separate prerequisites; default disabled configuration is not functional success.
+Recovery-composition-r2 remains deferred/unreviewed: RC-01/RC-02 are OPEN.
