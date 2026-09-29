@@ -10,8 +10,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-// SPDX-License-Identifier: Apache-2.0
 
 #ifndef CAPABILITY_MANAGER_LAUNCHER_RUNNER_HH_
 #define CAPABILITY_MANAGER_LAUNCHER_RUNNER_HH_
