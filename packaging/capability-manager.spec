@@ -55,6 +55,7 @@ Summary:        Capability Manager unit and C ABI tests
 Requires:       python3
 Requires:       %{name} = %{version}-%{release}
 Requires:       %{name}-offline-tools = %{version}-%{release}
+
 %description tests
 Real SQLite and mock-adapter unit tests plus a pure C consumer.
 
@@ -63,9 +64,13 @@ Real SQLite and mock-adapter unit tests plus a pure C consumer.
 %{__tar} -xf %{SOURCE1}
 
 %build
-cmake -S . -B %{capmgr_builddir} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS_RELEASE="-O1 -DNDEBUG" \
-  -DCMAKE_INSTALL_PREFIX=%{_prefix} -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
-  -DCAPMGR_JSON_SOURCE=$PWD/json-3.11.3 -DBUILD_TESTING=ON \
+cmake -S . -B %{capmgr_builddir} \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_FLAGS_RELEASE="-O1 -DNDEBUG" \
+  -DCMAKE_INSTALL_PREFIX=%{_prefix} \
+  -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
+  -DCAPMGR_JSON_SOURCE=$PWD/json-3.11.3 \
+  -DBUILD_TESTING=ON \
   %{?capmgr_dependency_prefix:-DCMAKE_PREFIX_PATH=%{capmgr_dependency_prefix}} \
   -DCAPMGR_REQUIRE_TIDL=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF} \
   -DCAPMGR_REQUIRE_CYNARA=%{?capmgr_tizen:ON}%{!?capmgr_tizen:OFF} \
@@ -111,7 +116,8 @@ install -D -m 0755 tools/verify.py %{buildroot}%{capmgr_libexecdir}/verify.py
 install -D -m 0755 tools/run_bounded.py %{buildroot}%{capmgr_libexecdir}/run_bounded.py
 install -D -m 0644 test/integration/package_tool_test.py \
   %{buildroot}%{capmgr_libexecdir}/package_tool_test.py
-install -D -m 644 json-3.11.3/LICENSE.MIT %{buildroot}%{_datadir}/licenses/%{name}/nlohmann-json-LICENSE.MIT
+install -D -m 644 json-3.11.3/LICENSE.MIT \
+  %{buildroot}%{_datadir}/licenses/%{name}/nlohmann-json-LICENSE.MIT
 
 %files
 %license LICENSE
