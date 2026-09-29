@@ -10,8 +10,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-// SPDX-License-Identifier: Apache-2.0
 
 #include "amd-module/catalog_service.hh"
 
@@ -20,9 +20,10 @@
 #include <unistd.h>
 
 #include <thread>
+#include <map>
 
 #include "amd-module/module_config.hh"
-#include "amd-module/module_thread.hh"
+#include "amd-module/module_task.hh"
 #include "fixture.hh"
 
 namespace {
@@ -77,15 +78,6 @@ class AmdModuleTest : public CatalogTest {
       std::function<void(uint64_t)> changed = {}) {
     return std::make_unique<AmdCatalogService>(policy_, source_,
                                                std::move(changed), &labels_);
-  }
-  bool WaitFor(const std::function<bool()>& ready,
-               std::chrono::seconds budget = std::chrono::seconds(2)) {
-    const auto end = std::chrono::steady_clock::now() + budget;
-    while (std::chrono::steady_clock::now() < end) {
-      if (ready()) return true;
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-    return false;
   }
   void ExpectExclusiveAvailable() {
     int fd = open(policy_.lock_path.c_str(), O_RDWR | O_CLOEXEC);
@@ -216,27 +208,129 @@ TEST_F(AmdModuleTest, ReconcileRejectsOtherThreadAndStopIsIdempotent) {
   ExpectExclusiveAvailable();
 }
 
-TEST_F(AmdModuleTest,
-       ConcreteModuleThreadInitializesAndStopJoinsOwnerBeforeLeaseRelease) {
-  AmdModuleThread module(policy_, source_, &labels_);
-  ASSERT_TRUE(WaitFor([&] { return module.Available(); }));
+// Scoped tizen-core adapter mock: explicit callback dispatch, no platform task.
+class FakeCore : public CoreOperations {
+ public:
+  struct Source {
+    void* core;
+    Callback callback;
+    void* data;
+  };
+  int task_token = 0, owner_token = 0, main_token = 0;
+  std::string fail;
+  std::string throwing;
+  std::vector<std::string> events;
+  std::map<void*, std::unique_ptr<Source>> sources;
+  unsigned interval = 0;
+  bool immediate = false;
+  std::function<void()> before_quit;
+  void Init() override { events.push_back("init"); }
+  void Shutdown() override { events.push_back("shutdown"); }
+  int Result(const char* name) {
+    events.push_back(name);
+    if (throwing == name) throw std::bad_alloc();
+    return fail == name ? -1 : 0;
+  }
+  int Create(void** task) override {
+    int result = Result("create");
+    if (!result) *task = &task_token;
+    return result;
+  }
+  int GetCore(void*, void** core) override {
+    int result = Result("get");
+    if (!result) *core = &owner_token;
+    return result;
+  }
+  int Run(void*) override { return Result("run"); }
+  int Main(void** core) override {
+    int result = Result("main");
+    if (!result) *core = &main_token;
+    return result;
+  }
+  int Add(void* core, Callback callback, void* data, void** source,
+          const char* name) {
+    int result = Result(name);
+    if (result) return result;
+    auto value = std::make_unique<Source>(Source{core, callback, data});
+    *source = value.get();
+    sources.emplace(*source, std::move(value));
+    if (immediate) Dispatch(*source);
+    return 0;
+  }
+  int Idle(void* core, Callback callback, void* data, void** source) override {
+    return Add(core, callback, data, source,
+               core == &main_token ? "main-idle" : "owner-idle");
+  }
+  int Timer(void* core, unsigned milliseconds, Callback callback, void* data,
+            void** source) override {
+    interval = milliseconds;
+    return Add(core, callback, data, source, "timer");
+  }
+  int Remove(void* core, void* source) override {
+    int result = Result("remove");
+    if (result) return result;
+    auto it = sources.find(source);
+    EXPECT_TRUE(it != sources.end());
+    if (it == sources.end()) return -1;
+    EXPECT_EQ(it->second->core, core);
+    sources.erase(it);
+    return 0;
+  }
+  int Quit(void*) override {
+    if (before_quit) before_quit();
+    return Result("quit");
+  }
+  int Destroy(void*) override { return Result("destroy"); }
+  void Dispatch(void* source) {
+    auto* value = sources.at(source).get();
+    if (!value->callback(value->data)) sources.erase(source);
+  }
+  void DispatchNext() {
+    ASSERT_FALSE(sources.empty());
+    Dispatch(sources.begin()->first);
+  }
+};
+
+TEST_F(AmdModuleTest, OwnerIdleImportsAndClosesBeforeQuitDestroyShutdown) {
+  FakeCore core;
+  AmdModuleTask module(core, policy_, source_, &labels_);
+  EXPECT_FALSE(module.Available());
+  ASSERT_EQ(core.sources.size(), 1u);
+  core.DispatchNext();  // AMD main idle only hands off; it does not open SQLite.
+  EXPECT_FALSE(std::filesystem::exists(path_));
+  core.DispatchNext();  // Dedicated owner startup idle.
+  ASSERT_TRUE(module.Available());
+  EXPECT_EQ(core.interval, 5000u);
   Catalog reader(path_, Database::Access::kReadOnly);
   EXPECT_EQ(reader.Search("pictures").size(), 1u);
+  core.before_quit = [&] {
+    EXPECT_FALSE(module.Available());
+    EXPECT_TRUE(core.sources.empty());
+    ExpectExclusiveAvailable();  // Actual physical close/release before quit.
+  };
+  core.immediate = true;  // Dispatch the stop idle on this SAME mock owner.
   module.Stop();
   module.Stop();
-  ExpectExclusiveAvailable();
+  EXPECT_EQ(std::vector<std::string>(core.events.end() - 3, core.events.end()),
+            (std::vector<std::string>{"quit", "destroy", "shutdown"}));
 }
 
-TEST_F(AmdModuleTest, FailedModuleThreadIsUnavailableAndCanBeJoined) {
+TEST_F(AmdModuleTest, FailedStartupRetainsTimerUntilKnownOwnerShutdown) {
   CorruptSource();
-  AmdModuleThread module(policy_, source_, &labels_);
-  ASSERT_TRUE(WaitFor([&] { return std::filesystem::exists(path_); }));
+  FakeCore core;
+  AmdModuleTask module(core, policy_, source_, &labels_);
+  core.DispatchNext();
+  core.DispatchNext();
+  EXPECT_TRUE(module.StartupFailed());
   EXPECT_FALSE(module.Available());
+  EXPECT_EQ(core.sources.size(), 1u);
+  core.immediate = true;
   module.Stop();
+  EXPECT_TRUE(core.sources.empty());
   ExpectExclusiveAvailable();
 }
 
-TEST_F(AmdModuleTest, MissingActionSourceAtStartupIsImportedAfterRetry) {
+TEST_F(AmdModuleTest, MissingActionSourceAtStartupIsImportedOnRetryTimer) {
   std::vector<std::string> saved;
   for (const char* suffix : {"", "-wal", "-shm"}) {
     const auto path = source_ + suffix;
@@ -245,16 +339,92 @@ TEST_F(AmdModuleTest, MissingActionSourceAtStartupIsImportedAfterRetry) {
       saved.push_back(path);
     }
   }
-  AmdModuleThread module(policy_, source_, &labels_);
-  ASSERT_TRUE(WaitFor([&] { return module.StartupFailed(); }));
+  FakeCore core;
+  AmdModuleTask module(core, policy_, source_, &labels_);
+  core.DispatchNext();
+  core.DispatchNext();
+  ASSERT_TRUE(module.StartupFailed());
   EXPECT_FALSE(module.Available());
+  EXPECT_EQ(core.interval, 5000u);  // Milliseconds, not seconds.
   for (const auto& path : saved) std::filesystem::rename(path + ".saved", path);
-  ASSERT_TRUE(
-      WaitFor([&] { return module.Available(); }, std::chrono::seconds(7)));
+  core.DispatchNext();  // Retry callback after source readiness, no real timer.
+  ASSERT_TRUE(module.Available());
   Catalog reader(path_, Database::Access::kReadOnly);
   EXPECT_EQ(reader.Search("pictures").size(), 1u);
+  core.immediate = true;
   module.Stop();
   ExpectExclusiveAvailable();
+}
+
+TEST_F(AmdModuleTest, StopCancelsPendingMainAndOwnerStartupSources) {
+  for (bool handoff : {false, true}) {
+    FakeCore core;
+    AmdModuleTask module(core, policy_, source_, &labels_);
+    if (handoff) core.DispatchNext();
+    core.immediate = true;
+    module.Stop();
+    EXPECT_TRUE(core.sources.empty());
+    EXPECT_FALSE(std::filesystem::exists(path_));
+  }
+}
+
+TEST_F(AmdModuleTest, SetupFailuresBalanceOnlyOwnCoreAcquisition) {
+  for (const char* operation : {"create", "get", "run", "main", "main-idle"}) {
+    FakeCore core;
+    core.fail = operation;
+    EXPECT_THROW(AmdModuleTask(core, policy_, source_, &labels_), Error);
+    EXPECT_EQ(core.events.front(), "init");
+    EXPECT_EQ(core.events.back(), "shutdown");
+    EXPECT_TRUE(core.sources.empty());
+    EXPECT_FALSE(std::filesystem::exists(path_));
+  }
+}
+
+TEST_F(AmdModuleTest, HandoffAndTimerFailureAreUnavailableWithoutFallback) {
+  for (const char* operation : {"owner-idle", "timer"}) {
+    FakeCore core;
+    AmdModuleTask module(core, policy_, source_, &labels_);
+    core.fail = operation;
+    core.DispatchNext();
+    if (core.sources.size()) core.DispatchNext();
+    EXPECT_TRUE(module.StartupFailed());
+    EXPECT_FALSE(module.Available());
+    EXPECT_FALSE(std::filesystem::exists(path_));
+    core.fail.clear();
+    core.immediate = true;
+    module.Stop();
+    EXPECT_TRUE(core.sources.empty());
+  }
+}
+
+TEST_F(AmdModuleTest, ThrowingIdleAndTimerAreContainedAtNativeCallbacks) {
+  for (const char* operation : {"owner-idle", "timer"}) {
+    FakeCore core;
+    AmdModuleTask module(core, policy_, source_, &labels_);
+    core.throwing = operation;
+    EXPECT_NO_THROW(core.DispatchNext());
+    if (!core.sources.empty()) {
+      EXPECT_NO_THROW(core.DispatchNext());
+    }
+    EXPECT_TRUE(module.StartupFailed());
+    EXPECT_FALSE(module.Available());
+    EXPECT_FALSE(std::filesystem::exists(path_));
+    core.throwing.clear();
+    core.immediate = true;
+    module.Stop();
+    EXPECT_TRUE(core.sources.empty());
+  }
+}
+
+TEST_F(AmdModuleTest, FailedStopPostRefusesUnsafeTaskUnload) {
+  EXPECT_DEATH(
+      {
+        FakeCore core;
+        AmdModuleTask module(core, policy_, source_, &labels_);
+        core.fail = "owner-idle";
+        module.Stop();
+      },
+      "cannot safely unload owned task");
 }
 
 TEST(AmdModuleConfigTest, DisabledConfigDoesNotInventPolicy) {

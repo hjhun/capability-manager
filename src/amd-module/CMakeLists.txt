@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 IF(CAPMGR_BUILD_AMD_MODULE)
-  SET(CAPMGR_AMD_MODULE_SOURCES module.cc)
+  SET(CAPMGR_AMD_MODULE_SOURCES module.cc core_platform.cc)
   ADD_LIBRARY(amd-mod-capability-manager SHARED ${CAPMGR_AMD_MODULE_SOURCES})
   TARGET_LINK_LIBRARIES(amd-mod-capability-manager PRIVATE
     capmgr-adapters
     PkgConfig::AMD
     PkgConfig::TZPLATFORM
+    PkgConfig::TIZEN_CORE
     PkgConfig::DLOG
   )
   SET_TARGET_PROPERTIES(amd-mod-capability-manager PROPERTIES

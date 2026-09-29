@@ -1,7 +1,7 @@
 # AMD catalog module
 
 `CAPMGR_BUILD_AMD_MODULE=ON` builds `libamd-mod-capability-manager.so` against
-`amd`, `dlog`, and `libtzplatform-config`. AMD discovers this shared module under
+`amd`, `tizen-core`, `dlog`, and `libtzplatform-config`. AMD discovers this shared module under
 `${AMD_MODULES_DIR}/mod` and calls `AMD_MOD_INIT`/`AMD_MOD_FINI`; it needs no new
 systemd service or socket. The Tizen RPM owns it in `amd-mod-capability-manager`.
 
@@ -37,7 +37,10 @@ ownership, so readers do not block ordinary restart/import. An existing unsuppor
 schema requires explicit exclusive maintenance; arbitrary admission failures never
 trigger repair. No chmod, chown, chsmack or policy operation is performed.
 
-The worker owns creation, SQLite, reconciliation and destruction on one thread.
+The dedicated tizen-core task owns creation, SQLite, reconciliation and destruction.
+AMD main idle hands off to owner startup idle; a timer uses exactly 5000 milliseconds.
+There is no production std-thread fallback. INIT/FINI and the handoff main idle are
+serialized on AMD main context, and only this module's core refcount is balanced.
 It reads the existing `.tizen_action.db` under `tzplatform_mkpath(TZ_SYS_DB, ...)`;
 no Action installation metadata is reparsed. It initializes/checks catalog schema
 and `quick_check`, then publishes the Action snapshot and FTS transaction together.
@@ -45,8 +48,12 @@ Errors keep the prior committed snapshot. Startup source readiness is retried ev
 five seconds with a fresh service; running services reconcile every five seconds.
 This periodic fallback is **not** the comprehensive post-commit writer feed required
 by SYNC-01. That integration remains open. Stop interrupts the periodic wait and
-joins the owner before AMD can unload the module; synchronous SQLite/IO completion
-can delay joining. Optional failure is logged and does not abort AMD startup.
+cancels pending main/startup/retry sources and posts an owner shutdown idle.
+That callback physically closes and destroys SQLite before acknowledging stop;
+only then does fini quit/destroy the task and release its core acquisition.
+Synchronous SQLite/IO or stalled dispatch can delay fini. Failed owner stop posting,
+source cancellation, physical close or task retirement cannot safely unload code
+and therefore fail-stop; optional startup exceptions instead log unavailable. Optional failure is logged and does not abort AMD startup.
 
 Diagnostics use `LOG(LEVEL) << ...`, `LOG_TAG=CAPMGR`, basename/function/line and
 real dlog in the platform build. Host tests use stderr with the same tag. Revision

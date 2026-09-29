@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Name:           capability-manager
 Version:        0.1.0
-Release:        16
+Release:        17
 Summary:        Capability catalog and client library
 License:        Apache-2.0 AND MIT
 URL:            https://github.com/hjhun/capability-manager
@@ -23,6 +23,7 @@ BuildRequires:  pkgconfig(gtest)
 BuildRequires:  pkgconfig(gmock)
 %if 0%{?capmgr_tizen}
 BuildRequires:  pkgconfig(amd)
+BuildRequires:  pkgconfig(tizen-core)
 BuildRequires:  pkgconfig(libtzplatform-config)
 BuildRequires:  tidl
 BuildRequires:  pkgconfig(rpc-port)
@@ -57,6 +58,7 @@ This is not a production installer finalizer or an automatically registered plug
 %package -n amd-mod-capability-manager
 Summary:        AMD capability catalog maintenance and Action import module
 Requires:       amd
+Requires:       tizen-core
 Requires:       %{name} = %{version}-%{release}
 
 %description -n amd-mod-capability-manager

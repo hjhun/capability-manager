@@ -6669,3 +6669,50 @@ RC-01/RC-02 remain deferred/unreviewed; historical retained scopes untouched.
 Independent reviewer accepted exact seven-path source/docs/instruction scope and
 selected host evidence; scoped incremental publication authorized. Next remains
 actual platform AMD prerequisites and connected public-create admission.
+
+## AMD-TIZEN-CORE-r1 — feature source/host ACCEPTED
+
+Production std::jthread engine removed. Dedicated actual tizen-core adapter uses
+Create(true)/GetCore/Run, AMD-main idle handoff, owner startup idle and retry timer
+5000ms. SAME owner creates/imports/reconciles/physically closes/destroys SQLite.
+Fini cancels main/startup/retry sources, waits for owner stop callback, then
+Quit/Destroy/Shutdown before unload; only own core reference is balanced. Serialized
+AMD main init/fini/handoff premise explicit. Optional setup failures log unavailable;
+unsafe owned shutdown fails-stop rather than unload active callbacks/foreign-delete.
+Private required tizen-core pkgconfig and RPM dependency added (sourceRelease17;
+no rebuilt/installed package). No production std-thread fallback.
+
+TC-01 reviewer found potentially throwing Idle/Timer calls inside noexcept startup
+callbacks. Corrected both with exception containment/StartupFailed/log/returnfalse;
+mocked bad_alloc at both calls passes; reviewer CLOSED TC-01 after inspecting
+final evidence. Initial affected
+build-r2 failed -Werror dangling-else around EXPECT_NO_THROW; braces corrected,
+final build-r3 PASS. Focused25/25 no skips704ms (module16+config2+import7), full
+host CTest29/29 PASS12.23s; testing-OFF build/staging PASS and ABI12/SONAME0/pc
+bytes unchanged. Host/Tizen rpmspec parses PASS. Evidence prefix
+`/tmp/capmgr-evidence/amd-tizen-core-`: host-focused-r1.log, host-check-r1.log,
+host-off-build-r1.log, host-install-r1.log, exports-r1.txt and spec-r1.txt variants.
+
+Scoped CoreOperations mock explicitly dispatches callbacks on the same host test
+owner: main handoff does not open SQL; owner import/real EX availability precede
+quit/destroy; pending main/startup and timer removal; setup reference balance;
+source-failure then timer retry; callback exceptions and unsafe-stop rejection.
+This is actual scratch SQLite plus mocked toolkit ordering/5000 argument, not
+a native thread/event-loop/timing measurement. Actual core_platform adapter syntax
+against local official tizen-core/common headers PASS (platform-syntax-r1.log).
+Native module link/loading remains NOT_RUN; prior generated tzplatform header
+prerequisite is unchanged. Public-create/provisioning/SYNC-01 remain open.
+
+Separate narrow notice-only scope includes project-owned src/test/tools native
+files: one initial full Apache block with SPDX inside, existing genuine rights
+preserved, missing runner test full block added. No third-party/generated/LICENSE
+or global skill changes. AGENTS reflects initial-block placement. All historical
+failure/pending states preserved; RC-01/RC-02 remain deferred/unreviewed and retained
+target readers untouched. No device/root/policy run. Publication awaits review.
+
+Independent reviewer FINAL ACCEPTED source/host/docs/instruction and notice scope,
+TC-01 CLOSED. Prior publication-pending paragraph records historical request state.
+Notice-only commit20b47b0 (157 native files) precedes functional task publication.
+Next remains actual native AMD module dependency/link validation and connected
+public-create authorization; native activation/SYNC-01 and deferred RC-01/RC-02
+remain open. No device or policy task was executed.

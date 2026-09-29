@@ -93,7 +93,7 @@ build/package restructuring and behavior changes in separate review checkpoints.
 Do not copy Watcher's service activation or platform policy as a style change.
 
 Start project-owned native files with the full manual Apache notice block;
-place SPDX within/after it, preserve genuine attribution, and never invent Samsung
+include SPDX inside that initial block, preserve genuine attribution, and never invent Samsung
 ownership. Use `LOG(LEVEL) << ...` with actual runtime `LOG_TAG="CAPMGR"` and the
 Action basename/function/line presentation. Keep .pc templates with their API
 component, packaging resources under packaging, and install only runnable units.

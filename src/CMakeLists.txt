@@ -17,7 +17,7 @@ SET(CAPMGR_ADAPTER_SOURCES
   "${PROJECT_SOURCE_DIR}/src/amd-module/action_import.cc"
   "${PROJECT_SOURCE_DIR}/src/amd-module/catalog_service.cc"
   "${PROJECT_SOURCE_DIR}/src/amd-module/module_config.cc"
-  "${PROJECT_SOURCE_DIR}/src/amd-module/module_thread.cc"
+  "${PROJECT_SOURCE_DIR}/src/amd-module/module_task.cc"
   ${CAPMGR_LAUNCHER_SOURCES}
 )
 ADD_LIBRARY(capmgr-adapters STATIC ${CAPMGR_ADAPTER_SOURCES})

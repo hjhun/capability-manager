@@ -10,8 +10,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-// SPDX-License-Identifier: Apache-2.0
 
 #include <amd_mod_common.h>
 #include <tzplatform_config.h>
@@ -28,7 +28,7 @@
 #include <system_error>
 #include <thread>
 
-#include "amd-module/module_thread.hh"
+#include "amd-module/module_task.hh"
 #include "amd-module/module_config.hh"
 #include "common/logging.hh"
 
@@ -140,7 +140,7 @@ capmgr::ReadLeasePolicy Policy(const capmgr::AmdModuleConfig& config) {
 }
 
 std::mutex module_mutex;
-std::unique_ptr<capmgr::AmdModuleThread> module;
+std::unique_ptr<capmgr::AmdModuleTask> module;
 
 }  // namespace
 
@@ -159,8 +159,8 @@ extern "C" EXPORT int AMD_MOD_INIT() {
     Check(path != nullptr && path[0] == '/',
           "Action DB platform path unavailable");
     std::string source(path);  // Copy platform scratch storage immediately.
-    auto candidate = std::make_unique<capmgr::AmdModuleThread>(
-        std::move(policy), std::move(source));
+    auto candidate = std::make_unique<capmgr::AmdModuleTask>(
+        capmgr::PlatformCoreOperations(), std::move(policy), std::move(source));
     module = std::move(candidate);
     // Retain ownership while source/configured catalog readiness is retried.
     LOG(INFO)

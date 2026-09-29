@@ -1435,3 +1435,23 @@ src/api; actual RPM resources stay in packaging, with no placeholder service/soc
 Platform module linkage/AMD activation and actual public-create authorization remain
 separate prerequisites; default disabled configuration is not functional success.
 Recovery-composition-r2 remains deferred/unreviewed: RC-01/RC-02 are OPEN.
+
+## AMD-TIZEN-CORE-r1 — source/host ACCEPTED
+
+The production AMD engine now selects an actual tizen-core threaded task, following
+Action main-idle -> owner-startup-idle handoff and an explicit 5000ms retry timer.
+The prior std::jthread engine is removed, with no production fallback. SQLite
+construction/import/reconcile/close/destruction remain on the SAME owner task.
+Fini cancels pending main/startup/timer sources, awaits owner stop, then quits and
+destroys the task before balancing only its own core reference. AMD main init/fini
+and handoff dispatch are serialized. Optional startup allocation/API failure logs
+unavailable and retains init0; unsafe shutdown/retirement failure fail-stops rather
+than permit active callbacks or creator-bound SQLite to outlive module code.
+
+Private required tizen-core pkgconfig/link and RPM dependency are declared. Host
+tests use a scoped API adapter with explicit callback dispatch and actual scratch
+SQLite; they establish wrapper order and timer argument, not native event-loop
+execution/timing. Platform task adapter syntax uses actual local official headers.
+Actual module link/AMD activation/public-create/SYNC-01 remain open. Notices are a
+separate comment-only scope: one initial full Apache block includes SPDX, with
+existing rights preserved and no third-party/generated/LICENSE changes.
