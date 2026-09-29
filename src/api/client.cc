@@ -27,8 +27,10 @@
 
 #include <unistd.h>
 
-struct capmgr_read_catalog {
-  explicit capmgr_read_catalog(std::unique_ptr<capmgr::ReadAccess> admission)
+namespace {
+
+struct ReadCatalog {
+  explicit ReadCatalog(std::unique_ptr<capmgr::ReadAccess> admission)
       : access(std::move(admission)),
         catalog(access->Path(), capmgr::Database::Access::kReadOnly) {
     access->Opened(catalog.database());
@@ -38,23 +40,20 @@ struct capmgr_read_catalog {
   capmgr::Catalog catalog;
 };
 
-struct capmgr_client : capmgr_read_catalog {
-  explicit capmgr_client(std::unique_ptr<capmgr::ReadAccess> admission)
-      : capmgr_read_catalog(std::move(admission)) {}
+struct Client : ReadCatalog {
+  explicit Client(std::unique_ptr<capmgr::ReadAccess> admission)
+      : ReadCatalog(std::move(admission)) {}
   const pid_t creator = getpid();
   // Base validation finishes before any dispatcher thread exists.
   capmgr::Dispatcher dispatcher;
   std::shared_ptr<capmgr::ExecutionBackend> backend;
 };
 
-struct capmgr_search_results {
+struct SearchResults {
   std::vector<std::string> items;
 };
 
-
-namespace {
-
-bool SameProcess(capmgr_client_h client) noexcept {
+bool SameProcess(Client* client) noexcept {
   return client->creator == getpid();
 }
 
@@ -123,13 +122,14 @@ int CreateClient(AccessGate& gate, std::shared_ptr<ExecutionBackend> backend,
     if (!access)
       throw Error(ErrorCode::kPermission, "Missing catalog admission");
     access->Check();
-    auto out = std::make_unique<capmgr_client>(std::move(access));
+    auto out = std::make_unique<Client>(std::move(access));
     out->backend = std::move(backend);
     *client = out.release();
   });
 }
 
-void NotifyChanged(capmgr_client_h client, uint64_t revision) {
+void NotifyChanged(capmgr_client_h handle, uint64_t revision) {
+  auto* client = static_cast<Client*>(handle);
   if (client && SameProcess(client)) client->dispatcher.Changed(revision);
 }
 }  // namespace capmgr
@@ -139,7 +139,8 @@ int capmgr_client_create(capmgr_client_h* client) {
   return capmgr::CreateClient(gate, client);
 }
 
-int capmgr_client_destroy(capmgr_client_h client) {
+int capmgr_client_destroy(capmgr_client_h handle) {
+  auto* client = static_cast<Client*>(handle);
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&] {
@@ -152,8 +153,9 @@ int capmgr_client_destroy(capmgr_client_h client) {
   });
 }
 
-int capmgr_client_foreach_capability(capmgr_client_h client, capmgr_kind_t kind,
+int capmgr_client_foreach_capability(capmgr_client_h handle, capmgr_kind_t kind,
                                      capmgr_foreach_cb callback, void* data) {
+  auto* client = static_cast<Client*>(handle);
   if (!client || !callback) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
   if (!client->dispatcher.EnterCallback()) return CAPMGR_ERROR_BUSY;
@@ -173,15 +175,16 @@ int capmgr_client_foreach_capability(capmgr_client_h client, capmgr_kind_t kind,
   });
 }
 
-int capmgr_client_search_capabilities(capmgr_client_h client, const char* query,
+int capmgr_client_search_capabilities(capmgr_client_h handle, const char* query,
                                       capmgr_kind_t kind,
                                       capmgr_search_results_h* results) {
+  auto* client = static_cast<Client*>(handle);
   if (results) *results = nullptr;
   if (!client || !query || !results) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&] {
     client->access->Check();
-    auto out = std::make_unique<capmgr_search_results>();
+    auto out = std::make_unique<SearchResults>();
     for (const auto& entry :
          client->catalog.Search(query, static_cast<capmgr::Kind>(kind)))
       out->items.push_back(entry.dump());
@@ -190,20 +193,23 @@ int capmgr_client_search_capabilities(capmgr_client_h client, const char* query,
   });
 }
 
-void capmgr_search_results_free(capmgr_search_results_h results) {
+void capmgr_search_results_free(capmgr_search_results_h handle) {
+  auto* results = static_cast<SearchResults*>(handle);
   delete results;
 }
 
-int capmgr_search_results_count(capmgr_search_results_h results,
+int capmgr_search_results_count(capmgr_search_results_h handle,
                                 size_t* count) {
+  auto* results = static_cast<SearchResults*>(handle);
   if (count) *count = 0;
   if (!results || !count) return CAPMGR_ERROR_INVALID_ARGUMENT;
   *count = results->items.size();
   return CAPMGR_OK;
 }
 
-int capmgr_search_results_item(capmgr_search_results_h results, size_t index,
+int capmgr_search_results_item(capmgr_search_results_h handle, size_t index,
                                const char** json) {
+  auto* results = static_cast<SearchResults*>(handle);
   if (json) *json = nullptr;
   if (!results || !json) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (index >= results->items.size()) return CAPMGR_ERROR_NOT_FOUND;
@@ -211,8 +217,9 @@ int capmgr_search_results_item(capmgr_search_results_h results, size_t index,
   return CAPMGR_OK;
 }
 
-int capmgr_client_get_capability(capmgr_client_h client, const char* id,
+int capmgr_client_get_capability(capmgr_client_h handle, const char* id,
                                  char** detail) {
+  auto* client = static_cast<Client*>(handle);
   if (detail) *detail = nullptr;
   if (!client || !id || !detail) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
@@ -229,9 +236,10 @@ int capmgr_client_get_capability(capmgr_client_h client, const char* id,
   });
 }
 
-int capmgr_client_execute(capmgr_client_h client, const char* request,
+int capmgr_client_execute(capmgr_client_h handle, const char* request,
                           capmgr_result_cb callback, void* data,
                           capmgr_request_token_t* token) {
+  auto* client = static_cast<Client*>(handle);
   if (token) *token = 0;
   if (!client || !request || !callback || !token)
     return CAPMGR_ERROR_INVALID_ARGUMENT;
@@ -272,22 +280,25 @@ int capmgr_client_execute(capmgr_client_h client, const char* request,
   });
 }
 
-int capmgr_client_cancel(capmgr_client_h client, capmgr_request_token_t token) {
+int capmgr_client_cancel(capmgr_client_h handle, capmgr_request_token_t token) {
+  auto* client = static_cast<Client*>(handle);
   if (!client || !token) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
   return Guard([&] { client->dispatcher.Cancel(token); });
 }
 
-int capmgr_client_remount_resources(capmgr_client_h client,
+int capmgr_client_remount_resources(capmgr_client_h handle,
                                     const char* destination) {
+  auto* client = static_cast<Client*>(handle);
   if (!client || !destination || destination[0] != '/')
     return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
   return CAPMGR_ERROR_NOT_SUPPORTED;
 }
 
-int capmgr_client_set_changed_callback(capmgr_client_h client,
+int capmgr_client_set_changed_callback(capmgr_client_h handle,
                                        capmgr_changed_cb callback, void* data) {
+  auto* client = static_cast<Client*>(handle);
   if (!client) return CAPMGR_ERROR_INVALID_ARGUMENT;
   if (!SameProcess(client)) return CAPMGR_ERROR_PERMISSION_DENIED;
   return client->dispatcher.SetChanged(callback, data) ? CAPMGR_OK

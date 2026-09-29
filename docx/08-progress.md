@@ -6649,3 +6649,23 @@ historical request state. Notice-only commit a95f027 is separate; feature public
 follows this disposition. Next: actual native AMD dependency/build validation and
 connected public-create authorization integration, with privileged methods reviewed
 when required. Native activation/SYNC-01 and deferred RC-01/RC-02 remain open.
+
+## API-HANDLE-VOID-r1 — source/host ACCEPTED
+
+Public client/results handles are void* typedefs following Action. Private C++
+Client/SearchResults owners live in the implementation's anonymous namespace;
+incoming boundaries static_cast before typed access/delete. No pointer discovery,
+registry or changed ownership model. Existing valid-live-handle/null/creator/BUSY/IO
+output/callback contracts retained. C _Generic and C++ is_same assert exact aliases.
+
+Affected host build PASS; verbose CTest unit123 + adapters214 + pure C consumer,
+3/3 PASS14.41s/no skips, covers query/result survival, asynchronous callback/cancel,
+destroy BUSY/IO, creator and lease lifecycle. Evidence
+`/tmp/capmgr-evidence/api-handle-void-host-build-r1.log`,
+`api-handle-void-host-tests-r1.log`; exports-r1 still12 CAPMGR_0.
+No native/device/privileged work or expanded arbitrary-pointer validation claim.
+RC-01/RC-02 remain deferred/unreviewed; historical retained scopes untouched.
+
+Independent reviewer accepted exact seven-path source/docs/instruction scope and
+selected host evidence; scoped incremental publication authorized. Next remains
+actual platform AMD prerequisites and connected public-create admission.

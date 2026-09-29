@@ -247,3 +247,13 @@ API returns remain `int`, handles remain opaque pointers and tokens remain uint6
 Primary default C/C++ builds check four-byte enums. This does not promise compatibility
 with `-fshort-enums` or unchanged C++ source conversions: use CAPMGR_KIND constants
 instead of implicit integer-to-enum arguments.
+
+## Opaque handle presentation
+
+`capmgr_client_h` and `capmgr_search_results_h` are `typedef void*` aliases,
+following Action's C boundary. Only private C++ implementation types own objects;
+entry points explicitly cast incoming handles before typed use/destruction. Pass
+only a valid live handle from the corresponding API; the aliases do not validate
+arbitrary, stale or wrong-kind pointers. Null, creator checks, BUSY/IO retention,
+output clearing and callback/result lifetimes retain their existing contracts.
+Public symbols and C calling convention remain unchanged.

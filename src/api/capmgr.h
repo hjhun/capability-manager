@@ -27,8 +27,8 @@ extern "C" {
 #else
 #define CAPMGR_API
 #endif
-typedef struct capmgr_client* capmgr_client_h;
-typedef struct capmgr_search_results* capmgr_search_results_h;
+typedef void* capmgr_client_h;
+typedef void* capmgr_search_results_h;
 typedef uint64_t capmgr_request_token_t;
 typedef enum _capmgr_kind {
   CAPMGR_KIND_ALL = 0,

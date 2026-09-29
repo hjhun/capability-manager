@@ -21,6 +21,8 @@ as code. Keep this file concise; detailed contracts belong in `docx/`.
 - Implement in C++20 with a public `capmgr_` C API, RPM packaging, and TIDL IPC.
   Use tizen-action AMD module, C API and logging patterns and verified Watcher
   source/build layout. Keep private writer headers private.
+  Public opaque handles use typedef void*; cast to private C++ owners at the API
+  boundary. Error/kind constants use named typedef enums, not value macros.
 - `client_create` prepares authorization and read-only DB access. Resource mounts
   require an explicit remount request with the caller's destination path.
 - Catalog enumeration, search, and detail queries read the local SQLite catalog

@@ -25,6 +25,10 @@
   } while (0)
 #include <stdlib.h>
 
+_Static_assert(_Generic((capmgr_client_h)0, void*: 1, default: 0),
+               "client handle is void pointer");
+_Static_assert(_Generic((capmgr_search_results_h)0, void*: 1, default: 0),
+               "results handle is void pointer");
 _Static_assert(sizeof(capmgr_request_token_t) == 8, "token width");
 _Static_assert(sizeof(capmgr_kind_t) == 4, "kind width");
 _Static_assert(sizeof(capmgr_error_e) == 4, "default error enum width");

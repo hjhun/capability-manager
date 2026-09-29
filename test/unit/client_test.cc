@@ -17,7 +17,10 @@
 #include "api/client.hh"
 
 #include <gmock/gmock.h>
+#include <type_traits>
 
+static_assert(std::is_same_v<capmgr_client_h, void*>);
+static_assert(std::is_same_v<capmgr_search_results_h, void*>);
 static_assert(sizeof(capmgr_kind_t) == 4);
 static_assert(sizeof(capmgr_error_e) == 4);
 static_assert(CAPMGR_KIND_ACTION == 4);
