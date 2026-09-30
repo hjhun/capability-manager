@@ -1455,3 +1455,32 @@ execution/timing. Platform task adapter syntax uses actual local official header
 Actual module link/AMD activation/public-create/SYNC-01 remain open. Notices are a
 separate comment-only scope: one initial full Apache block includes SPDX, with
 existing rights preserved and no third-party/generated/LICENSE changes.
+
+
+## CONSENT-INTEGRATION-03 r5 — native SDK prerequisite verified
+
+The Release18 platform GBS build now compiles and links the actual AMD module,
+including `core_platform.cc`, against the official tizen-core and tzplatform SDK.
+The SDK supplies generated `tzplatform_variables.h`; no substitute header or
+mock platform fallback was used. GBS exit0, CTest29/29 PASS and RPM creation are
+verified. This supersedes the earlier native dependency/link NOT_RUN state only.
+Module loading, native event-loop behavior and AMD activation remain NOT_RUN.
+
+Three narrow corrections were required: platform-only `pkgconfig(aul)`
+BuildRequires for the enabled TIDL fixture configuration, a guarded undef of the
+SDK `LOG` before the project stream macro, and a portable fatal-shutdown test.
+The test emits/flushes `stop-post-fault` before Stop and requires SIGABRT rather
+than a stderr message routed to dlog on the SDK. Production fatal handling,
+logging implementation, API ABI and authorization policy remain unchanged.
+The module RPM retains root-owned `enabled: false` configuration, exports only
+AMD_MOD_INIT/AMD_MOD_FINI, and depends on actual libtizen-core.so.0.
+
+This prerequisite does not establish a product consent adapter. Public-create
+still fails closed pending provisioning and initial/live trusted identity;
+TIDL Execute remains unsupported, and worker START lacks trusted consent
+subject/profile/operation context and generation binding. Source-owned identity,
+transport/delegation and final execution-gate contracts remain open. Current CE
+server source, authenticated identity, taxonomy and adapter remain unidentified.
+No package installation, device activation, privilege delegation or private CE
+RPC was performed. Exact input staging, failures and evidence are recorded in
+[the r5 progress checkpoint](08-progress.md#consent-integration-03-r5--native-sdk-build-and-package-checkpoint).

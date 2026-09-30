@@ -52,6 +52,10 @@ class Message {
 
 }  // namespace capmgr
 
+#ifdef LOG
+#undef LOG
+#endif
+
 #define LOG(LEVEL)                                                      \
   ::capmgr::logging::Message(::capmgr::logging::Level::LEVEL, __FILE__, \
                              __FUNCTION__, __LINE__)

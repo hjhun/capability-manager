@@ -19,6 +19,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <csignal>
+#include <cstdio>
 #include <thread>
 #include <map>
 
@@ -417,14 +419,16 @@ TEST_F(AmdModuleTest, ThrowingIdleAndTimerAreContainedAtNativeCallbacks) {
 }
 
 TEST_F(AmdModuleTest, FailedStopPostRefusesUnsafeTaskUnload) {
-  EXPECT_DEATH(
+  EXPECT_EXIT(
       {
         FakeCore core;
         AmdModuleTask module(core, policy_, source_, &labels_);
         core.fail = "owner-idle";
+        std::fputs("stop-post-fault\n", stderr);
+        std::fflush(stderr);
         module.Stop();
       },
-      "cannot safely unload owned task");
+      ::testing::KilledBySignal(SIGABRT), "stop-post-fault");
 }
 
 TEST(AmdModuleConfigTest, DisabledConfigDoesNotInventPolicy) {

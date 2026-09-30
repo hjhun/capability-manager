@@ -6716,3 +6716,92 @@ Notice-only commit20b47b0 (157 native files) precedes functional task publicatio
 Next remains actual native AMD module dependency/link validation and connected
 public-create authorization; native activation/SYNC-01 and deferred RC-01/RC-02
 remain open. No device or policy task was executed.
+
+
+## CONSENT-INTEGRATION-03 r5 — native SDK build and package checkpoint
+
+2026-09-30; owner w1:pA, independent reviewer w1:pJ. Baseline clean source
+HEAD47842213f393a7d33bfb7acc24cf9643dfd61a3a (sourceRelease17).
+Reviewed fixes are limited to packaging/capability-manager.spec (Release18 and
+platform-only AUL BuildRequires), src/common/logging.hh (guarded LOG undef), and
+test/unit/amd_module_test.cc (fault marker plus exact SIGABRT assertion).
+No product identity/permission/role or transport behavior was changed.
+
+Evidence root: `/var/tmp/consent-artifacts/consent-integration-03/`.
+Original failures remain: gbs-r1 exit1 at prep (missing declared Source1), gbs-r2
+exit1 at configure (missing AUL), gbs-r3 exit1 at AMD module compile (SDK LOG
+collision), gbs-r4 exit1 at check (28/29 PASS; adapter218/219 with sole fatal-test
+stderr mismatch). The r4 library/module link evidence is retained separately.
+No failed run is described as a package success.
+
+Official Source1 provisioning used the exact unchanged spec URL:
+
+```sh
+curl --fail --location --proto '=https' --proto-redir '=https' \
+  --max-time 120 --dump-header source1-headers.txt \
+  --output v3.11.3.tar.gz \
+  https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz
+```
+
+The official HTTPS redirect, archive size8053705 and SHA256
+`0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406`
+are retained in source1-headers.txt/inputs-r2.json. Archive members were validated
+under json-3.11.3 without traversal; abi_macros.hpp version macros are 3/11/3.
+Only this declared Source1 was supplied; no generated header was substituted.
+
+The final source was exported from the actual CM repository:
+
+```sh
+gbs build -A x86_64 --profile tizen_10_1_emulator --include-all \
+  --define 'capmgr_tizen 1' --export-only
+```
+
+export-r5 exit0 produced the Release18 directory under
+`/home/hjhun/GBS-ROOT/local/sources/tizen_10_1_emulator/`.
+Copy the verified Source1 into capability-manager-0.1.0-18 there. Preserve all
+four inputs (Source0/spec/Source1/amd.json) and their hashes before building.
+For this run frozen-inputs-r5 and inputs-r5.json retain those bytes. The external
+tar-driver-r5/capability-manager/packaging directory contains only an exact copy
+of that spec for discovery. Installed GBS/depanneur source inspection established
+that tar style discovers packaging/*.spec and consumes the corresponding exported
+name/version/release inputs without re-exporting Git; not-export-source was not
+assumed to preserve the exported inputs. The exact final command was:
+
+```sh
+gbs build -A x86_64 --profile tizen_10_1_emulator \
+  --define 'capmgr_tizen 1' --style tar \
+  /var/tmp/consent-artifacts/consent-integration-03/tar-driver-r5
+```
+
+Real platform configure, complete compile and link PASS, including generated TIDL,
+Cynara configuration, AMD module and actual core_platform.cc. gbs-r5.log/.exit
+records exit0; CTest29/29 PASS, no skips, 12.20s; RPM generation PASS. The official
+GBS SDK contains tzplatform_variables.h and tizen-core0.2.4. This is a native SDK
+build/check in GBS, not an installed-emulator run or native module activation.
+
+rpms-r5/ archives eleven artifacts: runtime, devel, offline-tools, tests, AMD
+module, their generated debug packages/debugsource, and source RPM. All are
+0.1.0-18; binary architecture x86_64. rpms-r5.json records size/SHA256.
+source-r5.json/source-r5.diff and inputs-r5-postcheck.txt establish that the three
+implementation files and all four exported inputs still match the executed
+snapshot. These documentation updates occur after that build and do not claim
+that the source RPM contains this later evidence prose.
+
+Extracted module audit (module-files/requires/scripts-r5.txt, module-elf-r5.txt,
+module-payload-r5/) confirms root-owned mode0755
+/usr/share/amd/mod/libamd-mod-capability-manager.so, mode0644
+/etc/capmgr/amd.json with enabled:false, only defined dynamic exports
+AMD_MOD_INIT/AMD_MOD_FINI, actual libtizen-core.so.0 and tzplatform/dlog/SQLite
+ELF dependencies. AUL is a platform build dependency for fixture configuration;
+it is not added as production runtime linkage. Module package scripts are empty;
+no service/policy activation is introduced. No RPM was installed.
+
+Remaining gates: actual emulator module load/activation and event-loop lifecycle,
+public-create provisioning plus initial/live identity, consent generation binding
+and trusted subject/profile/operation transport/final execution enforcement,
+and latest CE server source/identity/data-level taxonomy/adapter. These remain
+NOT_RUN/BLOCKED as applicable; this checkpoint grants no access or production
+consent delegation. No device commands were used after build authorization;
+earlier read-only discovery reported emulator-26101 x86_64. Consent smoke01 r6
+and Integration02 r4 archives remain untouched. Final source/docs/evidence review
+and signed publication follow separately.
